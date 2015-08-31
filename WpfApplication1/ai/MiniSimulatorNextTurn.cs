@@ -5,6 +5,7 @@
 
     public class MiniSimulatorNextTurn
     {
+        Silverfish sf;
         //#####################################################################################################################
         //public int maxdeep = 6;
         //public int maxwide = 10;
@@ -24,18 +25,17 @@
 
         public Action bestmove = null;
         public float bestmoveValue = 0;
-        public Playfield bestboard = new Playfield();
+        public Playfield bestboard;
 
         public Behavior botBase = null;
         private int calculated = 0;
 
         private bool simulateSecondTurn = false;
 
-        Movegenerator movegen = Movegenerator.Instance;
-
-
-        public MiniSimulatorNextTurn()
+        public MiniSimulatorNextTurn(Silverfish sf)
         {
+            this.sf = sf;
+            this.bestboard = new Playfield(sf);
         }
 
 
@@ -63,12 +63,12 @@
                 //simulateEnemysTurn(simulateTwoTurns, playaround, print, pprob, pprob2);
                 p.prepareNextTurn(p.isOwnTurn);
 
-                Ai.Instance.enemySecondTurnSim[this.thread].simulateEnemysTurn(p, simulateTwoTurns, playaround, print, playaroundprob, playaroundprob2);
+                sf.Ai.enemySecondTurnSim[this.thread].simulateEnemysTurn(p, simulateTwoTurns, playaround, print, playaroundprob, playaroundprob2);
                 /*
                 if (p.turnCounter >= 2)
-                    Ai.Instance.enemySecondTurnSim.simulateEnemysTurn(p, simulateTwoTurns, playaround, print, playaroundprob, playaroundprob2);
+                    sf.Ai.enemySecondTurnSim.simulateEnemysTurn(p, simulateTwoTurns, playaround, print, playaroundprob, playaroundprob2);
                 else
-                    Ai.Instance.enemyTurnSim.simulateEnemysTurn(p, simulateTwoTurns, playaround, print, playaroundprob, playaroundprob2);
+                    sf.Ai.enemyTurnSim.simulateEnemysTurn(p, simulateTwoTurns, playaround, print, playaroundprob, playaroundprob2);
                 */
             }
             p.complete = true;
@@ -78,17 +78,17 @@
         {
 
             //todo only one time!
-            this.doEnemySecondTurn = Settings.Instance.simEnemySecondTurn;
-            int totalboards = Settings.Instance.nextTurnTotalBoards;
-            int maxwide = Settings.Instance.nextTurnMaxWide;
-            int maxdeep = Settings.Instance.nextTurnDeep;
-            bool playaround = Settings.Instance.playarround;
-            int playaroundprob = Settings.Instance.playaroundprob;
-            int playaroundprob2 = Settings.Instance.playaroundprob2;
+            this.doEnemySecondTurn = sf.Settings.simEnemySecondTurn;
+            int totalboards = sf.Settings.nextTurnTotalBoards;
+            int maxwide = sf.Settings.nextTurnMaxWide;
+            int maxdeep = sf.Settings.nextTurnDeep;
+            bool playaround = sf.Settings.playarround;
+            int playaroundprob = sf.Settings.playaroundprob;
+            int playaroundprob2 = sf.Settings.playaroundprob2;
 
 
             //Helpfunctions.Instance.logg("NXTTRN" + playf.mana);
-            if (botBase == null) botBase = Ai.Instance.botBase;
+            if (botBase == null) botBase = sf.Ai.botBase;
             bool test = false;
             this.posmoves.Clear();
             this.addToPosmoves(playf, totalboards);
@@ -114,7 +114,7 @@
                         continue;
                     }
 
-                    List<Action> actions = movegen.getMoveList(p, isLethalCheck, usePenalityManager, useCutingTargets);
+                    List<Action> actions = sf.Movegenerator.getMoveList(p, isLethalCheck, usePenalityManager, useCutingTargets);
                     foreach (Action a in actions)
                     {
                         havedonesomething = true;
@@ -217,12 +217,12 @@
 
                 if (print)
                 {
-                    Helpfunctions.Instance.ErrorLog("best board after your second turn (value included enemy second turn)----------");
+                    sf.Helpfunctions.ErrorLog("best board after your second turn (value included enemy second turn)----------");
                     bestplay.printBoard();
                     bestplay.value = int.MinValue;
                     bestplay.sEnemTurn = this.doEnemySecondTurn;
-                    Ai.Instance.enemySecondTurnSim[this.thread].simulateEnemysTurn(bestplay, false, playaround, false, playaroundprob, playaroundprob2);
-                    //Ai.Instance.enemySecondTurnSim.simulateEnemysTurn(bestplay, false, false, true, 100, 100); //dont play arround in enemys second turn
+                    sf.Ai.enemySecondTurnSim[this.thread].simulateEnemysTurn(bestplay, false, playaround, false, playaroundprob, playaroundprob2);
+                    //sf.Ai.enemySecondTurnSim.simulateEnemysTurn(bestplay, false, false, true, 100, 100); //dont play arround in enemys second turn
 
                 }
                 this.bestmove = bestplay.getNextAction();

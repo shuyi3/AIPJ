@@ -23,6 +23,7 @@
     public class Hrtprozis
     {
 
+        Silverfish sf;
 
         public int attackFaceHp = 15;
         public int ownHeroFatigue = 0;
@@ -82,27 +83,29 @@
         public Minion ownHero = new Minion();
         public Minion enemyHero = new Minion();
 
-        Helpfunctions help = Helpfunctions.Instance;
+        Helpfunctions help;
         //Imagecomparer icom = Imagecomparer.Instance;
         //HrtNumbers hrtnumbers = HrtNumbers.Instance;
         CardDB cdb = CardDB.Instance;
 
         private int ownPlayerController = 0;
 
-        private static Hrtprozis instance;
+        //private static Hrtprozis instance;
 
-        public static Hrtprozis Instance
+        //public static Hrtprozis Instance
+        //{
+        //    get
+        //    {
+        //        return instance ?? (instance = new Hrtprozis());
+        //    }
+        //}
+
+
+
+        public Hrtprozis(Silverfish sf)
         {
-            get
-            {
-                return instance ?? (instance = new Hrtprozis());
-            }
-        }
-
-
-
-        private Hrtprozis()
-        {
+            this.sf = sf;
+            this.help = sf.Helpfunctions;
         }
 
         public void setAttackFaceHP(int hp)
@@ -327,7 +330,7 @@
             this.heroWeaponDurability = wdur;
 
             this.heroname = this.heroNametoEnum(heron);
-            Helpfunctions.Instance.logg(this.heroname.ToString());
+            help.logg(this.heroname.ToString());
             this.ownHeroStartClass = Hero.cardClass;
 
             this.heroAbility = hab;

@@ -4,6 +4,7 @@
 
     public class Handmanager
     {
+        Silverfish sf;
 
         public class Handcard
         {
@@ -66,21 +67,21 @@
         Helpfunctions help;
         CardDB cdb = CardDB.Instance;
 
-        private static Handmanager instance;
+        //private static Handmanager instance;
 
-        public static Handmanager Instance
+        //public static Handmanager Instance
+        //{
+        //    get
+        //    {
+        //        return instance ?? (instance = new Handmanager());
+        //    }
+        //}
+
+
+        public Handmanager(Silverfish sf)
         {
-            get
-            {
-                return instance ?? (instance = new Handmanager());
-            }
-        }
-
-
-        private Handmanager()
-        {
-            this.help = Helpfunctions.Instance;
-
+            this.help =sf.Helpfunctions;
+            this.sf = sf;
         }
 
         public void clearAll()

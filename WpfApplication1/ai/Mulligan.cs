@@ -55,27 +55,30 @@ namespace HREngine.Bots
             public List<HeroEnum> enemhero = new List<HeroEnum>();
         }
 
+        Silverfish sf;
+
         List<mulliitem> holdlist = new List<mulliitem>();
         List<mulliitem> deletelist = new List<mulliitem>();
         List<concedeItem> concedelist = new List<concedeItem>();
         public bool loserLoserLoser = false;
 
-        private static Mulligan instance;
+        //private static Mulligan instance;
 
-        public static Mulligan Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new Mulligan();
-                }
-                return instance;
-            }
-        }
+        //public static Mulligan Instance
+        //{
+        //    get
+        //    {
+        //        if (instance == null)
+        //        {
+        //            instance = new Mulligan();
+        //        }
+        //        return instance;
+        //    }
+        //}
 
-        private Mulligan()
+        public Mulligan(Silverfish sf)
         {
+            this.sf = sf;
             readCombos();
         }
 
@@ -86,17 +89,17 @@ namespace HREngine.Bots
             this.deletelist.Clear();
             try
             {
-                string path = Settings.Instance.path;
+                string path = sf.Settings.path;
                 lines = System.IO.File.ReadAllLines(path + "_mulligan.txt");
             }
             catch
             {
-                Helpfunctions.Instance.logg("cant find _mulligan.txt");
-                Helpfunctions.Instance.ErrorLog("cant find _mulligan.txt (if you dont created your own mulliganfile, ignore this message)");
+                sf.Helpfunctions.logg("cant find _mulligan.txt");
+                sf.Helpfunctions.ErrorLog("cant find _mulligan.txt (if you dont created your own mulliganfile, ignore this message)");
                 return;
             }
-            Helpfunctions.Instance.logg("read _mulligan.txt...");
-            Helpfunctions.Instance.ErrorLog("read _mulligan.txt...");
+            sf.Helpfunctions.logg("read _mulligan.txt...");
+            sf.Helpfunctions.ErrorLog("read _mulligan.txt...");
             foreach (string line in lines)
             {
                 if (line.StartsWith("loser"))
@@ -111,18 +114,18 @@ namespace HREngine.Bots
                     {
                         string ownh = line.Split(':')[1];
                         concedeItem ci = new concedeItem();
-                        ci.urhero = Hrtprozis.Instance.heroNametoEnum(ownh);
+                        ci.urhero = sf.Hrtprozis.heroNametoEnum(ownh);
                         string enemlist = line.Split(':')[2];
                         foreach (string s in enemlist.Split(','))
                         {
-                            ci.enemhero.Add(Hrtprozis.Instance.heroNametoEnum(s));
+                            ci.enemhero.Add(sf.Hrtprozis.heroNametoEnum(s));
                         }
                         concedelist.Add(ci);
                     }
                     catch
                     {
-                        Helpfunctions.Instance.logg("mullimaker cant read: " + line);
-                        Helpfunctions.Instance.ErrorLog("mullimaker cant read: " + line);
+                        sf.Helpfunctions.logg("mullimaker cant read: " + line);
+                        sf.Helpfunctions.ErrorLog("mullimaker cant read: " + line);
                     }
                     continue;
                 }
@@ -163,8 +166,8 @@ namespace HREngine.Bots
                     }
                     catch
                     {
-                        Helpfunctions.Instance.logg("mullimaker cant read: " + line);
-                        Helpfunctions.Instance.ErrorLog("mullimaker cant read: " + line);
+                        sf.Helpfunctions.logg("mullimaker cant read: " + line);
+                        sf.Helpfunctions.ErrorLog("mullimaker cant read: " + line);
                     }
                 }
                 else
@@ -191,8 +194,8 @@ namespace HREngine.Bots
                         }
                         catch
                         {
-                            Helpfunctions.Instance.logg("mullimaker cant read: " + line);
-                            Helpfunctions.Instance.ErrorLog("mullimaker cant read: " + line);
+                            sf.Helpfunctions.logg("mullimaker cant read: " + line);
+                            sf.Helpfunctions.ErrorLog("mullimaker cant read: " + line);
                         }
                     }
                     else
@@ -244,7 +247,7 @@ namespace HREngine.Bots
                         if (CardDB.Instance.getCardDataFromID(CardDB.Instance.cardIdstringToEnum(c.id)).cost >= mi.manarule)
                         {
                             if (discarditems.Contains(c.entitiy)) continue;
-                            Helpfunctions.Instance.ErrorLog("discard " + c.id + " because of this rule " + mi.rulestring);
+                            sf.Helpfunctions.ErrorLog("discard " + c.id + " because of this rule " + mi.rulestring);
                             discarditems.Add(c.entitiy);
                         }
                         continue;
@@ -253,7 +256,7 @@ namespace HREngine.Bots
                     if (c.id == mi.cardid && (mi.enemyclass == "all" || mi.enemyclass == enemclass) && (mi.ownclass == "all" || mi.ownclass == ownclass))
                     {
                         if (discarditems.Contains(c.entitiy)) continue;
-                        Helpfunctions.Instance.ErrorLog("discard " + c.id + " because of this rule " + mi.rulestring);
+                        sf.Helpfunctions.ErrorLog("discard " + c.id + " because of this rule " + mi.rulestring);
                         discarditems.Add(c.entitiy);
                     }
                 }

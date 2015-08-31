@@ -4,20 +4,23 @@
 
     public class Movegenerator
     {
-        PenalityManager pen = PenalityManager.Instance;
+        Silverfish sf;
+        PenalityManager pen;
 
-        private static Movegenerator instance;
+        //private static Movegenerator instance;
 
-        public static Movegenerator Instance
+        //public static Movegenerator Instance
+        //{
+        //    get
+        //    {
+        //        return instance ?? (instance = new Movegenerator());
+        //    }
+        //}
+
+        public Movegenerator(Silverfish sf)
         {
-            get
-            {
-                return instance ?? (instance = new Movegenerator());
-            }
-        }
-
-        private Movegenerator()
-        {
+            this.sf = sf;
+            pen = sf.PenalityManager;
         }
 
         
@@ -44,7 +47,7 @@
                 int isChoice = (c.choice) ? 1 : 0;
                 for (int i = 0 + 1 * isChoice; i < 1 + 2 * isChoice; i++)
                 {
-                    if (isChoice == 1) c = PenalityManager.Instance.getChooseCard(hc.card, i); // do all choice
+                    if (isChoice == 1) c = pen.getChooseCard(hc.card, i); // do all choice
 
                     if (p.mana >= c.getManaCost(p, hc.manacost)) // if enough manna
                     {

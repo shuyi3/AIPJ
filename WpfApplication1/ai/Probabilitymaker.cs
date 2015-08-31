@@ -87,7 +87,7 @@
             string canbe = secdata.Split('.')[1];
             if (canbe.Length < 17)
             {
-                Helpfunctions.Instance.ErrorLog("cant read secret " + secdata + " " + canbe.Length);
+                //sf.helpfunctions.ErrorLog("cant read secret " + secdata + " " + canbe.Length);
             }
 
             this.canBe_snaketrap = (canbe[0] == '1');
@@ -220,6 +220,8 @@
 
     public class Probabilitymaker
     {
+        Silverfish sf;
+
         public Dictionary<CardDB.cardIDEnum, int> ownCardsPlayed = new Dictionary<CardDB.cardIDEnum, int>();
         public Dictionary<CardDB.cardIDEnum, int> enemyCardsPlayed = new Dictionary<CardDB.cardIDEnum, int>();
         List<CardDB.Card> ownDeckGuessed = new List<CardDB.Card>();
@@ -233,18 +235,18 @@
         public bool feugenDead = false;
         public bool stalaggDead = false;
 
-        private static Probabilitymaker instance;
-        public static Probabilitymaker Instance
-        {
-            get
-            {
-                return instance ?? (instance = new Probabilitymaker());
-            }
-        }
+        //private static Probabilitymaker instance;
+        //public static Probabilitymaker Instance
+        //{
+        //    get
+        //    {
+        //        return instance ?? (instance = new Probabilitymaker());
+        //    }
+        //}
 
-        private Probabilitymaker()
+        public Probabilitymaker(Silverfish sf)
         {
-
+            this.sf = sf;
         }
 
         public void setOwnCards(List<CardDB.cardIDEnum> list)
@@ -262,24 +264,24 @@
             /*string g = "";
             if (Probabilitymaker.Instance.feugenDead) g += " fgn";
             if (Probabilitymaker.Instance.stalaggDead) g += " stlgg";
-            Helpfunctions.Instance.logg("GraveYard:" + g);
-            if (writetobuffer) Helpfunctions.Instance.writeToBuffer("GraveYard:" + g);*/
+            sf.helpfunctions.logg("GraveYard:" + g);
+            if (writetobuffer) sf.helpfunctions.writeToBuffer("GraveYard:" + g);*/
 
             string s = "ownDiedMinions: ";
             foreach (GraveYardItem gyi in this.turngraveyard)
             {
                 if (gyi.own) s += gyi.cardid + "," + gyi.entity + ";";
             }
-            Helpfunctions.Instance.logg(s);
-            if (writetobuffer) Helpfunctions.Instance.writeToBuffer(s);
+            sf.Helpfunctions.logg(s);
+            if (writetobuffer) sf.Helpfunctions.writeToBuffer(s);
 
             s = "enemyDiedMinions: ";
             foreach (GraveYardItem gyi in this.turngraveyard)
             {
                 if (!gyi.own) s += gyi.cardid + "," + gyi.entity + ";";
             }
-            Helpfunctions.Instance.logg(s);
-            if (writetobuffer) Helpfunctions.Instance.writeToBuffer(s);
+            sf.Helpfunctions.logg(s);
+            if (writetobuffer) sf.Helpfunctions.writeToBuffer(s);
         }
 
         public void readTurnGraveYard(string own, string enemy)
@@ -437,12 +439,12 @@
             {
                 eg += e.Key + "," + e.Value + ";";
             }
-            Helpfunctions.Instance.logg(og);
-            Helpfunctions.Instance.logg(eg);
+            sf.Helpfunctions.logg(og);
+            sf.Helpfunctions.logg(eg);
             if (writetobuffer)
             {
-                Helpfunctions.Instance.writeToBuffer(og);
-                Helpfunctions.Instance.writeToBuffer(eg);
+                sf.Helpfunctions.writeToBuffer(og);
+                sf.Helpfunctions.writeToBuffer(eg);
             }
         }
 
@@ -520,7 +522,7 @@
             foreach (int i in enemySecretIds)
             {
                 if (i >= 1000) continue;
-                Helpfunctions.Instance.logg("detect secret with id" + i);
+                sf.Helpfunctions.logg("detect secret with id" + i);
                 SecretItem sec = getNewSecretGuessedItem(i, enemyHeroStartClass);
 
                 newlist.Add(new SecretItem(sec));

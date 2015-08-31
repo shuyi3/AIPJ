@@ -2,6 +2,7 @@
 {
     public class Settings
     {
+        Silverfish sf;
 
         public void setSettings()
         {
@@ -38,36 +39,37 @@
 
             this.setWeights(alpha);
 
-            Mulligan.Instance.setAutoConcede(Settings.Instance.concede);
-            Helpfunctions.Instance.ErrorLog("set enemy-face-hp to: " + this.enfacehp);
-            ComboBreaker.Instance.attackFaceHP = this.enfacehp;
-            Ai.Instance.setMaxWide(this.maxwide);
-            Helpfunctions.Instance.ErrorLog("set maxwide to: " + this.maxwide);
+            sf.Mulligan.setAutoConcede(sf.Settings.concede);
+            sf.Helpfunctions.ErrorLog("set enemy-face-hp to: " + this.enfacehp);
+            sf.Combobreaker.attackFaceHP = this.enfacehp;
+            sf.Ai.setMaxWide(this.maxwide);
+            sf.Helpfunctions.ErrorLog("set maxwide to: " + this.maxwide);
 
-            Ai.Instance.setTwoTurnSimulation(false, this.twotsamount);
-            Helpfunctions.Instance.ErrorLog("calculate the second turn of the " + this.twotsamount + " best boards");
+            sf.Ai.setTwoTurnSimulation(false, this.twotsamount);
+            sf.Helpfunctions.ErrorLog("calculate the second turn of the " + this.twotsamount + " best boards");
             if (this.twotsamount >= 1)
             {
-                if (this.simEnemySecondTurn) Helpfunctions.Instance.ErrorLog("simulates the enemy turn on your second turn");
+                if (this.simEnemySecondTurn) sf.Helpfunctions.ErrorLog("simulates the enemy turn on your second turn");
             }
             if (this.useSecretsPlayArround)
             {
-                Helpfunctions.Instance.ErrorLog("playing arround secrets is " + this.useSecretsPlayArround);
+                sf.Helpfunctions.ErrorLog("playing arround secrets is " + this.useSecretsPlayArround);
             }
             if (this.playarround)
             {
-                Ai.Instance.setPlayAround();
-                Helpfunctions.Instance.ErrorLog("activated playaround AOE Spells");
+                sf.Ai.setPlayAround();
+                sf.Helpfunctions.ErrorLog("activated playaround AOE Spells");
             }
-            if (this.writeToSingleFile) Helpfunctions.Instance.ErrorLog("write log to single file");
+            if (this.writeToSingleFile) sf.Helpfunctions.ErrorLog("write log to single file");
 
 
         }
 
 
-        private Settings()
+        public Settings(Silverfish sf)
         {
             this.writeToSingleFile = false;
+            this.sf = sf;
         }
 
 
@@ -115,22 +117,22 @@
         public bool learnmode = true;
         public bool printlearnmode = true;
 
-        private static Settings instance;
+        //private static Settings instance;
 
-        public static Settings Instance
-        {
-            get
-            {
-                return instance ?? (instance = new Settings());
-            }
-        }
+        //public static Settings Instance
+        //{
+        //    get
+        //    {
+        //        return instance ?? (instance = new Settings());
+        //    }
+        //}
 
         public void setWeights(int alpha)
         {
             float a = ((float)alpha) / 100f;
             this.firstweight = 1f - a;
             this.secondweight = a;
-            Helpfunctions.Instance.ErrorLog("current alpha is " + this.secondweight);
+            sf.Helpfunctions.ErrorLog("current alpha is " + this.secondweight);
         }
 
         public void setFilePath(string path)

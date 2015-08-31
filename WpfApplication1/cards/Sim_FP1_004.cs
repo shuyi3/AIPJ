@@ -32,12 +32,12 @@ namespace HREngine.Bots
                     if (p.enemySecretCount <= 4)
                     {
                         p.enemySecretCount++;
-                        SecretItem si = Probabilitymaker.Instance.getNewSecretGuessedItem(p.getNextEntity(), p.ownHeroStartClass);
+                        SecretItem si = p.sf.Probabilitymaker.getNewSecretGuessedItem(p.getNextEntity(), p.ownHeroStartClass);
                         if (p.enemyHeroStartClass == TAG_CLASS.PALADIN)
                         {
                             si.canBe_redemption = false;
                         }
-                        if (Settings.Instance.useSecretsPlayArround)
+                        if (p.sf.Settings.useSecretsPlayArround)
                         {
                             p.enemySecretList.Add(si);
                         }

@@ -22,16 +22,24 @@ using HREngine.Bots;
 using System.Diagnostics;
 using System.IO.Pipes;
 
-using System.ComponentModel;
-
 namespace HRSim
 {
 
     public partial class MainWindow : Window
     {
 
+        private static MainWindow instance;
+
+        public static MainWindow Instance
+        {
+            get
+            {
+                return instance ?? (instance = new MainWindow());
+            }
+        }
+
         HRSim.Playfield testField;
-        public Silverfish playerOne, playerTwo;
+        public static Silverfish playerOne, playerTwo;
         private string _logText;
 
         public event PropertyChangedEventHandler LogChanged;
@@ -154,6 +162,7 @@ namespace HRSim
 
         public MainWindow()
         {
+            instance = this;
             DataContext = this;          
             InitializeComponent();
             Init();
@@ -368,114 +377,110 @@ namespace HRSim
             EnemyHeroText += "ownherostatus: frozen" + p.enemyHero.frozen + " || ";
         }
 
-        public void InitAISettings() 
-        {
+        //public void InitAISettings() 
+        //{
            
-            bool concede = false;
+        //    bool concede = false;
 
-            // play with these settings###################################
-            int enfacehp = 15;  // hp of enemy when your hero is allowed to attack the enemy face with his weapon
-            int mxwde = 3000;   // numer of boards which are taken to the next deep-lvl
-            int twotsamount = 0;          // number of boards where the next turn is simulated
-            bool enemySecondTurnSim = false; // if he simulates the next players-turn, he also simulates the enemys respons
+        //    // play with these settings###################################
+        //    int enfacehp = 15;  // hp of enemy when your hero is allowed to attack the enemy face with his weapon
+        //    int mxwde = 3000;   // numer of boards which are taken to the next deep-lvl
+        //    int twotsamount = 0;          // number of boards where the next turn is simulated
+        //    bool enemySecondTurnSim = false; // if he simulates the next players-turn, he also simulates the enemys respons
 
-            bool playaround = false;  //play around some enemys aoe-spells?
-            //these two probs are >= 0 and <= 100
-            int playaroundprob = 50;    //probability where the enemy plays the aoe-spell, but your minions will not die through it
-            int playaroundprob2 = 80;   // probability where the enemy plays the aoe-spell, and your minions can die!
-            bool useExternalProcess = false; // use silver.exe for calculations a lot faster than turning it off (true = recomended)
+        //    bool playaround = false;  //play around some enemys aoe-spells?
+        //    //these two probs are >= 0 and <= 100
+        //    int playaroundprob = 50;    //probability where the enemy plays the aoe-spell, but your minions will not die through it
+        //    int playaroundprob2 = 80;   // probability where the enemy plays the aoe-spell, and your minions can die!
+        //    bool useExternalProcess = false; // use silver.exe for calculations a lot faster than turning it off (true = recomended)
 
-            int amountBoardsInEnemyTurnSim = 40;
-            int amountBoardsInEnemyTurnSimSecondStepp = 200;
-            int amountBoardsInEnemySecondTurnSim = 20;
+        //    int amountBoardsInEnemyTurnSim = 40;
+        //    int amountBoardsInEnemyTurnSimSecondStepp = 200;
+        //    int amountBoardsInEnemySecondTurnSim = 20;
 
-            int nextturnsimDeep = 6;
-            int nextturnsimMaxWidth = 12;
-            int nexttunsimMaxBoards = 80;
-            int ImprovedCalculations = 1;
+        //    int nextturnsimDeep = 6;
+        //    int nextturnsimMaxWidth = 12;
+        //    int nexttunsimMaxBoards = 80;
+        //    int ImprovedCalculations = 1;
 
-            bool secrets = false; // playing arround enemys secrets
+        //    bool secrets = false; // playing arround enemys secrets
 
-            int alpha = 50; // weight of the second turn in calculation (0<= alpha <= 100)
+        //    int alpha = 50; // weight of the second turn in calculation (0<= alpha <= 100)
 
-            HREngine.Bots.Settings.Instance.simulatePlacement = false;  //rudiment!!! set this true, and ai will simulate all placements, whether you have a alpha/flametongue/argus
-            //use it only with useExternalProcess = true !!!!
+        //    HREngine.Bots.Settings.Instance.simulatePlacement = false;  //rudiment!!! set this true, and ai will simulate all placements, whether you have a alpha/flametongue/argus
+        //    //use it only with useExternalProcess = true !!!!
 
-            //###########################################################
-
-
-            Mulligan.Instance.setAutoConcede(concede);
-
-            //Silverfish.Instance.setnewLoggFile();
-
-            HRSim.Helpfunctions.Instance.ErrorLog("set enemy-face-hp to: " + enfacehp);
-            ComboBreaker.Instance.attackFaceHP = enfacehp;
-
-            Ai.Instance.setMaxWide(mxwde);
-            HRSim.Helpfunctions.Instance.ErrorLog("set maxwide to: " + mxwde);
-
-            Ai.Instance.setTwoTurnSimulation(false, twotsamount);
-            HRSim.Helpfunctions.Instance.ErrorLog("calculate the second turn of the " + twotsamount + " best boards");
-            if (twotsamount >= 1)
-            {
-                //Ai.Instance.nextTurnSimulator.setEnemyTurnsim(enemySecondTurnSim);
-                HREngine.Bots.Settings.Instance.simEnemySecondTurn = enemySecondTurnSim;
-                if (enemySecondTurnSim) Helpfunctions.Instance.ErrorLog("simulates the enemy turn on your second turn");
-            }
-
-            if (secrets)
-            {
-
-                HREngine.Bots.Settings.Instance.useSecretsPlayArround = secrets;
-                HRSim.Helpfunctions.Instance.ErrorLog("playing arround secrets is " + secrets);
-            }
+        //    //###########################################################
 
 
-            if (playaround)
-            {
-                HREngine.Bots.Settings.Instance.playarround = playaround;
-                HREngine.Bots.Settings.Instance.playaroundprob = playaroundprob;
-                HREngine.Bots.Settings.Instance.playaroundprob2 = playaroundprob2;
-                Ai.Instance.setPlayAround();
-                HRSim.Helpfunctions.Instance.ErrorLog("activated playaround");
-            }
+        //    Mulligan.Instance.setAutoConcede(concede);
+
+        //    //Silverfish.Instance.setnewLoggFile();
+
+        //    HRSim.Helpfunctions.Instance.ErrorLog("set enemy-face-hp to: " + enfacehp);
+        //    combobreaker.attackFaceHP = enfacehp;
+
+        //    Ai.Instance.setMaxWide(mxwde);
+        //    HRSim.Helpfunctions.Instance.ErrorLog("set maxwide to: " + mxwde);
+
+        //    Ai.Instance.setTwoTurnSimulation(false, twotsamount);
+        //    HRSim.Helpfunctions.Instance.ErrorLog("calculate the second turn of the " + twotsamount + " best boards");
+        //    if (twotsamount >= 1)
+        //    {
+        //        //Ai.Instance.nextTurnSimulator.setEnemyTurnsim(enemySecondTurnSim);
+        //        HREngine.Bots.Settings.Instance.simEnemySecondTurn = enemySecondTurnSim;
+        //        if (enemySecondTurnSim) Helpfunctions.Instance.ErrorLog("simulates the enemy turn on your second turn");
+        //    }
+
+        //    if (secrets)
+        //    {
+
+        //        HREngine.Bots.Settings.Instance.useSecretsPlayArround = secrets;
+        //        HRSim.Helpfunctions.Instance.ErrorLog("playing arround secrets is " + secrets);
+        //    }
 
 
-            HREngine.Bots.Settings.Instance.setWeights(alpha);
+        //    if (playaround)
+        //    {
+        //        HREngine.Bots.Settings.Instance.playarround = playaround;
+        //        HREngine.Bots.Settings.Instance.playaroundprob = playaroundprob;
+        //        HREngine.Bots.Settings.Instance.playaroundprob2 = playaroundprob2;
+        //        Ai.Instance.setPlayAround();
+        //        HRSim.Helpfunctions.Instance.ErrorLog("activated playaround");
+        //    }
 
 
-            bool teststuff = false;
-            // set to true, to run a testfile (requires test.txt file in filder where _cardDB.txt file is located)
-            bool printstuff = false; // if true, the best board of the tested file is printet stepp by stepp
+        //    HREngine.Bots.Settings.Instance.setWeights(alpha);
 
-            HREngine.Bots.Settings.Instance.enemyTurnMaxWide = amountBoardsInEnemyTurnSim;
-            HREngine.Bots.Settings.Instance.enemySecondTurnMaxWide = amountBoardsInEnemySecondTurnSim;
 
-            HREngine.Bots.Settings.Instance.nextTurnDeep = nextturnsimDeep;
-            HREngine.Bots.Settings.Instance.nextTurnMaxWide = nextturnsimMaxWidth;
-            HREngine.Bots.Settings.Instance.nextTurnTotalBoards = nexttunsimMaxBoards;
-           // HREngine.Bots.Settings.Instance.ImprovedCalculations = ImprovedCalculations;
+        //    bool teststuff = false;
+        //    // set to true, to run a testfile (requires test.txt file in filder where _cardDB.txt file is located)
+        //    bool printstuff = false; // if true, the best board of the tested file is printet stepp by stepp
 
-            HRSim.Helpfunctions.Instance.ErrorLog("----------------------------");
-            HRSim.Helpfunctions.Instance.ErrorLog("you are running uai V" + playerOne.versionnumber);
-            HRSim.Helpfunctions.Instance.ErrorLog("----------------------------");
+        //    HREngine.Bots.Settings.Instance.enemyTurnMaxWide = amountBoardsInEnemyTurnSim;
+        //    HREngine.Bots.Settings.Instance.enemySecondTurnMaxWide = amountBoardsInEnemySecondTurnSim;
 
-            //if (this.useExternalProcess) Helpfunctions.Instance.ErrorLog("YOU USE SILVER.EXE FOR CALCULATION, MAKE SURE YOU STARTED IT!");
-            //if (this.useExternalProcess) Helpfunctions.Instance.ErrorLog("SILVER.EXE IS LOCATED IN: " + HREngine.Bots.Settings.Instance.path);
+        //    HREngine.Bots.Settings.Instance.nextTurnDeep = nextturnsimDeep;
+        //    HREngine.Bots.Settings.Instance.nextTurnMaxWide = nextturnsimMaxWidth;
+        //    HREngine.Bots.Settings.Instance.nextTurnTotalBoards = nexttunsimMaxBoards;
+        //   // HREngine.Bots.Settings.Instance.ImprovedCalculations = ImprovedCalculations;
 
-            //if (teststuff)
-            //{
-                //Ai.Instance.autoTester(printstuff);
-            //}
-        }
+        //    HRSim.Helpfunctions.Instance.ErrorLog("----------------------------");
+        //    HRSim.Helpfunctions.Instance.ErrorLog("you are running uai V" + playerOne.versionnumber);
+        //    HRSim.Helpfunctions.Instance.ErrorLog("----------------------------");
+
+        //    //if (this.useExternalProcess) Helpfunctions.Instance.ErrorLog("YOU USE SILVER.EXE FOR CALCULATION, MAKE SURE YOU STARTED IT!");
+        //    //if (this.useExternalProcess) Helpfunctions.Instance.ErrorLog("SILVER.EXE IS LOCATED IN: " + HREngine.Bots.Settings.Instance.path);
+
+        //    //if (teststuff)
+        //    //{
+        //        //Ai.Instance.autoTester(printstuff);
+        //    //}
+        //}
 
         public void Init()
         {
 
-            playerOne = new Silverfish();
-            playerOne.setnewLoggFile();
-
-            HREngine.Bots.Bot b = new HREngine.Bots.Bot(playerOne);
 
             //implementation
             //string[] deckLines;
@@ -502,7 +507,7 @@ namespace HRSim
 
             testField.drawInitCards();
 
-            InitAISettings();
+            //InitAISettings();
 
             displayHandCards(testField, false);
 
@@ -519,15 +524,19 @@ namespace HRSim
             //HREngine.Bots.Action playEnemyLeftMinion = new HREngine.Bots.Action(actionEnum.playcard, enemyCardToPlay, null, 1, null, 0, 0);
 
             //testField.doAction(playEnemyLeftMinion);  
+            playerOne = new Silverfish();
+            playerOne.setnewLoggFile();
 
-            Behavior behave = new BehaviorControl();//change this to new BehaviorRush() for rush mode
+            HREngine.Bots.Bot b = new HREngine.Bots.Bot(playerOne);
+
+            Behavior behave = new BehaviorControl(playerOne);//change this to new BehaviorRush() for rush mode
             HRSim.Action moveTodo = null;
             //testField.printBoard();
             for (; ; )
             {
                 bool templearn = playerOne.updateEverything(behave, testField);
-                if (Ai.Instance.bestmove == null) break;
-                moveTodo = new HRSim.Action(Ai.Instance.bestmove);
+                if (playerOne.Ai.bestmove == null) break;
+                moveTodo = new HRSim.Action(playerOne.Ai.bestmove);
                 HRSim.Helpfunctions.Instance.logg("##########MOVE##########");
                 moveTodo.print();
                 HRSim.Helpfunctions.Instance.logg("##########MOVE##########");
@@ -904,15 +913,15 @@ namespace HRSim {
             //this.simulateEnemyTurn = Ai.Instance.simulateEnemyTurn;
             this.ownController = 1;
 
-            //this.ownHeroEntity = Hrtprozis.Instance.ownHeroEntity;
-            //this.enemyHeroEntity = Hrtprozis.Instance.enemyHeroEntitiy;
+            //this.ownHeroEntity = hrtprozis.ownHeroEntity;
+            //this.enemyHeroEntity = hrtprozis.enemyHeroEntitiy;
 
             this.mana = 10;
             this.manaTurnEnd = this.mana;
             this.ownMaxMana = 10;
             this.enemyMaxMana = 0;
             this.evaluatePenality = 0;
-            //this.ownSecretsIDList.AddRange(Hrtprozis.Instance.ownSecretList);
+            //this.ownSecretsIDList.AddRange(hrtprozis.ownSecretList);
             this.enemySecretCount = 0;
 
 
@@ -920,10 +929,10 @@ namespace HRSim {
 
             this.complete = false;
 
-            //addMinionsReal(Hrtprozis.Instance.ownMinions, ownMinions);
-            //addMinionsReal(Hrtprozis.Instance.enemyMinions, enemyMinions);
-            this.ownHero = new Minion(Hrtprozis.Instance.ownHero);
-            this.enemyHero = new Minion(Hrtprozis.Instance.enemyHero);
+            //addMinionsReal(hrtprozis.ownMinions, ownMinions);
+            //addMinionsReal(hrtprozis.enemyMinions, enemyMinions);
+            this.ownHero = new Minion();
+            this.enemyHero = new Minion();
             this.ownHero.cardClass = TAG_CLASS.MAGE;
             this.enemyHero.cardClass = TAG_CLASS.MAGE;
 
@@ -965,17 +974,17 @@ namespace HRSim {
             this.enemyHeroStartClass = TAG_CLASS.MAGE;
 
             /*
-            this.enemyHeroHp = Hrtprozis.Instance.enemyHp;
-            this.ownHeroHp = Hrtprozis.Instance.heroHp;
-            this.ownHeroReady = Hrtprozis.Instance.ownheroisread;
-            this.ownHeroWindfury = Hrtprozis.Instance.ownHeroWindfury;
-            this.ownHeroNumAttackThisTurn = Hrtprozis.Instance.ownHeroNumAttacksThisTurn;
-            this.ownHeroFrozen = Hrtprozis.Instance.herofrozen;
-            this.enemyHeroFrozen = Hrtprozis.Instance.enemyfrozen;
-            this.ownheroAngr = Hrtprozis.Instance.heroAtk;
-            this.heroImmuneWhileAttacking = Hrtprozis.Instance.heroImmuneToDamageWhileAttacking;
-            this.ownHeroDefence = Hrtprozis.Instance.heroDefence;
-            this.enemyHeroDefence = Hrtprozis.Instance.enemyDefence;
+            this.enemyHeroHp = hrtprozis.enemyHp;
+            this.ownHeroHp = hrtprozis.heroHp;
+            this.ownHeroReady = hrtprozis.ownheroisread;
+            this.ownHeroWindfury = hrtprozis.ownHeroWindfury;
+            this.ownHeroNumAttackThisTurn = hrtprozis.ownHeroNumAttacksThisTurn;
+            this.ownHeroFrozen = hrtprozis.herofrozen;
+            this.enemyHeroFrozen = hrtprozis.enemyfrozen;
+            this.ownheroAngr = hrtprozis.heroAtk;
+            this.heroImmuneWhileAttacking = hrtprozis.heroImmuneToDamageWhileAttacking;
+            this.ownHeroDefence = hrtprozis.heroDefence;
+            this.enemyHeroDefence = hrtprozis.enemyDefence;
              */
 
             //####buffs#############################
@@ -1254,13 +1263,13 @@ namespace HRSim {
             this.enemySecretCount = p.enemySecretCount;
 
             this.enemySecretList.Clear();
-            if (Settings.Instance.useSecretsPlayArround)
-            {
-                foreach (SecretItem si in p.enemySecretList)
-                {
-                    this.enemySecretList.Add(new SecretItem(si));
-                }
-            }
+            //if (Settings.Instance.useSecretsPlayArround)
+            //{
+            //    foreach (SecretItem si in p.enemySecretList)
+            //    {
+            //        this.enemySecretList.Add(new SecretItem(si));
+            //    }
+            //}
 
             this.mana = p.mana;
             this.manaTurnEnd = p.manaTurnEnd;
@@ -2534,7 +2543,7 @@ namespace HRSim {
             this.turnCounter++;
             //penalty for destroying combo
 
-            //this.evaluatePenality += ComboBreaker.Instance.checkIfComboWasPlayed(this.playactions, this.ownWeaponName, this.ownHeroName);
+            //this.evaluatePenality += combobreaker.checkIfComboWasPlayed(this.playactions, this.ownWeaponName, this.ownHeroName);
 
             if (this.complete) return;
             this.triggerEndTurn(this.isOwnTurn);
@@ -5707,10 +5716,13 @@ namespace HRSim {
 
     }
 
-       public class Helpfunctions
+    public class Helpfunctions
     {
 
         HRSim.MainWindow window = null;
+        public string logpath = "C:\\Code\\ConsoleApplication1\\ConsoleApplication1\\";
+        public string logfile = "UILogg" + DateTime.Now.ToString("_yyyy-MM-dd_HH-mm-ss") + ".txt";
+        public string path = "C:\\Code\\ConsoleApplication1\\ConsoleApplication1\\";
 
         public static List<T> TakeList<T>(IEnumerable<T> source, int limit)
         {
@@ -5749,7 +5761,7 @@ namespace HRSim {
             //        this.window = (HRSim.MainWindow) window;
             //    }
             //}
-            System.IO.File.WriteAllText(Settings.Instance.logpath + Settings.Instance.logfile, "");
+            System.IO.File.WriteAllText(logpath + logfile, "");
         }
 
         private bool writelogg = true;
@@ -5760,7 +5772,7 @@ namespace HRSim {
 
         public void createNewLoggfile()
         {
-            System.IO.File.WriteAllText(Settings.Instance.logpath + Settings.Instance.logfile, "");
+            System.IO.File.WriteAllText(logpath + logfile, "");
         }
 
         public void logg(string s)
@@ -5769,7 +5781,7 @@ namespace HRSim {
             if (!writelogg) return;
             try
             {
-                using (StreamWriter sw = File.AppendText(Settings.Instance.logpath + Settings.Instance.logfile))
+                using (StreamWriter sw = File.AppendText(logpath + logfile))
                 {
                     sw.WriteLine(s);
                 }
@@ -5813,7 +5825,7 @@ namespace HRSim {
             {
                 try
                 {
-                    System.IO.File.WriteAllText(Settings.Instance.path + "crrntbrd.txt", this.sendbuffer);
+                    System.IO.File.WriteAllText(path + "crrntbrd.txt", this.sendbuffer);
                     writed = false;
                 }
                 catch
@@ -5833,7 +5845,7 @@ namespace HRSim {
             {
                 try
                 {
-                    System.IO.File.WriteAllText(Settings.Instance.path + "actionstodo.txt", this.sendbuffer);
+                    System.IO.File.WriteAllText(path + "actionstodo.txt", this.sendbuffer);
                     writed = false;
                 }
                 catch
@@ -5908,37 +5920,37 @@ namespace HRSim {
 
                 /*if(Ai.Instance.playaround)
                 {
-                    if(Hrtprozis.Instance.enemyHeroname == HeroEnum.mage)
+                    if(hrtprozis.enemyHeroname == HeroEnum.mage)
                     {
                         help.logg("probs: "  + Probabilitymaker.Instance.anzCardsInDeck(CardDB.cardIDEnum.CS2_032) + " " + Probabilitymaker.Instance.anzCardsInDeck(CardDB.cardIDEnum.CS2_028));
                     }
 
-                    if (Hrtprozis.Instance.enemyHeroname == HeroEnum.warrior)
+                    if (hrtprozis.enemyHeroname == HeroEnum.warrior)
                     {
                         help.logg("probs: "  + Probabilitymaker.Instance.anzCardsInDeck(CardDB.cardIDEnum.EX1_400));
                     }
 
-                    if (Hrtprozis.Instance.enemyHeroname == HeroEnum.hunter)
+                    if (hrtprozis.enemyHeroname == HeroEnum.hunter)
                     {
                         help.logg("probs: "  + Probabilitymaker.Instance.anzCardsInDeck(CardDB.cardIDEnum.EX1_538));
                     }
 
-                    if (Hrtprozis.Instance.enemyHeroname == HeroEnum.priest)
+                    if (hrtprozis.enemyHeroname == HeroEnum.priest)
                     {
                         help.logg("probs: "  + Probabilitymaker.Instance.anzCardsInDeck(CardDB.cardIDEnum.CS1_112));
                     }
 
-                    if (Hrtprozis.Instance.enemyHeroname == HeroEnum.shaman)
+                    if (hrtprozis.enemyHeroname == HeroEnum.shaman)
                     {
                         help.logg("probs: "  + Probabilitymaker.Instance.anzCardsInDeck(CardDB.cardIDEnum.EX1_259));
                     }
 
-                    if (Hrtprozis.Instance.enemyHeroname == HeroEnum.pala)
+                    if (hrtprozis.enemyHeroname == HeroEnum.pala)
                     {
                         help.logg("probs: "  + Probabilitymaker.Instance.anzCardsInDeck(CardDB.cardIDEnum.CS2_093));
                     }
 
-                    if (Hrtprozis.Instance.enemyHeroname == HeroEnum.druid)
+                    if (hrtprozis.enemyHeroname == HeroEnum.druid)
                     {
                         help.logg("probs: "  + Probabilitymaker.Instance.anzCardsInDeck(CardDB.cardIDEnum.CS2_012));
                     }
@@ -5972,21 +5984,21 @@ namespace HREngine.Bots
     public class Bot
     {
         private int concedeLvl = 5; // the rank, till you want to concede
-        PenalityManager penman = PenalityManager.Instance;
-        DateTime starttime = DateTime.Now;
+        //PenalityManager penman = PenalityManager.Instance;
+        //DateTime starttime = DateTime.Now;
         Silverfish sf;
-        Behavior behave = new BehaviorControl();
+        Behavior behave;      
 
         public Bot(Silverfish sf)
         {
-            starttime = DateTime.Now;
-            Settings set = Settings.Instance;
-            this.sf = sf;
-            set.setSettings();
-            sf.setnewLoggFile();
+            //starttime = DateTime.Now;
+            //Settings set = Settings.Instance;
+            //this.sf = sf;
+            //set.setSettings();
+            //sf.setnewLoggFile();
 
-            bool teststuff = true;
-            bool printstuff = false;
+            //bool teststuff = true;
+            //bool printstuff = false;
 
             //if (teststuff)
             //{
@@ -5997,40 +6009,40 @@ namespace HREngine.Bots
             //Helpfunctions.Instance.ErrorLog("wait for board...");
         }
 
-        public void doData(string data)
-        {
-            Ai.Instance.updateTwoTurnSim();
-            Ai.Instance.autoTester(false, data);
-            HRSim.Helpfunctions.Instance.resetBuffer();
-            HRSim.Helpfunctions.Instance.writeToBuffer("board " + Ai.Instance.currentCalculatedBoard);
-            HRSim.Helpfunctions.Instance.writeToBuffer("value " + Ai.Instance.bestmoveValue);
-            if (Ai.Instance.bestmove != null)
-            {
-                Ai.Instance.bestmove.print(true);
-                foreach (Action a in Ai.Instance.bestActions)
-                {
-                    a.print(true);
-                }
-            }
-            HRSim.Helpfunctions.Instance.writeBufferToActionFile();
-            Ai.Instance.currentCalculatedBoard = "1";
-            HRSim.Helpfunctions.Instance.ErrorLog("wait for next board...");
+        //public void doData(string data)
+        //{
+        //    Ai.Instance.updateTwoTurnSim();
+        //    Ai.Instance.autoTester(false, data);
+        //    HRSim.Helpfunctions.Instance.resetBuffer();
+        //    HRSim.Helpfunctions.Instance.writeToBuffer("board " + Ai.Instance.currentCalculatedBoard);
+        //    HRSim.Helpfunctions.Instance.writeToBuffer("value " + Ai.Instance.bestmoveValue);
+        //    if (Ai.Instance.bestmove != null)
+        //    {
+        //        Ai.Instance.bestmove.print(true);
+        //        foreach (Action a in Ai.Instance.bestActions)
+        //        {
+        //            a.print(true);
+        //        }
+        //    }
+        //    HRSim.Helpfunctions.Instance.writeBufferToActionFile();
+        //    Ai.Instance.currentCalculatedBoard = "1";
+        //    HRSim.Helpfunctions.Instance.ErrorLog("wait for next board...");
 
-            //sf.readActionFile();
-        }
+        //    //sf.readActionFile();
+        //}
 
         public void testing(int start)
         {
             //for (int i = start; i < 900; i++)
             //{
             //    homeHandManager.anzcards = 1;
-            //    Handmanager.Instance.handCards.Clear();
+            //    handmanager.handCards.Clear();
             //    Handmanager.Handcard hc = new Handmanager.Handcard();
             //    hc.manacost = 1;
             //    hc.position = 1;
             //    hc.entity = 122;
             //    hc.card = CardDB.Instance.getCardDataFromID((CardDB.cardIDEnum)i);
-            //    Handmanager.Instance.handCards.Add(hc);
+            //    handmanager.handCards.Add(hc);
             //    Helpfunctions.Instance.ErrorLog("test " + i + " " + hc.card.name + " " + hc.card.cardIDenum);
             //    if (hc.card.sim_card == null)
             //    {
@@ -6047,11 +6059,32 @@ namespace HREngine.Bots
 
     public class Silverfish
     {
+        //public Ai ai;
+        //public Settings Settings;
+        //public Helpfunctions Helpfunctions;
+        //public Movegenerator Movegenerator;
+        //public Hrtprozis Hrtprozis;
+        //public Handmanager Handmanager;
+        //public ComboBreaker Combobreaker;
+        //public PenalityManager PenalityManager;
+        //public Probabilitymaker Probabilitymaker;
+        //public Mulligan Mulligan; // read the mulligan list
+        private Ai ai;
+        private Settings settings;
+        private Helpfunctions helpfunctions;
+        private Movegenerator movegenerator;
+        private Hrtprozis hrtprozis;
+        private Handmanager handmanager;
+        private ComboBreaker combobreaker;
+        private PenalityManager penalityManager;
+        private Probabilitymaker probabilitymaker;
+        private Mulligan mulligan; // read the mulligan list
+
         public string versionnumber = "115.0";
         private bool singleLog = false;
         private string botbehave = "rush";
 
-        Settings sttngs = Settings.Instance;
+        //Settings settings = Settings.Instance;
 
         List<Minion> ownMinions = new List<Minion>();
         List<Minion> enemyMinions = new List<Minion>();
@@ -6100,31 +6133,116 @@ namespace HREngine.Bots
         private List<int> enemySecretList = new List<int>();
 
         //private static Silverfish instance;
+      
+        public Ai Ai
+        {
+            get
+            {
+                return ai ?? (ai = new Ai(this));
+            }
+        }
 
-        //public static Silverfish Instance
-        //{
-        //    get
-        //    {
-        //        return instance ?? (instance = new Silverfish());
-        //    }
-        //}
+        public Settings Settings
+        {
+            get
+            {
+                return settings ?? (settings = new Settings(this));
+            }
+        }
+
+        public Helpfunctions Helpfunctions
+        {
+            get
+            {
+                return helpfunctions ?? (helpfunctions = new Helpfunctions(this));
+            }
+        }
+
+        public Movegenerator Movegenerator
+        {
+            get
+            {
+                return movegenerator ?? (movegenerator = new Movegenerator(this));
+            }
+        }
+
+        public Hrtprozis Hrtprozis
+        {
+            get
+            {
+                return hrtprozis ?? (hrtprozis = new Hrtprozis(this));
+            }
+        }
+
+        public Handmanager Handmanager
+        {
+            get
+            {
+                return handmanager ?? (handmanager = new Handmanager(this));
+            }
+        }
+
+        public ComboBreaker Combobreaker
+        {
+            get
+            {
+                return combobreaker ?? (combobreaker = new ComboBreaker(this));
+            }
+        }
+
+        public PenalityManager PenalityManager
+        {
+            get
+            {
+                return penalityManager ?? (penalityManager = new PenalityManager(this));
+            }
+        }
+
+        public Probabilitymaker Probabilitymaker
+        {
+            get
+            {
+                return probabilitymaker ?? (probabilitymaker = new Probabilitymaker(this));
+            }
+        }
+
+        public Mulligan Mulligan
+        {
+            get
+            {
+                return mulligan ?? (mulligan = new Mulligan(this));
+            }
+        }
+
+
 
         public Silverfish()
         {
-            this.singleLog = Settings.Instance.writeToSingleFile;
+            //Ai = new Ai(this);
+            //Settings = new Settings(this);
+            //Helpfunctions = new Helpfunctions(this);
+            //Movegenerator = new Movegenerator(this);
+            //Hrtprozis = new Hrtprozis(this);
+            //Handmanager = new Handmanager(this);
+            //Combobreaker = new ComboBreaker(this);
+            //PenalityManager = new PenalityManager(this);
+            //Probabilitymaker = new Probabilitymaker(this);
+            //Mulligan = new Mulligan(this);
+            
+            this.singleLog = Settings.writeToSingleFile;
             HRSim.Helpfunctions.Instance.ErrorLog("init Silverfish");
             string path = "";
             //System.IO.Directory.CreateDirectory(path);
-            sttngs.setFilePath("C:\\Code\\ConsoleApplication1\\ConsoleApplication1\\");
+            Settings.setFilePath("C:\\Code\\ConsoleApplication1\\ConsoleApplication1\\");
 
             if (!singleLog)
             {
-                sttngs.setLoggPath(path);
+                Settings.setLoggPath(path);
             }
             else
             {
-                sttngs.setLoggPath("");
-                sttngs.setLoggFile("UILogg.txt");
+                Settings.setLoggPath("");
+                Settings.setLoggFile("UILogg.txt");
                 try
                 {
                     HRSim.Helpfunctions.Instance.createNewLoggfile();
@@ -6133,8 +6251,7 @@ namespace HREngine.Bots
                 {
                 }
             }
-            PenalityManager.Instance.setCombos();
-            Mulligan m = Mulligan.Instance; // read the mulligan list
+            PenalityManager.setCombos();
         }
 
         public void updateHeroStuff(HRSim.Playfield p)
@@ -6287,16 +6404,16 @@ namespace HREngine.Bots
                 GraveYardItem mGraveItem = new GraveYardItem(graveCardID, g.entity, g.own);
                 graveYard.Add(mGraveItem);
             }
-            
-            Probabilitymaker.Instance.setOwnCards(ownCards);
-            Probabilitymaker.Instance.setEnemyCards(enemyCards);
+
+            Probabilitymaker.setOwnCards(ownCards);
+            Probabilitymaker.setEnemyCards(enemyCards);
             bool isTurnStart = false;
-            if (Ai.Instance.nextMoveGuess.mana == -100)
+            if (Ai.nextMoveGuess.mana == -100)
             {
                 isTurnStart = true;
-                Ai.Instance.updateTwoTurnSim();
+                Ai.updateTwoTurnSim();
             }
-            Probabilitymaker.Instance.setGraveYard(graveYard, isTurnStart);
+            Probabilitymaker.setGraveYard(graveYard, isTurnStart);
 
         }
 
@@ -6306,44 +6423,44 @@ namespace HREngine.Bots
             this.botbehave = "rush";
             if (botbase is BehaviorControl) this.botbehave = "control";
             if (botbase is BehaviorMana) this.botbehave = "mana";
-            this.botbehave += " " + Ai.Instance.maxwide;
-            this.botbehave += " face " + ComboBreaker.Instance.attackFaceHP;
-            if (Settings.Instance.secondTurnAmount > 0)
+            this.botbehave += " " + Ai.maxwide;
+            this.botbehave += " face " + Combobreaker.attackFaceHP;
+            if (Settings.secondTurnAmount > 0)
             {
-                if (Ai.Instance.nextMoveGuess.mana == -100)
+                if (Ai.nextMoveGuess.mana == -100)
                 {
-                    Ai.Instance.updateTwoTurnSim();
+                    Ai.updateTwoTurnSim();
                 }
-                this.botbehave += " twoturnsim " + Settings.Instance.secondTurnAmount + " ntss " +
-                                  Settings.Instance.nextTurnDeep + " " + Settings.Instance.nextTurnMaxWide + " " +
-                                  Settings.Instance.nextTurnTotalBoards;
+                this.botbehave += " twoturnsim " + Settings.secondTurnAmount + " ntss " +
+                                  Settings.nextTurnDeep + " " + Settings.nextTurnMaxWide + " " +
+                                  Settings.nextTurnTotalBoards;
             }
 
-            if (Settings.Instance.playarround)
+            if (Settings.playarround)
             {
                 this.botbehave += " playaround";
-                this.botbehave += " " + Settings.Instance.playaroundprob + " " + Settings.Instance.playaroundprob2;
+                this.botbehave += " " + Settings.playaroundprob + " " + Settings.playaroundprob2;
             }
 
-            this.botbehave += " ets " + Settings.Instance.enemyTurnMaxWide;
+            this.botbehave += " ets " + Settings.enemyTurnMaxWide;
 
-            if (Settings.Instance.simEnemySecondTurn)
+            if (Settings.simEnemySecondTurn)
             {
-                this.botbehave += " ets2 " + Settings.Instance.enemyTurnMaxWideSecondTime;
-                this.botbehave += " ents " + Settings.Instance.enemySecondTurnMaxWide;
+                this.botbehave += " ets2 " + Settings.enemyTurnMaxWideSecondTime;
+                this.botbehave += " ents " + Settings.enemySecondTurnMaxWide;
             }
 
-            if (Settings.Instance.useSecretsPlayArround)
+            if (Settings.useSecretsPlayArround)
             {
                 this.botbehave += " secret";
             }
 
-            if (Settings.Instance.secondweight != 0.5f)
+            if (Settings.secondweight != 0.5f)
             {
-                this.botbehave += " weight " + (int)(Settings.Instance.secondweight * 100f);
+                this.botbehave += " weight " + (int)(Settings.secondweight * 100f);
             }
 
-            if (Settings.Instance.simulatePlacement)
+            if (Settings.simulatePlacement)
             {
                 this.botbehave += " plcmnt";
             }
@@ -6361,11 +6478,11 @@ namespace HREngine.Bots
             updateDecks(mp);
 
             // send ai the data:
-            Hrtprozis.Instance.clearAll();
-            Handmanager.Instance.clearAll();
+            Hrtprozis.clearAll();
+            Handmanager.clearAll();
 
-            Hrtprozis.Instance.setOwnPlayer(mp.ownController);
-            Handmanager.Instance.setOwnPlayer(mp.ownController);
+            Hrtprozis.setOwnPlayer(mp.ownController);
+            Handmanager.setOwnPlayer(mp.ownController);
 
             this.numOptionPlayedThisTurn = 0;
             this.numOptionPlayedThisTurn += this.cardsPlayedThisTurn + this.ownHero.numAttacksThisTurn;
@@ -6374,27 +6491,27 @@ namespace HREngine.Bots
                 if (m.Hp >= 1) this.numOptionPlayedThisTurn += m.numAttacksThisTurn;
             }
 
-            Hrtprozis.Instance.updatePlayer(this.ownMaxMana, this.currentMana, this.cardsPlayedThisTurn,
+            Hrtprozis.updatePlayer(this.ownMaxMana, this.currentMana, this.cardsPlayedThisTurn,
                 this.numMinionsPlayedThisTurn, this.numOptionPlayedThisTurn, this.ueberladung, mp.ownHero.entitiyID,
                 mp.enemyHero.entitiyID);
-            Hrtprozis.Instance.updateSecretStuff(this.ownSecretList, this.enemySecretCount);
+            Hrtprozis.updateSecretStuff(this.ownSecretList, this.enemySecretCount);
 
-            Hrtprozis.Instance.updateOwnHero(this.ownHeroWeapon, this.heroWeaponAttack, this.heroWeaponDurability,
+            Hrtprozis.updateOwnHero(this.ownHeroWeapon, this.heroWeaponAttack, this.heroWeaponDurability,
                 this.heroname, this.heroAbility, this.ownAbilityisReady, this.ownHero);
-            Hrtprozis.Instance.updateEnemyHero(this.enemyHeroWeapon, this.enemyWeaponAttack, this.enemyWeaponDurability,
+            Hrtprozis.updateEnemyHero(this.enemyHeroWeapon, this.enemyWeaponAttack, this.enemyWeaponDurability,
                 this.enemyHeroname, this.enemyMaxMana, this.enemyAbility, this.enemyHero);
 
-            Hrtprozis.Instance.updateMinions(this.ownMinions, this.enemyMinions);
-            Handmanager.Instance.setHandcards(this.handCards, this.anzcards, this.enemyAnzCards);
+            Hrtprozis.updateMinions(this.ownMinions, this.enemyMinions);
+            Handmanager.setHandcards(this.handCards, this.anzcards, this.enemyAnzCards);
 
-            Hrtprozis.Instance.updateFatigueStats(this.ownDecksize, this.ownHeroFatigue, this.enemyDecksize,
+            Hrtprozis.updateFatigueStats(this.ownDecksize, this.ownHeroFatigue, this.enemyDecksize,
                 this.enemyHeroFatigue);
 
-            Probabilitymaker.Instance.getEnemySecretGuesses(this.enemySecretList,
-                Hrtprozis.Instance.enemyHeroStartClass);
+            Probabilitymaker.getEnemySecretGuesses(this.enemySecretList,
+                Hrtprozis.enemyHeroStartClass);
             //learnmode :D
 
-            Playfield p = new Playfield();
+            Playfield p = new Playfield(this);
 
             if (lastpf != null)
             {
@@ -6404,8 +6521,8 @@ namespace HREngine.Bots
                 }
 
                 //board changed we update secrets!
-                //if(Ai.Instance.nextMoveGuess!=null) Probabilitymaker.Instance.updateSecretList(Ai.Instance.nextMoveGuess.enemySecretList);
-                Probabilitymaker.Instance.updateSecretList(p, lastpf);
+                //if(Ai.nextMoveGuess!=null) Probabilitymaker.Instance.updateSecretList(Ai.nextMoveGuess.enemySecretList);
+                Probabilitymaker.updateSecretList(p, lastpf);
                 lastpf = p;
             }
             else
@@ -6413,7 +6530,7 @@ namespace HREngine.Bots
                 lastpf = p;
             }
 
-            p = new Playfield(); //secrets have updated :D
+            p = new Playfield(this); //secrets have updated :D
 
             p.printBoard();
 
@@ -6422,11 +6539,11 @@ namespace HREngine.Bots
             if (runExtern)
             {
                 HRSim.Helpfunctions.Instance.logg("recalc-check###########");
-                if (p.isEqual(Ai.Instance.nextMoveGuess, true))
+                if (p.isEqual(Ai.nextMoveGuess, true))
                 {
                     //printstuff(false);
                     Debug.WriteLine("equal");
-                    Ai.Instance.doNextCalcedMove();
+                    Ai.doNextCalcedMove();
                 }
                 else
                 {
@@ -6442,7 +6559,7 @@ namespace HREngine.Bots
                 //using (TritonHs.Memory.ReleaseFrame(true))
                 //{
                 //    printstuff(false);
-                Ai.Instance.dosomethingclever(botbase);
+                Ai.dosomethingclever(botbase);
                 //}
             }
 
@@ -6454,21 +6571,21 @@ namespace HREngine.Bots
         {
             if (!singleLog)
             {
-                sttngs.setLoggFile("UILogg" + DateTime.Now.ToString("_yyyy-MM-dd_HH-mm-ss") + ".txt");
+                Settings.setLoggFile("UILogg" + DateTime.Now.ToString("_yyyy-MM-dd_HH-mm-ss") + ".txt");
                 HRSim.Helpfunctions.Instance.createNewLoggfile();
                 HRSim.Helpfunctions.Instance.ErrorLog("#######################################################");
-                HRSim.Helpfunctions.Instance.ErrorLog("fight is logged in: " + sttngs.logpath + sttngs.logfile);
+                HRSim.Helpfunctions.Instance.ErrorLog("fight is logged in: " + Settings.logpath + Settings.logfile);
                 HRSim.Helpfunctions.Instance.ErrorLog("#######################################################");
             }
             else
             {
-                sttngs.setLoggFile("UILogg.txt");
+                Settings.setLoggFile("UILogg.txt");
             }
         }
 
         public void readActionFile(bool passiveWaiting = false)
         {
-            Ai.Instance.nextMoveGuess = new Playfield();
+            Ai.nextMoveGuess = new Playfield(this);
             bool readed = true;
             List<string> alist = new List<string>();
             float value = 0f;
@@ -6477,7 +6594,7 @@ namespace HREngine.Bots
             {
                 try
                 {
-                    string data = System.IO.File.ReadAllText(Settings.Instance.path + "actionstodo.txt");
+                    string data = System.IO.File.ReadAllText(Settings.path + "actionstodo.txt");
                     if (data != "" && data != "<EoF>" && data.EndsWith("<EoF>"))
                     {
                         data = data.Replace("<EoF>", "");
@@ -6490,7 +6607,7 @@ namespace HREngine.Bots
                         {
                             boardnumm = (board.Split(' ')[1].Split(' ')[0]);
                             alist.RemoveAt(0);
-                            /*if (boardnumm != Ai.Instance.currentCalculatedBoard)
+                            /*if (boardnumm != Ai.currentCalculatedBoard)
                             {
                                 if (passiveWaiting)
                                 {
@@ -6525,8 +6642,8 @@ namespace HREngine.Bots
 
             }
             HRSim.Helpfunctions.Instance.logg("received " + boardnumm + " actions to do:");
-            Ai.Instance.currentCalculatedBoard = "0";
-            Playfield p = new Playfield();
+            Ai.currentCalculatedBoard = "0";
+            Playfield p = new Playfield(this);
             List<Action> aclist = new List<Action>();
 
             foreach (string a in alist)
@@ -6535,7 +6652,7 @@ namespace HREngine.Bots
                 HRSim.Helpfunctions.Instance.logg(a);
             }
 
-            Ai.Instance.setBestMoves(aclist, value);
+            Ai.setBestMoves(aclist, value);
 
         }
 
@@ -6556,8 +6673,7 @@ namespace HREngine.Bots
     //please ask/write me if you use this in your project
     public class Helpfunctions
     {
-
-        HRSim.MainWindow window = null;
+        Silverfish sf;
 
         public static List<T> TakeList<T>(IEnumerable<T> source, int limit)
         {
@@ -6577,17 +6693,17 @@ namespace HREngine.Bots
 
         public bool runningbot = false;
 
-        private static Helpfunctions instance;
+        //private static Helpfunctions instance;
 
-        public static Helpfunctions Instance
-        {
-            get
-            {
-                return instance ?? (instance = new Helpfunctions());
-            }
-        }
+        //public static Helpfunctions Instance
+        //{
+        //    get
+        //    {
+        //        return instance ?? (instance = new Helpfunctions());
+        //    }
+        //}
 
-        private Helpfunctions()
+        public Helpfunctions(Silverfish sf)
         {
             //foreach (Window window in Application.Current.Windows)
             //{
@@ -6596,7 +6712,8 @@ namespace HREngine.Bots
             //        this.window = (HRSim.MainWindow)window;
             //    }
             //}
-            System.IO.File.WriteAllText(Settings.Instance.logpath + Settings.Instance.logfile, "");
+            this.sf = sf;
+            System.IO.File.WriteAllText(sf.Settings.logpath + sf.Settings.logfile, "");
         }
 
         private bool writelogg = true;
@@ -6607,7 +6724,7 @@ namespace HREngine.Bots
 
         public void createNewLoggfile()
         {
-            System.IO.File.WriteAllText(Settings.Instance.logpath + Settings.Instance.logfile, "");
+            System.IO.File.WriteAllText(sf.Settings.logpath + sf.Settings.logfile, "");
         }
 
         public void logg(string s)
@@ -6617,7 +6734,7 @@ namespace HREngine.Bots
             if (!writelogg) return;
             try
             {
-                using (StreamWriter sw = File.AppendText(Settings.Instance.logpath + Settings.Instance.logfile))
+                using (StreamWriter sw = File.AppendText(sf.Settings.logpath + sf.Settings.logfile))
                 {
                     sw.WriteLine(s);
                 }
@@ -6661,7 +6778,7 @@ namespace HREngine.Bots
             {
                 try
                 {
-                    System.IO.File.WriteAllText(Settings.Instance.path + "crrntbrd.txt", this.sendbuffer);
+                    System.IO.File.WriteAllText(sf.Settings.path + "crrntbrd.txt", this.sendbuffer);
                     writed = false;
                 }
                 catch
@@ -6681,7 +6798,7 @@ namespace HREngine.Bots
             {
                 try
                 {
-                    System.IO.File.WriteAllText(Settings.Instance.path + "actionstodo.txt", this.sendbuffer);
+                    System.IO.File.WriteAllText(sf.Settings.path + "actionstodo.txt", this.sendbuffer);
                     writed = false;
                 }
                 catch

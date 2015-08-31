@@ -2,7 +2,14 @@
 {
     public class BehaviorRush : Behavior
     {
-        PenalityManager penman = PenalityManager.Instance;
+        PenalityManager penman;
+        Silverfish sf;
+
+        public BehaviorRush(Silverfish sf)
+        {
+            this.sf = sf;
+            penman = sf.PenalityManager;
+        }
 
         public override float getPlayfieldValue(Playfield p)
         {
@@ -37,7 +44,7 @@
             //RR if lethal is close, carddraw value is increased
 
 
-            if (Ai.Instance.lethalMissing <= 5) //RR
+            if (sf.Ai.lethalMissing <= 5) //RR
             {
                 retval += p.owncarddraw * 100;
             }

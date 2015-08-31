@@ -5,7 +5,7 @@
 
     public class Ai
     {
-
+        Silverfish sf;
         private int maxdeep = 12;
         public int maxwide = 3000;
         //public int playaroundprob = 40;
@@ -29,17 +29,17 @@
 
         public string currentCalculatedBoard = "1";
 
-        PenalityManager penman = PenalityManager.Instance;
+        PenalityManager penman;
 
         List<Playfield> posmoves = new List<Playfield>(7000);
 
-        Hrtprozis hp = Hrtprozis.Instance;
-        Handmanager hm = Handmanager.Instance;
-        Helpfunctions help = Helpfunctions.Instance;
+        Hrtprozis hp;
+        Handmanager hm;
+        Helpfunctions help;
 
         public Action bestmove = null;
         public float bestmoveValue = 0;
-        public Playfield nextMoveGuess = new Playfield();
+        public Playfield nextMoveGuess;
         public Behavior botBase = null;
 
         public List<Action> bestActions = new List<Action>();
@@ -48,32 +48,39 @@
         //public int secondTurnAmount = 256;
         public bool playaround = false;
 
-        private static Ai instance;
+        //private static Ai instance;
 
-        public static Ai Instance
+        //public static Ai Instance
+        //{
+        //    get
+        //    {
+        //        return instance ?? (instance = new Ai());
+        //    }
+        //}
+
+        public Ai(Silverfish sf)
         {
-            get
-            {
-                return instance ?? (instance = new Ai());
-            }
-        }
+            this.sf = sf;
+            this.nextMoveGuess = new Playfield(sf);
+            PenalityManager penman = sf.PenalityManager;
+            hp = sf.Hrtprozis;
+            hm = sf.Handmanager;
+            help = sf.Helpfunctions;
 
-        private Ai()
-        {
-            this.nextMoveGuess = new Playfield { mana = -100 };
+            this.nextMoveGuess = new Playfield (sf) { mana = -100 };
 
-            this.mainTurnSimulator = new MiniSimulator(maxdeep, maxwide, 0); // 0 for unlimited
+            this.mainTurnSimulator = new MiniSimulator(sf, maxdeep, maxwide, 0); // 0 for unlimited
             this.mainTurnSimulator.setPrintingstuff(true);
 
             /*this.nextTurnSimulator = new MiniSimulatorNextTurn();
             this.enemyTurnSim = new EnemyTurnSimulator();
             this.enemySecondTurnSim = new EnemyTurnSimulator();*/
 
-            for (int i = 0; i < Settings.Instance.numberOfThreads; i++)
+            for (int i = 0; i < sf.Settings.numberOfThreads; i++)
             {
-                this.nextTurnSimulator.Add(new MiniSimulatorNextTurn());
-                this.enemyTurnSim.Add(new EnemyTurnSimulator());
-                this.enemySecondTurnSim.Add(new EnemyTurnSimulator());
+                this.nextTurnSimulator.Add(new MiniSimulatorNextTurn(sf));
+                this.enemyTurnSim.Add(new EnemyTurnSimulator(sf));
+                this.enemySecondTurnSim.Add(new EnemyTurnSimulator(sf));
 
                 this.nextTurnSimulator[i].thread = i;
                 this.enemyTurnSim[i].thread = i;
@@ -93,17 +100,17 @@
         {
             this.mainTurnSimulator.setSecondTurnSimu(stts, amount);
             this.secondturnsim = stts;
-            Settings.Instance.secondTurnAmount = amount;
+            sf.Settings.secondTurnAmount = amount;
         }
 
         public void updateTwoTurnSim()
         {
-            this.mainTurnSimulator.setSecondTurnSimu(Settings.Instance.simulateEnemysTurn, Settings.Instance.secondTurnAmount);
+            this.mainTurnSimulator.setSecondTurnSimu(sf.Settings.simulateEnemysTurn, sf.Settings.secondTurnAmount);
         }
 
         public void setPlayAround()
         {
-            this.mainTurnSimulator.setPlayAround(Settings.Instance.playarround, Settings.Instance.playaroundprob, Settings.Instance.playaroundprob2);
+            this.mainTurnSimulator.setPlayAround(sf.Settings.playarround, sf.Settings.playaroundprob, sf.Settings.playaroundprob2);
         }
 
         private void doallmoves(bool test, bool isLethalCheck)
@@ -144,7 +151,7 @@
             foreach (Action a in bestplay.playactions)
             {
                 this.bestActions.Add(new Action(a));
-                a.print();
+                a.print(sf.Helpfunctions);
             }
             //this.bestActions.Add(new Action(actionEnum.endturn, null, null, 0, null, 0, 0));
 
@@ -157,7 +164,7 @@
 
             if (bestmove != null && bestmove.actionType != actionEnum.endturn) // save the guessed move, so we doesnt need to recalc!
             {
-                this.nextMoveGuess = new Playfield();
+                this.nextMoveGuess = new Playfield(sf);
 
                 this.nextMoveGuess.doAction(bestmove);
             }
@@ -178,7 +185,7 @@
             {
                 help.logg("-a-");
                 this.bestActions.Add(new Action(a));
-                this.bestActions[this.bestActions.Count - 1].print();
+                this.bestActions[this.bestActions.Count - 1].print(sf.Helpfunctions);
             }
             //this.bestActions.Add(new Action(actionEnum.endturn, null, null, 0, null, 0, 0));
 
@@ -188,13 +195,13 @@
                 this.bestActions.RemoveAt(0);
             }
 
-            this.nextMoveGuess = new Playfield();
+            this.nextMoveGuess = new Playfield(sf);
             //only debug:
             //this.nextMoveGuess.printBoardDebug();
 
             if (bestmove != null && bestmove.actionType != actionEnum.endturn) // save the guessed move, so we doesnt need to recalc!
             {
-                Helpfunctions.Instance.logg("nmgsim-");
+                help.logg("nmgsim-");
                 try
                 {
                     this.nextMoveGuess.doAction(bestmove);
@@ -202,14 +209,14 @@
                 }
                 catch (Exception ex)
                 {
-                    Helpfunctions.Instance.logg("Message ---");
-                    Helpfunctions.Instance.logg("Message ---" + ex.Message);
-                    Helpfunctions.Instance.logg("Source ---" + ex.Source);
-                    Helpfunctions.Instance.logg("StackTrace ---" + ex.StackTrace);
-                    Helpfunctions.Instance.logg("TargetSite ---\n{0}" + ex.TargetSite);
+                    help.logg("Message ---");
+                    help.logg("Message ---" + ex.Message);
+                    help.logg("Source ---" + ex.Source);
+                    help.logg("StackTrace ---" + ex.StackTrace);
+                    help.logg("TargetSite ---\n{0}" + ex.TargetSite);
 
                 }
-                Helpfunctions.Instance.logg("nmgsime-");
+                help.logg("nmgsime-");
 
 
             }
@@ -230,13 +237,13 @@
                 this.bestmove = this.bestActions[0];
                 this.bestActions.RemoveAt(0);
             }
-            if (this.nextMoveGuess == null) this.nextMoveGuess = new Playfield();
+            if (this.nextMoveGuess == null) this.nextMoveGuess = new Playfield(sf);
             //this.nextMoveGuess.printBoardDebug();
 
             if (bestmove != null && bestmove.actionType != actionEnum.endturn)  // save the guessed move, so we doesnt need to recalc!
             {
                 //this.nextMoveGuess = new Playfield();
-                Helpfunctions.Instance.logg("nmgsim-");
+                help.logg("nmgsim-");
                 try
                 {
                     this.nextMoveGuess.doAction(bestmove);
@@ -244,19 +251,19 @@
                 }
                 catch (Exception ex)
                 {
-                    Helpfunctions.Instance.logg("Message ---");
-                    Helpfunctions.Instance.logg("Message ---" + ex.Message);
-                    Helpfunctions.Instance.logg("Source ---" + ex.Source);
-                    Helpfunctions.Instance.logg("StackTrace ---" + ex.StackTrace);
-                    Helpfunctions.Instance.logg("TargetSite ---\n{0}" + ex.TargetSite);
+                    help.logg("Message ---");
+                    help.logg("Message ---" + ex.Message);
+                    help.logg("Source ---" + ex.Source);
+                    help.logg("StackTrace ---" + ex.StackTrace);
+                    help.logg("TargetSite ---\n{0}" + ex.TargetSite);
 
                 }
-                Helpfunctions.Instance.logg("nmgsime-");
+                help.logg("nmgsime-");
 
             }
             else
             {
-                //Helpfunctions.Instance.logg("nd trn");
+                //help.logg("nd trn");
                 nextMoveGuess.mana = -100;
             }
 
@@ -272,8 +279,8 @@
             hp.updatePositions();
 
             posmoves.Clear();
-            posmoves.Add(new Playfield());
-            posmoves[0].sEnemTurn = Settings.Instance.simulateEnemysTurn;
+            posmoves.Add(new Playfield(sf));
+            posmoves[0].sEnemTurn = sf.Settings.simulateEnemysTurn;
             /* foreach (var item in this.posmoves[0].owncards)
              {
                  help.logg("card " + item.handcard.card.name + " is playable :" + item.handcard.card.canplayCard(posmoves[0]) + " cost/mana: " + item.handcard.card.cost + "/" + posmoves[0].mana);
@@ -303,8 +310,8 @@
                 if (bestmoveValue < 10000)
                 {
                     posmoves.Clear();
-                    posmoves.Add(new Playfield());
-                    posmoves[0].sEnemTurn = Settings.Instance.simulateEnemysTurn;
+                    posmoves.Add(new Playfield(sf));
+                    posmoves[0].sEnemTurn = sf.Settings.simulateEnemysTurn;
                     help.logg("no lethal, do something random######");
                     strt = DateTime.Now;
                     doallmoves(false, false);
@@ -318,59 +325,59 @@
 
         }
 
-        public void autoTester(bool printstuff, string data = "")
-        {
-            help.logg("simulating board ");
+        //public void autoTester(bool printstuff, string data = "")
+        //{
+        //    help.logg("simulating board ");
 
-            BoardTester bt = new BoardTester(data);
-            if (!bt.datareaded) return;
-            hp.printHero();
-            hp.printOwnMinions();
-            hp.printEnemyMinions();
-            hm.printcards();
-            //calculate the stuff
-            posmoves.Clear();
-            posmoves.Add(new Playfield());
-            posmoves[0].sEnemTurn = Settings.Instance.simulateEnemysTurn;
-            help.logg("Debug: before the foreach");
-            foreach (Playfield p in this.posmoves)
-            {
-                help.logg("Debug: in the foreach");
-                //p.printBoard();
-            }
-            help.logg("ownminionscount " + posmoves[0].ownMinions.Count);
-            help.logg("owncardscount " + posmoves[0].owncards.Count);
+        //    BoardTester bt = new BoardTester(data);
+        //    if (!bt.datareaded) return;
+        //    hp.printHero();
+        //    hp.printOwnMinions();
+        //    hp.printEnemyMinions();
+        //    hm.printcards();
+        //    //calculate the stuff
+        //    posmoves.Clear();
+        //    posmoves.Add(new Playfield());
+        //    posmoves[0].sEnemTurn = sf.settings.simulateEnemysTurn;
+        //    help.logg("Debug: before the foreach");
+        //    foreach (Playfield p in this.posmoves)
+        //    {
+        //        help.logg("Debug: in the foreach");
+        //        //p.printBoard();
+        //    }
+        //    help.logg("ownminionscount " + posmoves[0].ownMinions.Count);
+        //    help.logg("owncardscount " + posmoves[0].owncards.Count);
 
-            foreach (var item in this.posmoves[0].owncards)
-            {
-                help.logg("card " + item.card.name + " is playable :" + item.canplayCard(posmoves[0]) + " cost/mana: " + item.manacost + "/" + posmoves[0].mana);
-            }
-            help.logg("ability " + posmoves[0].ownHeroAblility.card.name + " is playable :" + posmoves[0].ownHeroAblility.card.canplayCard(posmoves[0], 2) + " cost/mana: " + posmoves[0].ownHeroAblility.card.getManaCost(posmoves[0], 2) + "/" + posmoves[0].mana);
+        //    foreach (var item in this.posmoves[0].owncards)
+        //    {
+        //        help.logg("card " + item.card.name + " is playable :" + item.canplayCard(posmoves[0]) + " cost/mana: " + item.manacost + "/" + posmoves[0].mana);
+        //    }
+        //    help.logg("ability " + posmoves[0].ownHeroAblility.card.name + " is playable :" + posmoves[0].ownHeroAblility.card.canplayCard(posmoves[0], 2) + " cost/mana: " + posmoves[0].ownHeroAblility.card.getManaCost(posmoves[0], 2) + "/" + posmoves[0].mana);
 
-            // lethalcheck + normal
-            DateTime strt = DateTime.Now;
-            doallmoves(false, true);
-            help.logg("calculated 0 " + (DateTime.Now - strt).TotalSeconds);
-            double timeneeded = 0;
-            if (bestmoveValue < 10000)
-            {
-                posmoves.Clear();
-                posmoves.Add(new Playfield());
-                posmoves[0].sEnemTurn = Settings.Instance.simulateEnemysTurn;
-                strt = DateTime.Now;
-                doallmoves(false, false);
-                timeneeded = (DateTime.Now - strt).TotalSeconds;
-                help.logg("calculated 1 " + (DateTime.Now - strt).TotalSeconds);
-            }
+        //    // lethalcheck + normal
+        //    DateTime strt = DateTime.Now;
+        //    doallmoves(false, true);
+        //    help.logg("calculated 0 " + (DateTime.Now - strt).TotalSeconds);
+        //    double timeneeded = 0;
+        //    if (bestmoveValue < 10000)
+        //    {
+        //        posmoves.Clear();
+        //        posmoves.Add(new Playfield());
+        //        posmoves[0].sEnemTurn = sf.settings.simulateEnemysTurn;
+        //        strt = DateTime.Now;
+        //        doallmoves(false, false);
+        //        timeneeded = (DateTime.Now - strt).TotalSeconds;
+        //        help.logg("calculated 1 " + (DateTime.Now - strt).TotalSeconds);
+        //    }
 
-            if (printstuff)
-            {
-                this.mainTurnSimulator.printPosmoves();
-                help.logg("printPosmoves ended");
-                simmulateWholeTurn();
-                help.logg("calculated 2 " + timeneeded);
-            }
-        }
+        //    if (printstuff)
+        //    {
+        //        this.mainTurnSimulator.printPosmoves();
+        //        help.logg("printPosmoves ended");
+        //        simmulateWholeTurn();
+        //        help.logg("calculated 2 " + timeneeded);
+        //    }
+        //}
 
         public void simmulateWholeTurn()
         {
@@ -379,13 +386,13 @@
             help.ErrorLog("########################################################################################################");
             //this.bestboard.printActions();
 
-            Playfield tempbestboard = new Playfield();
+            Playfield tempbestboard = new Playfield(sf);
 
             tempbestboard.printBoard();
 
             if (bestmove != null && bestmove.actionType != actionEnum.endturn)  // save the guessed move, so we doesnt need to recalc!
             {
-                bestmove.print();
+                bestmove.print(sf.Helpfunctions);
 
                 tempbestboard.doAction(bestmove);
 
@@ -405,7 +412,7 @@
 
                 if (bestmovee != null && bestmove.actionType != actionEnum.endturn)  // save the guessed move, so we doesnt need to recalc!
                 {
-                    bestmovee.print();
+                    bestmovee.print(sf.Helpfunctions);
 
                     tempbestboard.doAction(bestmovee);
 
@@ -420,11 +427,11 @@
 
             //help.logg("AFTER ENEMY TURN:" );
             tempbestboard.sEnemTurn = true;
-            tempbestboard.endTurn(false, this.playaround, false, Settings.Instance.playaroundprob, Settings.Instance.playaroundprob2);
+            tempbestboard.endTurn(false, this.playaround, false, sf.Settings.playaroundprob, sf.Settings.playaroundprob2);
             help.logg("ENEMY TURN:-----------------------------");
             tempbestboard.value = int.MinValue;
             tempbestboard.prepareNextTurn(tempbestboard.isOwnTurn);
-            Ai.Instance.enemyTurnSim[0].simulateEnemysTurn(tempbestboard, true, playaround, true, Settings.Instance.playaroundprob, Settings.Instance.playaroundprob2);
+            sf.Ai.enemyTurnSim[0].simulateEnemysTurn(tempbestboard, true, playaround, true, sf.Settings.playaroundprob, sf.Settings.playaroundprob2);
         }
 
         public void simmulateWholeTurnandPrint()
@@ -435,7 +442,7 @@
             if (this.bestmoveValue >= 10000) help.ErrorLog("DETECTED LETHAL ###################################");
             //this.bestboard.printActions();
 
-            Playfield tempbestboard = new Playfield();
+            Playfield tempbestboard = new Playfield(sf);
 
             if (bestmove != null && bestmove.actionType != actionEnum.endturn)  // save the guessed move, so we doesnt need to recalc!
             {
@@ -475,7 +482,7 @@
 
         public void updateEntitiy(int old, int newone)
         {
-            Helpfunctions.Instance.logg("entityupdate! " + old + " to " + newone);
+            help.logg("entityupdate! " + old + " to " + newone);
             if (this.nextMoveGuess != null)
             {
                 foreach (Minion m in this.nextMoveGuess.ownMinions)

@@ -6,23 +6,34 @@
     public class EnemyTurnSimulator
     {
 
+        Silverfish sf;
         public int thread = 0;
 
         private List<Playfield> posmoves = new List<Playfield>(7000);
         //public int maxwide = 20;
-        Movegenerator movegen = Movegenerator.Instance;
+        //sf.Ai sf.Ai;
+        //sf.Movegeneratorerator sf.Movegenerator;
+        //sf.Settings sf.Settings;
+        //sf.Helpfunctionsfunctions sf.Helpfunctions;
+        //sf.Probabilitymaker sf.Probabilitymaker;
+        
         public int maxwide = 20;
+
+        public EnemyTurnSimulator(Silverfish sf) {
+            this.sf = sf;
+        }
+
 
         public void setMaxwideFirstStep(bool firstTurn)
         {
-            maxwide = Settings.Instance.enemyTurnMaxWide;
-            if (!firstTurn) maxwide = Settings.Instance.enemyTurnMaxWide;
+            maxwide = sf.Settings.enemyTurnMaxWide;
+            if (!firstTurn) maxwide = sf.Settings.enemyTurnMaxWide;
         }
 
         public void setMaxwideSecondStep(bool firstTurn)
         {
-            maxwide = Settings.Instance.enemyTurnMaxWideSecondTime;
-            if (!firstTurn) maxwide = Settings.Instance.enemyTurnMaxWide;
+            maxwide = sf.Settings.enemyTurnMaxWideSecondTime;
+            if (!firstTurn) maxwide = sf.Settings.enemyTurnMaxWide;
         }
 
         public void simulateEnemysTurn(Playfield rootfield, bool simulateTwoTurns, bool playaround, bool print, int pprob, int pprob2)
@@ -32,7 +43,7 @@
             posmoves.Clear();
             if (print)
             {
-                Helpfunctions.Instance.ErrorLog("board at enemyturn start-----------------------------");
+                sf.Helpfunctions.ErrorLog("board at enemyturn start-----------------------------");
                 rootfield.printBoard();
             }
             posmoves.Add(new Playfield(rootfield));
@@ -43,10 +54,10 @@
 
             if (playaround && !rootfield.loatheb)
             {
-                float oldval = Ai.Instance.botBase.getPlayfieldValue(posmoves[0]);
+                float oldval = sf.Ai.botBase.getPlayfieldValue(posmoves[0]);
                 posmoves[0].value = int.MinValue;
                 enemMana = posmoves[0].EnemyCardPlaying(rootfield.enemyHeroStartClass, enemMana, rootfield.enemyAnzCards, pprob, pprob2);
-                float newval = Ai.Instance.botBase.getPlayfieldValue(posmoves[0]);
+                float newval = sf.Ai.botBase.getPlayfieldValue(posmoves[0]);
                 posmoves[0].value = int.MinValue;
                 posmoves[0].enemyAnzCards--;
                 posmoves[0].triggerCardsChanged(false);
@@ -102,7 +113,7 @@
             doSomeBasicEnemyAi(posmoves[0]);
 
             int boardcount = 0;
-            //movegen...
+            //sf.Movegenerator...
 
             int i = 0;
             int count = 0;
@@ -127,7 +138,7 @@
                         continue;
                     }
 
-                    List<Action> actions = movegen.getEnemyMoveList(p, false, true, true, 1);// 1 for not using ability moves
+                    List<Action> actions = sf.Movegenerator.getEnemyMoveList(p, false, true, true, 1);// 1 for not using ability moves
 
                     foreach (Action a in actions)
                     {
@@ -140,9 +151,9 @@
 
                     p.endEnemyTurn();
                     p.guessingHeroHP = rootfield.guessingHeroHP;
-                    if (Ai.Instance.botBase.getPlayfieldValue(p) < bestoldval) // want the best enemy-play-> worst for us
+                    if (sf.Ai.botBase.getPlayfieldValue(p) < bestoldval) // want the best enemy-play-> worst for us
                     {
-                        bestoldval = Ai.Instance.botBase.getPlayfieldValue(p);
+                        bestoldval = sf.Ai.botBase.getPlayfieldValue(p);
                         bestold = p;
                     }
                     posmoves.Remove(p);
@@ -176,7 +187,7 @@
             {
                 p = posmoves[i];
                 p.guessingHeroHP = rootfield.guessingHeroHP;
-                float val = Ai.Instance.botBase.getPlayfieldValue(p);
+                float val = sf.Ai.botBase.getPlayfieldValue(p);
                 if (bestval > val)// we search the worst value
                 {
                     bestplay = p;
@@ -185,14 +196,14 @@
             }
             if (print)
             {
-                Helpfunctions.Instance.ErrorLog("best enemy board----------------------------------");
+                sf.Helpfunctions.ErrorLog("best enemy board----------------------------------");
                 bestplay.printBoard();
             }
             rootfield.value = bestplay.value;
             if (simulateTwoTurns && bestplay.value > -1000)
             {
                 bestplay.prepareNextTurn(true);
-                rootfield.value = Settings.Instance.firstweight * bestval + Settings.Instance.secondweight * Ai.Instance.nextTurnSimulator[this.thread].doallmoves(bestplay, false, print);
+                rootfield.value = sf.Settings.firstweight * bestval + sf.Settings.secondweight * sf.Ai.nextTurnSimulator[this.thread].doallmoves(bestplay, false, print);
             }
 
 
@@ -204,7 +215,7 @@
         {
             if (p.enemyHeroName == HeroEnum.mage)
             {
-                if (Probabilitymaker.Instance.enemyCardsPlayed.ContainsKey(CardDB.cardIDEnum.EX1_561)) p.ownHero.Hp = Math.Max(5, p.ownHero.Hp - 7);
+                if (sf.Probabilitymaker.enemyCardsPlayed.ContainsKey(CardDB.cardIDEnum.EX1_561)) p.ownHero.Hp = Math.Max(5, p.ownHero.Hp - 7);
             }
 
             //play some cards (to not overdraw)

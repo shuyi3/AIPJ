@@ -4,7 +4,14 @@
 
     public class BehaviorMana : Behavior
     {
-        PenalityManager penman = PenalityManager.Instance;
+        PenalityManager penman;
+        Silverfish sf;
+
+        public BehaviorMana(Silverfish sf)
+        {
+            this.sf = sf;
+            penman = sf.PenalityManager;
+        }
 
         public override float getPlayfieldValue(Playfield p)
         {

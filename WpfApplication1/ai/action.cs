@@ -158,9 +158,8 @@ namespace HREngine.Bots
             this.penalty = a.penalty;
         }
 
-        public void print(bool tobuffer = false)
+        public void print(Helpfunctions help, bool tobuffer = false)
         {
-            Helpfunctions help = Helpfunctions.Instance;
             if (tobuffer)
             {
                 if (this.actionType == actionEnum.playcard)

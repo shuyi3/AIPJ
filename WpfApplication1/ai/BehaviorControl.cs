@@ -3,7 +3,13 @@
 
     public class BehaviorControl : Behavior
     {
-        PenalityManager penman = PenalityManager.Instance;
+        PenalityManager penman;
+        Silverfish sf;
+
+        public BehaviorControl(Silverfish sf){
+            this.sf = sf;
+            penman = sf.PenalityManager;
+        }
 
         public override float getPlayfieldValue(Playfield p)
         {
@@ -61,7 +67,7 @@
 
             //RR card draw value depending on the turn and distance to lethal
             //RR if lethal is close, carddraw value is increased
-            if (Ai.Instance.lethalMissing <= 5) //RR
+            if (sf.Ai.lethalMissing <= 5) //RR
             {
                 retval += p.owncarddraw * 100;
             }

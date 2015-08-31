@@ -7,6 +7,7 @@
 
     public class ComboBreaker
     {
+        Silverfish sf;
 
         enum combotype
         {
@@ -20,8 +21,8 @@
         private List<combo> combos = new List<combo>();
         private static ComboBreaker instance;
 
-        Handmanager hm = Handmanager.Instance;
-        Hrtprozis hp = Hrtprozis.Instance;
+        Handmanager hm;
+        Hrtprozis hp;
 
         public int attackFaceHP = -1;
 
@@ -47,7 +48,7 @@
             public CardDB.cardName requiredWeapon = CardDB.cardName.unknown;
             public HeroEnum oHero = HeroEnum.None;
 
-            public combo(string s)
+            public combo(string s, Silverfish sf)
             {
                 int i = 0;
                 this.neededMana = 0;
@@ -99,7 +100,7 @@
                         }
                         if (crdl.StartsWith("hero:"))
                         {
-                            this.oHero = Hrtprozis.Instance.heroNametoEnum(crdl.Replace("hero:", ""));
+                            this.oHero = sf.Hrtprozis.heroNametoEnum(crdl.Replace("hero:", ""));
                             continue;
                         }
                         if (crdl.StartsWith("bonus:"))
@@ -362,16 +363,20 @@
 
         }
 
-        public static ComboBreaker Instance
-        {
-            get
-            {
-                return instance ?? (instance = new ComboBreaker());
-            }
-        }
+        //public static ComboBreaker Instance
+        //{
+        //    get
+        //    {
+        //        return instance ?? (instance = new ComboBreaker());
+        //    }
+        //}
 
-        private ComboBreaker()
+        public ComboBreaker(Silverfish sf)
         {
+            this.sf = sf;
+            hm = sf.Handmanager;
+            hp = sf.Hrtprozis;
+
             readCombos();
             if (attackFaceHP != -1)
             {
@@ -385,17 +390,17 @@
             combos.Clear();
             try
             {
-                string path = Settings.Instance.path;
+                string path = sf.Settings.path;
                 lines = System.IO.File.ReadAllLines(path + "_combo.txt");
             }
             catch
             {
-                Helpfunctions.Instance.logg("cant find _combo.txt");
-                Helpfunctions.Instance.ErrorLog("cant find _combo.txt (if you dont created your own combos, ignore this message)");
+                sf.Helpfunctions.logg("cant find _combo.txt");
+                sf.Helpfunctions.ErrorLog("cant find _combo.txt (if you dont created your own combos, ignore this message)");
                 return;
             }
-            Helpfunctions.Instance.logg("read _combo.txt...");
-            Helpfunctions.Instance.ErrorLog("read _combo.txt...");
+            sf.Helpfunctions.logg("read _combo.txt...");
+            sf.Helpfunctions.ErrorLog("read _combo.txt...");
             foreach (string line in lines)
             {
 
@@ -407,8 +412,8 @@
                     }
                     catch
                     {
-                        Helpfunctions.Instance.logg("combomaker cant read: " + line);
-                        Helpfunctions.Instance.ErrorLog("combomaker cant read: " + line);
+                        sf.Helpfunctions.logg("combomaker cant read: " + line);
+                        sf.Helpfunctions.ErrorLog("combomaker cant read: " + line);
                     }
                 }
                 else
@@ -422,25 +427,25 @@
                             int val = Convert.ToInt32(cardvalue.Split(',')[1]);
                             if (this.playByValue.ContainsKey(ce)) continue;
                             this.playByValue.Add(ce, val);
-                            //Helpfunctions.Instance.ErrorLog("adding: " + line);
+                            //sf.helpfunctions.ErrorLog("adding: " + line);
                         }
                         catch
                         {
-                            Helpfunctions.Instance.logg("combomaker cant read: " + line);
-                            Helpfunctions.Instance.ErrorLog("combomaker cant read: " + line);
+                            sf.Helpfunctions.logg("combomaker cant read: " + line);
+                            sf.Helpfunctions.ErrorLog("combomaker cant read: " + line);
                         }
                     }
                     else
                     {
                         try
                         {
-                            combo c = new combo(line);
+                            combo c = new combo(line, sf);
                             this.combos.Add(c);
                         }
                         catch
                         {
-                            Helpfunctions.Instance.logg("combomaker cant read: " + line);
-                            Helpfunctions.Instance.ErrorLog("combomaker cant read: " + line);
+                            sf.Helpfunctions.logg("combomaker cant read: " + line);
+                            sf.Helpfunctions.ErrorLog("combomaker cant read: " + line);
                         }
                     }
                 }

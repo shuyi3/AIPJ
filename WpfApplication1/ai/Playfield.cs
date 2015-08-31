@@ -36,6 +36,8 @@
         //TODO: graveyard change (list <card,owner>)
         //Todo: vanish clear all auras/buffs (NEW1_004)
 
+        public Silverfish sf;
+
         public bool logging = false;
         public bool complete = false;
 
@@ -214,7 +216,7 @@
         public CardDB.cardIDEnum OwnLastDiedMinion = CardDB.cardIDEnum.None;
 
         public int shadowmadnessed = 0; //minions has switched controllers this turn.
-        //Helpfunctions help = Helpfunctions.Instance;
+        //Helpfunctions help = sf.Helpfunctions;
 
 
         private void addMinionsReal(List<Minion> source, List<Minion> trgt)
@@ -236,60 +238,62 @@
 
         }
 
-        public Playfield()
+        public Playfield(Silverfish sf)
         {
+            this.sf = sf;
+
             this.nextEntity = 1000;
-            //this.simulateEnemyTurn = Ai.Instance.simulateEnemyTurn;
-            this.ownController = Hrtprozis.Instance.getOwnController();
+            //this.simulateEnemyTurn = sf.Ai.simulateEnemyTurn;
+            this.ownController = sf.Hrtprozis.getOwnController();
 
-            //this.ownHeroEntity = Hrtprozis.Instance.ownHeroEntity;
-            //this.enemyHeroEntity = Hrtprozis.Instance.enemyHeroEntitiy;
+            //this.ownHeroEntity = sf.Hrtprozis.ownHeroEntity;
+            //this.enemyHeroEntity = sf.Hrtprozis.enemyHeroEntitiy;
 
-            this.mana = Hrtprozis.Instance.currentMana;
+            this.mana = sf.Hrtprozis.currentMana;
             this.manaTurnEnd = this.mana;
-            this.ownMaxMana = Hrtprozis.Instance.ownMaxMana;
-            this.enemyMaxMana = Hrtprozis.Instance.enemyMaxMana;
+            this.ownMaxMana = sf.Hrtprozis.ownMaxMana;
+            this.enemyMaxMana = sf.Hrtprozis.enemyMaxMana;
             this.evaluatePenality = 0;
-            this.ownSecretsIDList.AddRange(Hrtprozis.Instance.ownSecretList);
-            this.enemySecretCount = Hrtprozis.Instance.enemySecretCount;
+            this.ownSecretsIDList.AddRange(sf.Hrtprozis.ownSecretList);
+            this.enemySecretCount = sf.Hrtprozis.enemySecretCount;
 
 
-            this.attackFaceHP = Hrtprozis.Instance.attackFaceHp;
+            this.attackFaceHP = sf.Hrtprozis.attackFaceHp;
 
             this.complete = false;
 
-            addMinionsReal(Hrtprozis.Instance.ownMinions, ownMinions);
-            addMinionsReal(Hrtprozis.Instance.enemyMinions, enemyMinions);
-            this.ownHero = new Minion(Hrtprozis.Instance.ownHero);
-            this.enemyHero = new Minion(Hrtprozis.Instance.enemyHero);
-            addCardsReal(Handmanager.Instance.handCards);
+            addMinionsReal(sf.Hrtprozis.ownMinions, ownMinions);
+            addMinionsReal(sf.Hrtprozis.enemyMinions, enemyMinions);
+            this.ownHero = new Minion(sf.Hrtprozis.ownHero);
+            this.enemyHero = new Minion(sf.Hrtprozis.enemyHero);
+            addCardsReal(sf.Handmanager.handCards);
 
             this.enemySecretList.Clear();
-            if (Settings.Instance.useSecretsPlayArround)
+            if (sf.Settings.useSecretsPlayArround)
             {
-                foreach (SecretItem si in Probabilitymaker.Instance.enemySecrets)
+                foreach (SecretItem si in sf.Probabilitymaker.enemySecrets)
                 {
                     this.enemySecretList.Add(new SecretItem(si));
                 }
             }
 
-            this.ownHeroName = Hrtprozis.Instance.heroname;
-            this.enemyHeroName = Hrtprozis.Instance.enemyHeroname;
-            this.ownHeroStartClass = Hrtprozis.Instance.ownHeroStartClass;
-            this.enemyHeroStartClass = Hrtprozis.Instance.enemyHeroStartClass;
+            this.ownHeroName = sf.Hrtprozis.heroname;
+            this.enemyHeroName = sf.Hrtprozis.enemyHeroname;
+            this.ownHeroStartClass = sf.Hrtprozis.ownHeroStartClass;
+            this.enemyHeroStartClass = sf.Hrtprozis.enemyHeroStartClass;
 
             /*
-            this.enemyHeroHp = Hrtprozis.Instance.enemyHp;
-            this.ownHeroHp = Hrtprozis.Instance.heroHp;
-            this.ownHeroReady = Hrtprozis.Instance.ownheroisread;
-            this.ownHeroWindfury = Hrtprozis.Instance.ownHeroWindfury;
-            this.ownHeroNumAttackThisTurn = Hrtprozis.Instance.ownHeroNumAttacksThisTurn;
-            this.ownHeroFrozen = Hrtprozis.Instance.herofrozen;
-            this.enemyHeroFrozen = Hrtprozis.Instance.enemyfrozen;
-            this.ownheroAngr = Hrtprozis.Instance.heroAtk;
-            this.heroImmuneWhileAttacking = Hrtprozis.Instance.heroImmuneToDamageWhileAttacking;
-            this.ownHeroDefence = Hrtprozis.Instance.heroDefence;
-            this.enemyHeroDefence = Hrtprozis.Instance.enemyDefence;
+            this.enemyHeroHp = sf.Hrtprozis.enemyHp;
+            this.ownHeroHp = sf.Hrtprozis.heroHp;
+            this.ownHeroReady = sf.Hrtprozis.ownheroisread;
+            this.ownHeroWindfury = sf.Hrtprozis.ownHeroWindfury;
+            this.ownHeroNumAttackThisTurn = sf.Hrtprozis.ownHeroNumAttacksThisTurn;
+            this.ownHeroFrozen = sf.Hrtprozis.herofrozen;
+            this.enemyHeroFrozen = sf.Hrtprozis.enemyfrozen;
+            this.ownheroAngr = sf.Hrtprozis.heroAtk;
+            this.heroImmuneWhileAttacking = sf.Hrtprozis.heroImmuneToDamageWhileAttacking;
+            this.ownHeroDefence = sf.Hrtprozis.heroDefence;
+            this.enemyHeroDefence = sf.Hrtprozis.enemyDefence;
              */
 
             //####buffs#############################
@@ -318,8 +322,8 @@
             this.ownMinionsDiedTurn = 0;
             this.enemyMinionsDiedTurn = 0;
 
-            this.feugenDead = Probabilitymaker.Instance.feugenDead;
-            this.stalaggDead = Probabilitymaker.Instance.stalaggDead;
+            this.feugenDead = sf.Probabilitymaker.feugenDead;
+            this.stalaggDead = sf.Probabilitymaker.stalaggDead;
 
             this.weHavePlayedMillhouseManastorm = false;
 
@@ -330,37 +334,37 @@
             this.enemyBaronRivendare = 0;
             //#########################################
 
-            this.ownWeaponDurability = Hrtprozis.Instance.heroWeaponDurability;
-            this.ownWeaponAttack = Hrtprozis.Instance.heroWeaponAttack;
-            this.ownWeaponName = Hrtprozis.Instance.ownHeroWeapon;
+            this.ownWeaponDurability = sf.Hrtprozis.heroWeaponDurability;
+            this.ownWeaponAttack = sf.Hrtprozis.heroWeaponAttack;
+            this.ownWeaponName = sf.Hrtprozis.ownHeroWeapon;
             this.owncarddraw = 0;
 
 
-            this.enemyWeaponAttack = Hrtprozis.Instance.enemyWeaponAttack;//dont know jet
-            this.enemyWeaponName = Hrtprozis.Instance.enemyHeroWeapon;
-            this.enemyWeaponDurability = Hrtprozis.Instance.enemyWeaponDurability;
+            this.enemyWeaponAttack = sf.Hrtprozis.enemyWeaponAttack;//dont know jet
+            this.enemyWeaponName = sf.Hrtprozis.enemyHeroWeapon;
+            this.enemyWeaponDurability = sf.Hrtprozis.enemyWeaponDurability;
             this.enemycarddraw = 0;
 
-            this.enemyAnzCards = Handmanager.Instance.enemyAnzCards;
+            this.enemyAnzCards = sf.Handmanager.enemyAnzCards;
 
-            this.ownAbilityReady = Hrtprozis.Instance.ownAbilityisReady;
-            this.ownHeroAblility = new Handmanager.Handcard(Hrtprozis.Instance.heroAbility);
-            this.enemyHeroAblility = new Handmanager.Handcard(Hrtprozis.Instance.enemyAbility);
+            this.ownAbilityReady = sf.Hrtprozis.ownAbilityisReady;
+            this.ownHeroAblility = new Handmanager.Handcard(sf.Hrtprozis.heroAbility);
+            this.enemyHeroAblility = new Handmanager.Handcard(sf.Hrtprozis.enemyAbility);
             this.enemyAbilityReady = false;
 
 
-            this.mobsplayedThisTurn = Hrtprozis.Instance.numMinionsPlayedThisTurn;
-            this.startedWithMobsPlayedThisTurn = Hrtprozis.Instance.numMinionsPlayedThisTurn;// only change mobsplayedthisturm
-            this.cardsPlayedThisTurn = Hrtprozis.Instance.cardsPlayedThisTurn;
+            this.mobsplayedThisTurn = sf.Hrtprozis.numMinionsPlayedThisTurn;
+            this.startedWithMobsPlayedThisTurn = sf.Hrtprozis.numMinionsPlayedThisTurn;// only change mobsplayedthisturm
+            this.cardsPlayedThisTurn = sf.Hrtprozis.cardsPlayedThisTurn;
             //todo:
-            this.optionsPlayedThisTurn = Hrtprozis.Instance.numOptionsPlayedThisTurn;
+            this.optionsPlayedThisTurn = sf.Hrtprozis.numOptionsPlayedThisTurn;
 
-            this.ueberladung = Hrtprozis.Instance.ueberladung;
+            this.ueberladung = sf.Hrtprozis.ueberladung;
 
-            this.ownHeroFatigue = Hrtprozis.Instance.ownHeroFatigue;
-            this.enemyHeroFatigue = Hrtprozis.Instance.enemyHeroFatigue;
-            this.ownDeckSize = Hrtprozis.Instance.ownDeckSize;
-            this.enemyDeckSize = Hrtprozis.Instance.enemyDeckSize;
+            this.ownHeroFatigue = sf.Hrtprozis.ownHeroFatigue;
+            this.enemyHeroFatigue = sf.Hrtprozis.enemyHeroFatigue;
+            this.ownDeckSize = sf.Hrtprozis.ownDeckSize;
+            this.enemyDeckSize = sf.Hrtprozis.enemyDeckSize;
 
             //need the following for manacost-calculation
             this.ownHeroHpStarted = this.ownHero.Hp;
@@ -531,7 +535,7 @@
                 }
             }
             if (this.enemySecretCount >= 1) this.needGraveyard = true;
-            if (this.needGraveyard) this.diedMinions = new List<GraveYardItem>(Probabilitymaker.Instance.turngraveyard);
+            if (this.needGraveyard) this.diedMinions = new List<GraveYardItem>(sf.Probabilitymaker.turngraveyard);
 
             this.tempanzOwnCards = this.owncards.Count;
             this.tempanzEnemyCards = this.enemyAnzCards;
@@ -541,6 +545,7 @@
 
         public Playfield(Playfield p)
         {
+            sf = p.sf;
 
             this.nextEntity = p.nextEntity;
 
@@ -559,7 +564,8 @@
             this.enemySecretCount = p.enemySecretCount;
 
             this.enemySecretList.Clear();
-            if (Settings.Instance.useSecretsPlayArround)
+
+            if (sf.Settings.useSecretsPlayArround)
             {
                 foreach (SecretItem si in p.enemySecretList)
                 {
@@ -719,7 +725,7 @@
             if (this.enemySecretCount != p.enemySecretCount)
             {
 
-                if (logg) Helpfunctions.Instance.logg("enemy secrets changed ");
+                if (logg) sf.Helpfunctions.logg("enemy secrets changed ");
                 return false;
             }
 
@@ -729,7 +735,7 @@
                 {
                     if (!this.enemySecretList[i].isEqual(p.enemySecretList[i]))
                     {
-                        if (logg) Helpfunctions.Instance.logg("enemy secrets changed! ");
+                        if (logg) sf.Helpfunctions.logg("enemy secrets changed! ");
                         return false;
                     }
                 }
@@ -737,64 +743,64 @@
 
             if (this.mana != p.mana || this.enemyMaxMana != p.enemyMaxMana || this.ownMaxMana != p.ownMaxMana)
             {
-                if (logg) Helpfunctions.Instance.logg("mana changed " + this.mana + " " + p.mana + " " + this.enemyMaxMana + " " + p.enemyMaxMana + " " + this.ownMaxMana + " " + p.ownMaxMana);
+                if (logg) sf.Helpfunctions.logg("mana changed " + this.mana + " " + p.mana + " " + this.enemyMaxMana + " " + p.enemyMaxMana + " " + this.ownMaxMana + " " + p.ownMaxMana);
                 return false;
             }
 
             if (this.ownDeckSize != p.ownDeckSize || this.enemyDeckSize != p.enemyDeckSize || this.ownHeroFatigue != p.ownHeroFatigue || this.enemyHeroFatigue != p.enemyHeroFatigue)
             {
-                if (logg) Helpfunctions.Instance.logg("deck/fatigue changed " + this.ownDeckSize + " " + p.ownDeckSize + " " + this.enemyDeckSize + " " + p.enemyDeckSize + " " + this.ownHeroFatigue + " " + p.ownHeroFatigue + " " + this.enemyHeroFatigue + " " + p.enemyHeroFatigue);
+                if (logg) sf.Helpfunctions.logg("deck/fatigue changed " + this.ownDeckSize + " " + p.ownDeckSize + " " + this.enemyDeckSize + " " + p.enemyDeckSize + " " + this.ownHeroFatigue + " " + p.ownHeroFatigue + " " + this.enemyHeroFatigue + " " + p.enemyHeroFatigue);
             }
 
             if (this.cardsPlayedThisTurn != p.cardsPlayedThisTurn || this.mobsplayedThisTurn != p.mobsplayedThisTurn || this.ueberladung != p.ueberladung || this.ownAbilityReady != p.ownAbilityReady)
             {
-                if (logg) Helpfunctions.Instance.logg("stuff changed " + this.cardsPlayedThisTurn + " " + p.cardsPlayedThisTurn + " " + this.mobsplayedThisTurn + " " + p.mobsplayedThisTurn + " " + this.ueberladung + " " + p.ueberladung + " " + this.ownAbilityReady + " " + p.ownAbilityReady);
+                if (logg) sf.Helpfunctions.logg("stuff changed " + this.cardsPlayedThisTurn + " " + p.cardsPlayedThisTurn + " " + this.mobsplayedThisTurn + " " + p.mobsplayedThisTurn + " " + this.ueberladung + " " + p.ueberladung + " " + this.ownAbilityReady + " " + p.ownAbilityReady);
                 return false;
             }
 
             if (this.ownHeroName != p.ownHeroName || this.enemyHeroName != p.enemyHeroName)
             {
-                if (logg) Helpfunctions.Instance.logg("hero name changed ");
+                if (logg) sf.Helpfunctions.logg("hero name changed ");
                 return false;
             }
 
             if (this.ownHero.Hp != p.ownHero.Hp || this.ownHero.Angr != p.ownHero.Angr || this.ownHero.armor != p.ownHero.armor || this.ownHero.frozen != p.ownHero.frozen || this.ownHero.immuneWhileAttacking != p.ownHero.immuneWhileAttacking || this.ownHero.immune != p.ownHero.immune)
             {
-                if (logg) Helpfunctions.Instance.logg("ownhero changed " + this.ownHero.Hp + " " + p.ownHero.Hp + " " + this.ownHero.Angr + " " + p.ownHero.Angr + " " + this.ownHero.armor + " " + p.ownHero.armor + " " + this.ownHero.frozen + " " + p.ownHero.frozen + " " + this.ownHero.immuneWhileAttacking + " " + p.ownHero.immuneWhileAttacking + " " + this.ownHero.immune + " " + p.ownHero.immune);
+                if (logg) sf.Helpfunctions.logg("ownhero changed " + this.ownHero.Hp + " " + p.ownHero.Hp + " " + this.ownHero.Angr + " " + p.ownHero.Angr + " " + this.ownHero.armor + " " + p.ownHero.armor + " " + this.ownHero.frozen + " " + p.ownHero.frozen + " " + this.ownHero.immuneWhileAttacking + " " + p.ownHero.immuneWhileAttacking + " " + this.ownHero.immune + " " + p.ownHero.immune);
                 return false;
             }
             if (this.ownHero.Ready != p.ownHero.Ready || this.ownWeaponAttack != p.ownWeaponAttack || this.ownWeaponDurability != p.ownWeaponDurability || this.ownHero.numAttacksThisTurn != p.ownHero.numAttacksThisTurn || this.ownHero.windfury != p.ownHero.windfury)
             {
-                if (logg) Helpfunctions.Instance.logg("weapon changed " + this.ownHero.Ready + " " + p.ownHero.Ready + " " + this.ownWeaponAttack + " " + p.ownWeaponAttack + " " + this.ownWeaponDurability + " " + p.ownWeaponDurability + " " + this.ownHero.numAttacksThisTurn + " " + p.ownHero.numAttacksThisTurn + " " + this.ownHero.windfury + " " + p.ownHero.windfury);
+                if (logg) sf.Helpfunctions.logg("weapon changed " + this.ownHero.Ready + " " + p.ownHero.Ready + " " + this.ownWeaponAttack + " " + p.ownWeaponAttack + " " + this.ownWeaponDurability + " " + p.ownWeaponDurability + " " + this.ownHero.numAttacksThisTurn + " " + p.ownHero.numAttacksThisTurn + " " + this.ownHero.windfury + " " + p.ownHero.windfury);
                 return false;
             }
             if (this.enemyHero.Hp != p.enemyHero.Hp || this.enemyWeaponAttack != p.enemyWeaponAttack || this.enemyHero.armor != p.enemyHero.armor || this.enemyWeaponDurability != p.enemyWeaponDurability || this.enemyHero.frozen != p.enemyHero.frozen || this.enemyHero.immune != p.enemyHero.immune)
             {
-                if (logg) Helpfunctions.Instance.logg("enemyhero changed " + this.enemyHero.Hp + " " + p.enemyHero.Hp + " " + this.enemyWeaponAttack + " " + p.enemyWeaponAttack + " " + this.enemyHero.armor + " " + p.enemyHero.armor + " " + this.enemyWeaponDurability + " " + p.enemyWeaponDurability + " " + this.enemyHero.frozen + " " + p.enemyHero.frozen + " " + this.enemyHero.immune + " " + p.enemyHero.immune);
+                if (logg) sf.Helpfunctions.logg("enemyhero changed " + this.enemyHero.Hp + " " + p.enemyHero.Hp + " " + this.enemyWeaponAttack + " " + p.enemyWeaponAttack + " " + this.enemyHero.armor + " " + p.enemyHero.armor + " " + this.enemyWeaponDurability + " " + p.enemyWeaponDurability + " " + this.enemyHero.frozen + " " + p.enemyHero.frozen + " " + this.enemyHero.immune + " " + p.enemyHero.immune);
                 return false;
             }
 
             /*if (this.auchenaiseelenpriesterin != p.auchenaiseelenpriesterin || this.winzigebeschwoererin != p.winzigebeschwoererin || this.zauberlehrling != p.zauberlehrling || this.managespenst != p.managespenst || this.soeldnerDerVenture != p.soeldnerDerVenture || this.beschwoerungsportal != p.beschwoerungsportal || this.doublepriest != p.doublepriest)
             {
-                Helpfunctions.Instance.logg("special minions changed " + this.auchenaiseelenpriesterin + " " + p.auchenaiseelenpriesterin + " " + this.winzigebeschwoererin + " " + p.winzigebeschwoererin + " " + this.zauberlehrling + " " + p.zauberlehrling + " " + this.managespenst + " " + p.managespenst + " " + this.soeldnerDerVenture + " " + p.soeldnerDerVenture + " " + this.beschwoerungsportal + " " + p.beschwoerungsportal + " " + this.doublepriest + " " + p.doublepriest);
+                sf.Helpfunctions.logg("special minions changed " + this.auchenaiseelenpriesterin + " " + p.auchenaiseelenpriesterin + " " + this.winzigebeschwoererin + " " + p.winzigebeschwoererin + " " + this.zauberlehrling + " " + p.zauberlehrling + " " + this.managespenst + " " + p.managespenst + " " + this.soeldnerDerVenture + " " + p.soeldnerDerVenture + " " + this.beschwoerungsportal + " " + p.beschwoerungsportal + " " + this.doublepriest + " " + p.doublepriest);
                 return false;
             }*/
 
             if (this.ownHeroAblility.card.name != p.ownHeroAblility.card.name)
             {
-                if (logg) Helpfunctions.Instance.logg("hero ability changed ");
+                if (logg) sf.Helpfunctions.logg("hero ability changed ");
                 return false;
             }
 
             if (this.spellpower != p.spellpower)
             {
-                if (logg) Helpfunctions.Instance.logg("spellpower changed");
+                if (logg) sf.Helpfunctions.logg("spellpower changed");
                 return false;
             }
 
             if (this.ownMinions.Count != p.ownMinions.Count || this.enemyMinions.Count != p.enemyMinions.Count || this.owncards.Count != p.owncards.Count)
             {
-                if (logg) Helpfunctions.Instance.logg("minions count or hand changed");
+                if (logg) sf.Helpfunctions.logg("minions count or hand changed");
                 return false;
             }
 
@@ -817,7 +823,7 @@
             }
             if (minionbool == false)
             {
-                if (logg) Helpfunctions.Instance.logg("ownminions changed");
+                if (logg) sf.Helpfunctions.logg("ownminions changed");
                 return false;
             }
 
@@ -838,7 +844,7 @@
             }
             if (minionbool == false)
             {
-                if (logg) Helpfunctions.Instance.logg("enemyminions changed");
+                if (logg) sf.Helpfunctions.logg("enemyminions changed");
                 return false;
             }
 
@@ -847,7 +853,7 @@
                 Handmanager.Handcard dishc = this.owncards[i]; Handmanager.Handcard pishc = p.owncards[i];
                 if (dishc.position != pishc.position || dishc.entity != pishc.entity || dishc.getManaCost(this) != pishc.getManaCost(p))
                 {
-                    if (logg) Helpfunctions.Instance.logg("handcard changed: " + dishc.card.name);
+                    if (logg) sf.Helpfunctions.logg("handcard changed: " + dishc.card.name);
                     return false;
                 }
             }
@@ -855,26 +861,26 @@
             for (int i = 0; i < this.ownMinions.Count; i++)
             {
                 Minion dis = this.ownMinions[i]; Minion pis = p.ownMinions[i];
-                if (dis.entitiyID != pis.entitiyID) Ai.Instance.updateEntitiy(pis.entitiyID, dis.entitiyID);
+                if (dis.entitiyID != pis.entitiyID) sf.Ai.updateEntitiy(pis.entitiyID, dis.entitiyID);
 
             }
 
             for (int i = 0; i < this.enemyMinions.Count; i++)
             {
                 Minion dis = this.enemyMinions[i]; Minion pis = p.enemyMinions[i];
-                if (dis.entitiyID != pis.entitiyID) Ai.Instance.updateEntitiy(pis.entitiyID, dis.entitiyID);
+                if (dis.entitiyID != pis.entitiyID) sf.Ai.updateEntitiy(pis.entitiyID, dis.entitiyID);
 
             }
             if (this.ownSecretsIDList.Count != p.ownSecretsIDList.Count)
             {
-                if (logg) Helpfunctions.Instance.logg("secretsCount changed");
+                if (logg) sf.Helpfunctions.logg("secretsCount changed");
                 return false;
             }
             for (int i = 0; i < this.ownSecretsIDList.Count; i++)
             {
                 if (this.ownSecretsIDList[i] != p.ownSecretsIDList[i])
                 {
-                    if (logg) Helpfunctions.Instance.logg("secrets changed");
+                    if (logg) sf.Helpfunctions.logg("secrets changed");
                     return false;
                 }
             }
@@ -994,10 +1000,10 @@
             if (!this.loatheb)
             {
                 Playfield p = new Playfield(this);
-                float oldval = Ai.Instance.botBase.getPlayfieldValue(p);
+                float oldval = sf.Ai.botBase.getPlayfieldValue(p);
                 p.value = int.MinValue;
                 p.EnemyCardPlaying(p.enemyHeroStartClass, p.mana, p.enemyAnzCards, pprob, pprob2);
-                float newval = Ai.Instance.botBase.getPlayfieldValue(p);
+                float newval = sf.Ai.botBase.getPlayfieldValue(p);
                 p.value = int.MinValue;
                 if (oldval > newval) // new board is better for enemy (value is smaller)
                 {
@@ -1080,7 +1086,7 @@
             if (cardname == CardDB.cardName.flamestrike && currmana >= 7)
             {
                 bool dontkill = false;
-                int prob = Probabilitymaker.Instance.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS2_032, this.enemyAnzCards, this.enemyDeckSize);
+                int prob = sf.Probabilitymaker.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS2_032, this.enemyAnzCards, this.enemyDeckSize);
                 if (playAroundProb > prob) return currmana;
                 if (pap2 > prob) dontkill = true;
 
@@ -1100,7 +1106,7 @@
             if (cardname == CardDB.cardName.blizzard && currmana >= 6)
             {
                 bool dontkill = false;
-                int prob = Probabilitymaker.Instance.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS2_028, this.enemyAnzCards, this.enemyDeckSize);
+                int prob = sf.Probabilitymaker.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS2_028, this.enemyAnzCards, this.enemyDeckSize);
                 if (playAroundProb > prob) return currmana;
                 if (pap2 > prob) dontkill = true;
 
@@ -1122,7 +1128,7 @@
             if (cardname == CardDB.cardName.unleashthehounds && currmana >= 5)
             {
                 bool dontkill = false;
-                int prob = Probabilitymaker.Instance.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.EX1_538, this.enemyAnzCards, this.enemyDeckSize);
+                int prob = sf.Probabilitymaker.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.EX1_538, this.enemyAnzCards, this.enemyDeckSize);
                 if (playAroundProb > prob) return currmana;
                 if (pap2 > prob) dontkill = true;
 
@@ -1144,7 +1150,7 @@
             if (cardname == CardDB.cardName.holynova && currmana >= 5)
             {
                 bool dontkill = false;
-                int prob = Probabilitymaker.Instance.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS1_112, this.enemyAnzCards, this.enemyDeckSize);
+                int prob = sf.Probabilitymaker.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS1_112, this.enemyAnzCards, this.enemyDeckSize);
                 if (playAroundProb > prob) return currmana;
                 if (pap2 > prob) dontkill = true;
 
@@ -1174,7 +1180,7 @@
             if (cardname == CardDB.cardName.lightningstorm && currmana >= 4)//3
             {
                 bool dontkill = false;
-                int prob = Probabilitymaker.Instance.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.EX1_259, this.enemyAnzCards, this.enemyDeckSize);
+                int prob = sf.Probabilitymaker.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.EX1_259, this.enemyAnzCards, this.enemyDeckSize);
                 if (playAroundProb > prob) return currmana;
                 if (pap2 > prob) dontkill = true;
 
@@ -1195,7 +1201,7 @@
             if (cardname == CardDB.cardName.whirlwind && currmana >= 3)//1
             {
                 bool dontkill = false;
-                int prob = Probabilitymaker.Instance.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.EX1_400, this.enemyAnzCards, this.enemyDeckSize);
+                int prob = sf.Probabilitymaker.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.EX1_400, this.enemyAnzCards, this.enemyDeckSize);
                 if (playAroundProb > prob) return currmana;
                 if (pap2 > prob) dontkill = true;
 
@@ -1221,7 +1227,7 @@
             if (cardname == CardDB.cardName.consecration && currmana >= 4)
             {
                 bool dontkill = false;
-                int prob = Probabilitymaker.Instance.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS2_093, this.enemyAnzCards, this.enemyDeckSize);
+                int prob = sf.Probabilitymaker.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS2_093, this.enemyAnzCards, this.enemyDeckSize);
                 if (playAroundProb > prob) return currmana;
                 if (pap2 > prob) dontkill = true;
 
@@ -1244,7 +1250,7 @@
             if (cardname == CardDB.cardName.swipe && currmana >= 4)
             {
                 bool dontkill = false;
-                int prob = Probabilitymaker.Instance.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS2_012, this.enemyAnzCards, this.enemyDeckSize);
+                int prob = sf.Probabilitymaker.getProbOfEnemyHavingCardInHand(CardDB.cardIDEnum.CS2_012, this.enemyAnzCards, this.enemyDeckSize);
                 if (playAroundProb > prob) return currmana;
                 if (pap2 > prob) dontkill = true;
 
@@ -1398,7 +1404,7 @@
                         tempval += 2;
                     }
 
-                    tempval += PenalityManager.Instance.getValueOfUsefulNeedKeepPriority(m.handcard.card.name);
+                    tempval += sf.PenalityManager.getValueOfUsefulNeedKeepPriority(m.handcard.card.name);
                     places[i] = tempval;
                     i++;
                 }
@@ -1555,7 +1561,7 @@
                 cardvalue += card.Health;
             }
 
-            cardvalue += PenalityManager.Instance.getValueOfUsefulNeedKeepPriority(card.name); //  add a custom placement rules (replace it)
+            cardvalue += sf.PenalityManager.getValueOfUsefulNeedKeepPriority(card.name); //  add a custom placement rules (replace it)
             cardvalue += 1;
 
             i = 0;
@@ -1570,7 +1576,7 @@
                 }
                 if (!m.silenced)
                 {
-                    tempval += PenalityManager.Instance.getValueOfUsefulNeedKeepPriority(m.handcard.card.name);
+                    tempval += sf.PenalityManager.getValueOfUsefulNeedKeepPriority(m.handcard.card.name);
                     if (m.stealth) tempval += 40;
                 }
                 places[i] = tempval;
@@ -1838,7 +1844,7 @@
             this.turnCounter++;
             //penalty for destroying combo
 
-            this.evaluatePenality += ComboBreaker.Instance.checkIfComboWasPlayed(this.playactions, this.ownWeaponName, this.ownHeroName);
+            this.evaluatePenality += sf.Combobreaker.checkIfComboWasPlayed(this.playactions, this.ownWeaponName, this.ownHeroName);
 
             if (this.complete) return;
             this.triggerEndTurn(this.isOwnTurn);
@@ -1864,9 +1870,9 @@
                     this.prepareNextTurn(this.isOwnTurn);
 
                     if (this.turnCounter >= 2)
-                        Ai.Instance.enemySecondTurnSim.simulateEnemysTurn(this, simulateTwoTurns, playaround, print, pprob, pprob2);
+                        sf.Ai.enemySecondTurnSim.simulateEnemysTurn(this, simulateTwoTurns, playaround, print, pprob, pprob2);
                     else
-                        Ai.Instance.enemyTurnSim.simulateEnemysTurn(this, simulateTwoTurns, playaround, print, pprob, pprob2);
+                        sf.Ai.enemyTurnSim.simulateEnemysTurn(this, simulateTwoTurns, playaround, print, pprob, pprob2);
                 }
                 this.complete = true;*/
             }
@@ -1968,7 +1974,7 @@
             this.isOwnTurn = true;
             this.triggerStartTurn(true);
             this.complete = true;
-            //Ai.Instance.botBase.getPlayfieldValue(this);
+            //sf.Ai.botBase.getPlayfieldValue(this);
 
         }
 
@@ -2129,7 +2135,7 @@
                     }
                     if (this.ownHero.entitiyID == newTarget) target = this.ownHero;
                     if (this.enemyHero.entitiyID == newTarget) target = this.enemyHero;
-                    //Helpfunctions.Instance.ErrorLog("missdirection target = " + target.entitiyID);
+                    //sf.Helpfunctions.ErrorLog("missdirection target = " + target.entitiyID);
                 }
                 if (a.own.Hp >= 1) minionAttacksMinion(a.own, target);
             }
@@ -2234,7 +2240,7 @@
             }
             
 
-            if (logging) Helpfunctions.Instance.logg(".attck with" + attacker.name + " A " + attacker.Angr + " H " + attacker.Hp);
+            if (logging) sf.Helpfunctions.logg(".attck with" + attacker.name + " A " + attacker.Angr + " H " + attacker.Hp);
 
             int attackerAngr = attacker.Angr;
             int defAngr = defender.Angr;
@@ -2349,7 +2355,7 @@
                 }
             }
 
-            if (logging) Helpfunctions.Instance.logg("attck with weapon trgt: " + target.entitiyID);
+            if (logging) sf.Helpfunctions.logg("attck with weapon trgt: " + target.entitiyID);
 
             // hero attacks enemy----------------------------------------------------------------------------------
 
@@ -2445,8 +2451,8 @@
             }
 
 
-            //Helpfunctions.Instance.logg("play crd " + c.name + " entitiy# " + cardEntity + " mana " + hc.getManaCost(this) + " trgt " + target);
-            if (logging) Helpfunctions.Instance.logg("play crd " + c.name + " entitiy# " + hc.entity + " mana " + hc.getManaCost(this) + " trgt " + target);
+            //sf.Helpfunctions.logg("play crd " + c.name + " entitiy# " + cardEntity + " mana " + hc.getManaCost(this) + " trgt " + target);
+            if (logging) sf.Helpfunctions.logg("play crd " + c.name + " entitiy# " + hc.entity + " mana " + hc.getManaCost(this) + " trgt " + target);
 
 
             this.triggerACardWillBePlayed(hc, true);
@@ -2503,8 +2509,8 @@
 
             Handmanager.Handcard hc = new Handmanager.Handcard(c);
             hc.entity = this.getNextEntity();
-            //Helpfunctions.Instance.logg("play crd " + c.name + " entitiy# " + cardEntity + " mana " + hc.getManaCost(this) + " trgt " + target);
-            if (logging) Helpfunctions.Instance.logg("enemy play crd " + c.name + " trgt " + target);
+            //sf.Helpfunctions.logg("play crd " + c.name + " entitiy# " + cardEntity + " mana " + hc.getManaCost(this) + " trgt " + target);
+            if (logging) sf.Helpfunctions.logg("enemy play crd " + c.name + " trgt " + target);
 
             this.enemyAnzCards--;//might be deleted if he got a real hand
 
@@ -2565,8 +2571,8 @@
             this.evaluatePenality += penality;
             this.mana = this.mana - 2;
 
-            //Helpfunctions.Instance.logg("play crd " + c.name + " entitiy# " + cardEntity + " mana " + hc.getManaCost(this) + " trgt " + target);
-            if (logging) Helpfunctions.Instance.logg("play crd " + c.name + " trgt " + target);
+            //sf.Helpfunctions.logg("play crd " + c.name + " entitiy# " + cardEntity + " mana " + hc.getManaCost(this) + " trgt " + target);
+            if (logging) sf.Helpfunctions.logg("play crd " + c.name + " trgt " + target);
 
             c.sim_card.onCardPlay(this, ownturn, target, 0);
             this.doDmgTriggers();
@@ -3308,7 +3314,7 @@
                             triggered++;
                             CardDB.Instance.getCardDataFromID(CardDB.cardIDEnum.EX1_610).sim_card.onSecretPlay(this, false, 0);
                             doDmgTriggers();
-                            //Helpfunctions.Instance.ErrorLog("trigger explosive" + attacker.Hp);
+                            //sf.Helpfunctions.ErrorLog("trigger explosive" + attacker.Hp);
                             si.usedTrigger_CharIsAttacked(true, attacker.isHero);
                             foreach (SecretItem sii in this.enemySecretList)
                             {
@@ -3336,7 +3342,7 @@
                                 triggered++;
                                 CardDB.Instance.getCardDataFromID(CardDB.cardIDEnum.EX1_533).sim_card.onSecretPlay(this, false, attacker, defender, out newTarget);
                                 si.usedTrigger_CharIsAttacked(true, attacker.isHero);
-                                //Helpfunctions.Instance.ErrorLog("trigger miss " + attacker.Hp);
+                                //sf.Helpfunctions.ErrorLog("trigger miss " + attacker.Hp);
                                 foreach (SecretItem sii in this.enemySecretList)
                                 {
                                     sii.canBe_missdirection = false;
@@ -3386,7 +3392,7 @@
                             triggered++;
                             CardDB.Instance.getCardDataFromID(CardDB.cardIDEnum.EX1_611).sim_card.onSecretPlay(this, false, attacker, 0);
                             si.usedTrigger_CharIsAttacked(defender.isHero, attacker.isHero);
-                            //Helpfunctions.Instance.ErrorLog("trigger freeze " + attacker.Hp);
+                            //sf.Helpfunctions.ErrorLog("trigger freeze " + attacker.Hp);
                             foreach (SecretItem sii in this.enemySecretList)
                             {
                                 sii.canBe_freezing = false;
@@ -3725,7 +3731,7 @@
 
                         /*if (m.handcard.card.name == CardDB.cardName.cairnebloodhoof || m.handcard.card.name == CardDB.cardName.harvestgolem || m.ancestralspirit>=1)
                         {
-                            this.evaluatePenality -= Ai.Instance.botBase.getEnemyMinionValue(m, this) - 1;
+                            this.evaluatePenality -= sf.Ai.botBase.getEnemyMinionValue(m, this) - 1;
                         }*/
 
                     }
@@ -3773,7 +3779,7 @@
 
                         if ((!m.silenced && (m.handcard.card.name == CardDB.cardName.cairnebloodhoof || m.handcard.card.name == CardDB.cardName.harvestgolem)) || m.ancestralspirit >= 1)
                         {
-                            this.evaluatePenality -= Ai.Instance.botBase.getEnemyMinionValue(m, this) - 1;
+                            this.evaluatePenality -= sf.Ai.botBase.getEnemyMinionValue(m, this) - 1;
                         }
                     }
                     else
@@ -4016,7 +4022,7 @@
             secretTrigger_MinionIsPlayed(m);
 
 
-            if (logging) Helpfunctions.Instance.logg("added " + m.handcard.card.name);
+            if (logging) sf.Helpfunctions.logg("added " + m.handcard.card.name);
         }
 
         public void addMinionToBattlefield(Minion m, bool isSummon = true)
@@ -4496,7 +4502,7 @@
             int ancestral = m.ancestralspirit;
             if (m.handcard.card.name == CardDB.cardName.cairnebloodhoof || m.handcard.card.name == CardDB.cardName.harvestgolem || ancestral >= 1)
             {
-                this.evaluatePenality -= Ai.Instance.botBase.getEnemyMinionValue(m, this) - 1;
+                this.evaluatePenality -= sf.Ai.botBase.getEnemyMinionValue(m, this) - 1;
             }
 
             //necessary???
@@ -4519,7 +4525,7 @@
                 this.tempTrigger.enemyMininsChanged = true;
             }
 
-            if (logging) Helpfunctions.Instance.logg("minion got sheep" + m.name + " " + m.Angr);
+            if (logging) sf.Helpfunctions.logg("minion got sheep" + m.name + " " + m.Angr);
         }
 
         public void minionGetControlled(Minion m, bool newOwner, bool canAttack)
@@ -4811,73 +4817,73 @@
 
         public void debugMinions()
         {
-            Helpfunctions.Instance.logg("OWN MINIONS################");
+            sf.Helpfunctions.logg("OWN MINIONS################");
 
             foreach (Minion m in this.ownMinions)
             {
-                Helpfunctions.Instance.logg("name,ang, hp, maxhp: " + m.name + ", " + m.Angr + ", " + m.Hp + ", " + m.maxHp);
+                sf.Helpfunctions.logg("name,ang, hp, maxhp: " + m.name + ", " + m.Angr + ", " + m.Hp + ", " + m.maxHp);
             }
 
-            Helpfunctions.Instance.logg("ENEMY MINIONS############");
+            sf.Helpfunctions.logg("ENEMY MINIONS############");
             foreach (Minion m in this.enemyMinions)
             {
-                Helpfunctions.Instance.logg("name,ang, hp: " + m.name + ", " + m.Angr + ", " + m.Hp);
+                sf.Helpfunctions.logg("name,ang, hp: " + m.name + ", " + m.Angr + ", " + m.Hp);
             }
         }
 
         public void printBoard()
         {
-            Helpfunctions.Instance.logg("board/hash: " + value + "  /  " + this.hashcode + " ++++++++++++++++++++++");
-            Helpfunctions.Instance.logg("pen " + this.evaluatePenality);
-            Helpfunctions.Instance.logg("mana " + this.mana + "/" + this.ownMaxMana);
-            Helpfunctions.Instance.logg("cardsplayed: " + this.cardsPlayedThisTurn + " handsize: " + this.owncards.Count + " eh " + this.enemyAnzCards);
+            sf.Helpfunctions.logg("board/hash: " + value + "  /  " + this.hashcode + " ++++++++++++++++++++++");
+            sf.Helpfunctions.logg("pen " + this.evaluatePenality);
+            sf.Helpfunctions.logg("mana " + this.mana + "/" + this.ownMaxMana);
+            sf.Helpfunctions.logg("cardsplayed: " + this.cardsPlayedThisTurn + " handsize: " + this.owncards.Count + " eh " + this.enemyAnzCards);
 
-            Helpfunctions.Instance.logg("ownhero: ");
-            Helpfunctions.Instance.logg("ownherohp: " + this.ownHero.Hp + " + " + this.ownHero.armor);
-            Helpfunctions.Instance.logg("ownheroattac: " + this.ownHero.Angr);
-            Helpfunctions.Instance.logg("ownheroweapon: " + this.ownWeaponAttack + " " + this.ownWeaponDurability + " " + this.ownWeaponName);
-            Helpfunctions.Instance.logg("ownherostatus: frozen" + this.ownHero.frozen + " ");
-            Helpfunctions.Instance.logg("enemyherohp: " + this.enemyHero.Hp + " + " + this.enemyHero.armor + ((this.enemyHero.immune) ? " immune" : ""));
+            sf.Helpfunctions.logg("ownhero: ");
+            sf.Helpfunctions.logg("ownherohp: " + this.ownHero.Hp + " + " + this.ownHero.armor);
+            sf.Helpfunctions.logg("ownheroattac: " + this.ownHero.Angr);
+            sf.Helpfunctions.logg("ownheroweapon: " + this.ownWeaponAttack + " " + this.ownWeaponDurability + " " + this.ownWeaponName);
+            sf.Helpfunctions.logg("ownherostatus: frozen" + this.ownHero.frozen + " ");
+            sf.Helpfunctions.logg("enemyherohp: " + this.enemyHero.Hp + " + " + this.enemyHero.armor + ((this.enemyHero.immune) ? " immune" : ""));
 
-            if (this.enemySecretCount >= 1) Helpfunctions.Instance.logg("enemySecrets: " + Probabilitymaker.Instance.getEnemySecretData(this.enemySecretList));
+            if (this.enemySecretCount >= 1) sf.Helpfunctions.logg("enemySecrets: " + sf.Probabilitymaker.getEnemySecretData(this.enemySecretList));
             foreach (Action a in this.playactions)
             {
-                a.print();
+                a.print(sf.Helpfunctions);
             }
-            Helpfunctions.Instance.logg("OWN MINIONS################");
+            sf.Helpfunctions.logg("OWN MINIONS################");
 
             foreach (Minion m in this.ownMinions)
             {
-                Helpfunctions.Instance.logg("name,ang, hp: " + m.name + ", " + m.Angr + ", " + m.Hp + " " + m.entitiyID);
+                sf.Helpfunctions.logg("name,ang, hp: " + m.name + ", " + m.Angr + ", " + m.Hp + " " + m.entitiyID);
             }
 
-            Helpfunctions.Instance.logg("ENEMY MINIONS############");
+            sf.Helpfunctions.logg("ENEMY MINIONS############");
             foreach (Minion m in this.enemyMinions)
             {
-                Helpfunctions.Instance.logg("name,ang, hp: " + m.name + ", " + m.Angr + ", " + m.Hp + " " + m.entitiyID);
+                sf.Helpfunctions.logg("name,ang, hp: " + m.name + ", " + m.Angr + ", " + m.Hp + " " + m.entitiyID);
             }
 
 
-            Helpfunctions.Instance.logg("");
+            sf.Helpfunctions.logg("");
         }
 
         public void printBoardDebug()
         {
-            Helpfunctions.Instance.logg("hero " + this.ownHero.Hp + " " + this.ownHero.armor + " " + this.ownHero.entitiyID);
-            Helpfunctions.Instance.logg("ehero " + this.enemyHero.Hp + " " + this.enemyHero.armor + " " + this.enemyHero.entitiyID);
+            sf.Helpfunctions.logg("hero " + this.ownHero.Hp + " " + this.ownHero.armor + " " + this.ownHero.entitiyID);
+            sf.Helpfunctions.logg("ehero " + this.enemyHero.Hp + " " + this.enemyHero.armor + " " + this.enemyHero.entitiyID);
             foreach (Minion m in ownMinions)
             {
-                Helpfunctions.Instance.logg(m.name + " " + m.entitiyID);
+                sf.Helpfunctions.logg(m.name + " " + m.entitiyID);
             }
-            Helpfunctions.Instance.logg("-");
+            sf.Helpfunctions.logg("-");
             foreach (Minion m in enemyMinions)
             {
-                Helpfunctions.Instance.logg(m.name + " " + m.entitiyID);
+                sf.Helpfunctions.logg(m.name + " " + m.entitiyID);
             }
-            Helpfunctions.Instance.logg("-");
+            sf.Helpfunctions.logg("-");
             foreach (Handmanager.Handcard hc in this.owncards)
             {
-                Helpfunctions.Instance.logg(hc.position + " " + hc.card.name + " " + hc.entity);
+                sf.Helpfunctions.logg(hc.position + " " + hc.card.name + " " + hc.entity);
             }
         }
 
@@ -4891,8 +4897,8 @@
         {
             foreach (Action a in this.playactions)
             {
-                a.print(toBuffer);
-                Helpfunctions.Instance.logg("");
+                a.print(sf.Helpfunctions, toBuffer);
+                sf.Helpfunctions.logg("");
             }
         }
 
@@ -4900,38 +4906,38 @@
         {
             if (a.actionType == actionEnum.playcard)
             {
-                Helpfunctions.Instance.ErrorLog("play " + a.card.card.name);
+                sf.Helpfunctions.ErrorLog("play " + a.card.card.name);
                 if (a.druidchoice >= 1)
                 {
                     string choose = (a.druidchoice == 1) ? "left card" : "right card";
-                    Helpfunctions.Instance.ErrorLog("choose the " + choose);
+                    sf.Helpfunctions.ErrorLog("choose the " + choose);
                 }
                 if (a.place >= 1)
                 {
-                    Helpfunctions.Instance.ErrorLog("on position " + a.place);
+                    sf.Helpfunctions.ErrorLog("on position " + a.place);
                 }
                 if (a.target != null)
                 {
                     if (!a.target.own && !a.target.isHero)
                     {
                         string ename = "" + a.target.name;
-                        Helpfunctions.Instance.ErrorLog("and target to the enemy " + ename);
+                        sf.Helpfunctions.ErrorLog("and target to the enemy " + ename);
                     }
 
                     if (a.target.own && !a.target.isHero)
                     {
                         string ename = "" + a.target.name;
-                        Helpfunctions.Instance.ErrorLog("and target to your own" + ename);
+                        sf.Helpfunctions.ErrorLog("and target to your own" + ename);
                     }
 
                     if (a.target.own && a.target.isHero)
                     {
-                        Helpfunctions.Instance.ErrorLog("and target your own hero");
+                        sf.Helpfunctions.ErrorLog("and target your own hero");
                     }
 
                     if (!a.target.own && a.target.isHero)
                     {
-                        Helpfunctions.Instance.ErrorLog("and target to the enemy hero");
+                        sf.Helpfunctions.ErrorLog("and target to the enemy hero");
                     }
                 }
 
@@ -4941,12 +4947,12 @@
                 string name = "" + a.own.name;
                 if (a.target.isHero)
                 {
-                    Helpfunctions.Instance.ErrorLog( "attack with: " + name + " the enemy hero");
+                    sf.Helpfunctions.ErrorLog( "attack with: " + name + " the enemy hero");
                 }
                 else
                 {
                     string ename = "" + a.target.name;
-                    Helpfunctions.Instance.ErrorLog("attack with: " + name + " the enemy: " + ename);
+                    sf.Helpfunctions.ErrorLog("attack with: " + name + " the enemy: " + ename);
                 }
 
             }
@@ -4955,44 +4961,44 @@
             {
                 if (a.target.isHero)
                 {
-                    Helpfunctions.Instance.ErrorLog("attack with your hero the enemy hero!");
+                    sf.Helpfunctions.ErrorLog("attack with your hero the enemy hero!");
                 }
                 else
                 {
                     string ename = "" + a.target.name;
-                    Helpfunctions.Instance.ErrorLog("attack with the hero, and choose the enemy: " + ename);
+                    sf.Helpfunctions.ErrorLog("attack with the hero, and choose the enemy: " + ename);
                 }
             }
             if (a.actionType == actionEnum.useHeroPower)
             {
-                Helpfunctions.Instance.ErrorLog("use your Heropower ");
+                sf.Helpfunctions.ErrorLog("use your Heropower ");
                 if (a.target != null)
                 {
                     if (!a.target.own && !a.target.isHero)
                     {
                         string ename = "" + a.target.name;
-                        Helpfunctions.Instance.ErrorLog("on enemy: " + ename);
+                        sf.Helpfunctions.ErrorLog("on enemy: " + ename);
                     }
 
                     if (a.target.own && !a.target.isHero)
                     {
                         string ename = "" + a.target.name;
-                        Helpfunctions.Instance.ErrorLog("on your own: " + ename);
+                        sf.Helpfunctions.ErrorLog("on your own: " + ename);
                     }
 
                     if (a.target.own && a.target.isHero)
                     {
-                        Helpfunctions.Instance.ErrorLog("on your own hero");
+                        sf.Helpfunctions.ErrorLog("on your own hero");
                     }
 
                     if (!a.target.own && a.target.isHero)
                     {
-                        Helpfunctions.Instance.ErrorLog("on your the enemy hero");
+                        sf.Helpfunctions.ErrorLog("on your the enemy hero");
                     }
 
                 }
             }
-            Helpfunctions.Instance.ErrorLog("");
+            sf.Helpfunctions.ErrorLog("");
 
         }
 
