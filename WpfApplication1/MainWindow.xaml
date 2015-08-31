@@ -1,0 +1,83 @@
+﻿<Window x:Class="HRSim.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="800" Width="1200"
+        Loaded="Window_Loaded">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="63*"/>
+            <ColumnDefinition Width="300*"/>
+            <ColumnDefinition Width="63*"/>
+            <ColumnDefinition Width="150*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0*"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock HorizontalAlignment="Left" Margin="400,200,0,0" TextWrapping="Wrap"
+Text="TextBlock" VerticalAlignment="Top"/>
+        <TextBlock Name="LogTextBlock" Text="{Binding LogText}" Grid.Column="3" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top" Height="749" Width="290"/>
+        <ListBox ItemsSource="{Binding OwnHandCards}" Grid.Column="1" HorizontalAlignment="Left" Height="146" Margin="88.6,540,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="449">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="{Binding Name}"/>
+                        <Image Source="{Binding Image}"  Width="60" Height="90"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" Orientation="Horizontal"  />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+        <ListBox ItemsSource="{Binding EnemyHandCards}" Grid.Column="1" HorizontalAlignment="Left" Height="146" Margin="88.6,86,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="449">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="{Binding Name}"/>
+                        <Image Source="{Binding Image}"  Width="60" Height="90"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" Orientation="Horizontal"  />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+        <ListBox ItemsSource="{Binding OwnMinions}" Grid.Column="1" HorizontalAlignment="Left" Height="146" Margin="88.6,389,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="449">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="{Binding Name}"/>
+                        <Image Source="{Binding Image}"  Width="60" Height="90"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" Orientation="Horizontal"  />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+        <ListBox ItemsSource="{Binding EnemyMinions}" Grid.Column="1" HorizontalAlignment="Left" Height="146" Margin="88.6,238,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="449">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="{Binding Name}"/>
+                        <Image Source="{Binding Image}"  Width="60" Height="90"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" Orientation="Horizontal"  />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+        <TextBlock Name="OwnHeroBlock" Text="{Binding OwnHeroText}" Grid.Column="1" HorizontalAlignment="Left" Margin="88.6,691,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock Name="EnemyHeroBlock" Text="{Binding EnemyHeroText}" Grid.Column="1" HorizontalAlignment="Left" Margin="88.6,10,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top"/>
+    </Grid>
+</Window>
