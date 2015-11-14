@@ -12,12 +12,12 @@ namespace HRSim
         {
             if (m.own == ownplay && c.type == CardDB.cardtype.SPELL)
             {
-                Minion target = (ownplay) ? p.enemyHero : p.ownHero;
+                Minion target = (ownplay) ? p.playerSecond.ownHero : p.playerFirst.ownHero;
                 p.minionGetDamageOrHeal(target, 1);
 
-                List<Minion> temp = (ownplay) ? p.enemyMinions : p.ownMinions;
+                List<Minion> temp = (ownplay) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
                 if (temp.Count > 0) target = p.searchRandomMinion(temp, Playfield.searchmode.searchLowestHP);
-                if (target == null) target = (ownplay) ? p.enemyHero : p.ownHero;
+                if (target == null) target = (ownplay) ? p.playerSecond.ownHero : p.playerFirst.ownHero;
                 p.minionGetDamageOrHeal(target, 1);
             }
         }

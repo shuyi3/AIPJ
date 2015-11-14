@@ -12,8 +12,8 @@ namespace HRSim
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
             p.minionGetDestroyed(target);
-            p.drawACard(CardDB.cardName.unknown, !ownplay);
-            p.drawACard(CardDB.cardName.unknown, !ownplay);
+            p.drawACard(p.getArandomCardFromDeck(!ownplay), !ownplay);
+            p.drawACard(p.getArandomCardFromDeck(!ownplay), !ownplay);
 		}
 
 	}

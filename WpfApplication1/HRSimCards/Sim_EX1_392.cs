@@ -11,16 +11,16 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            List<Minion> temp = (ownplay)? p.ownMinions : p.enemyMinions;
+            List<Minion> temp = (ownplay)? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             foreach (Minion mnn in temp )
             {
                 if (mnn.wounded)
                 {
-                    p.drawACard(CardDB.cardName.unknown, ownplay);
+                    p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
                 }
             }
-            if (ownplay && p.ownHero.Hp < 30) p.drawACard(CardDB.cardName.unknown, true);
-            if (!ownplay && p.enemyHero.Hp < 30) p.drawACard(CardDB.cardName.unknown, false);
+            if (ownplay && p.playerFirst.ownHero.Hp < 30) p.drawACard(p.getArandomCardFromDeck(true), true);
+            if (!ownplay && p.playerSecond.ownHero.Hp < 30) p.drawACard(p.getArandomCardFromDeck(false), false);
 
 		}
 

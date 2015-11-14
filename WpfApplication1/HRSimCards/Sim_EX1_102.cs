@@ -13,7 +13,7 @@ namespace HRSim
         {
             if (triggerEffectMinion.own == turnStartOfOwner)
             {
-                List<Minion> temp2 = (turnStartOfOwner) ? p.enemyMinions : p.ownMinions;
+                List<Minion> temp2 = (turnStartOfOwner) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
                 bool dmgdone = false;
                 foreach (Minion mins in temp2)
                 {
@@ -23,7 +23,7 @@ namespace HRSim
                 }
                 if (!dmgdone)
                 {
-                    p.minionGetDamageOrHeal(turnStartOfOwner ? p.enemyHero : p.ownHero, 2);
+                    p.minionGetDamageOrHeal(turnStartOfOwner ? p.playerSecond.ownHero : p.playerFirst.ownHero, 2);
                 };
             }
         }

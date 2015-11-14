@@ -12,7 +12,7 @@ namespace HRSim
         {
             if (turnEndOfOwner == triggerEffectMinion.own)
             {
-                List<Minion> temp2 = new List<Minion>(p.ownMinions);
+                List<Minion> temp2 = new List<Minion>(p.playerFirst.ownMinions);
                 temp2.Sort((a, b) => a.Angr.CompareTo(b.Angr));//buff the weakest
                 foreach (Minion mins in temp2)
                 {

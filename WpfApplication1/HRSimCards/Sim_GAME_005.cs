@@ -12,11 +12,11 @@ namespace HRSim
         {
             if (ownplay)
             {
-                p.mana++;
+                p.playerFirst.mana++;
             }
             else
             {
-                p.mana++;
+                p.playerFirst.mana++;
             }
         }
 

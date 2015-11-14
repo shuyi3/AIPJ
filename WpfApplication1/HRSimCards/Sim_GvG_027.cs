@@ -13,7 +13,7 @@ namespace HRSim
         {
             if (turnEndOfOwner == triggerEffectMinion.own)
             {
-                List<Minion> temp = (turnEndOfOwner) ? p.ownMinions : p.enemyMinions;
+                List<Minion> temp = (turnEndOfOwner) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
                 if (temp.Count >= 1)
                 {
                     // Drew: Null check for searchRandomMinion.

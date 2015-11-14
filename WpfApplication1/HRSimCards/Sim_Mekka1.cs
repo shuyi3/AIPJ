@@ -14,9 +14,9 @@ namespace HRSim
             if (turnStartOfOwner == triggerEffectMinion.own)
             {
                 p.minionGetDestroyed(triggerEffectMinion);
-                p.drawACard(CardDB.cardName.unknown, turnStartOfOwner);
-                p.drawACard(CardDB.cardName.unknown, turnStartOfOwner);
-                p.drawACard(CardDB.cardName.unknown, turnStartOfOwner);
+                p.drawACard(p.getArandomCardFromDeck(turnStartOfOwner), turnStartOfOwner);
+                p.drawACard(p.getArandomCardFromDeck(turnStartOfOwner), turnStartOfOwner);
+                p.drawACard(p.getArandomCardFromDeck(turnStartOfOwner), turnStartOfOwner);
             }
         }
 

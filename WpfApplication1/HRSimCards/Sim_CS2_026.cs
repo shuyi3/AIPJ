@@ -10,7 +10,7 @@ namespace HRSim
         //    friert/ alle feindlichen diener ein.
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            List<Minion> temp = (ownplay) ? p.enemyMinions : p.ownMinions;
+            List<Minion> temp = (ownplay) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
             foreach (Minion t in temp)
             {
                 t.frozen = true;

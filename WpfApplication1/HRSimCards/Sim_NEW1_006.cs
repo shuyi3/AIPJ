@@ -11,8 +11,8 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            p.drawACard(CardDB.cardName.unknown, ownplay);
-            if (p.cardsPlayedThisTurn >= 1) p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
+            if (p.playerFirst.cardsPlayedThisTurn >= 1) p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
 		}
 
 	}

@@ -14,13 +14,13 @@ namespace HRSim
             int heal = 2;
             if (ownplay)
             {
-                if (p.anzOwnAuchenaiSoulpriest >= 1) heal = -heal;
-                if (p.doublepriest >= 1) heal *= (2 * p.doublepriest);
+                if (p.playerFirst.anzOwnAuchenaiSoulpriest >= 1) heal = -heal;
+                if (p.playerFirst.doublepriest >= 1) heal *= (2 * p.playerFirst.doublepriest);
             }
             else
             {
-                if (p.anzEnemyAuchenaiSoulpriest >= 1) heal = -heal;
-                if (p.enemydoublepriest >= 1) heal *= (2 * p.enemydoublepriest);
+                if (p.playerSecond.anzOwnAuchenaiSoulpriest >= 1) heal = -heal;
+                if (p.playerSecond.doublepriest >= 1) heal *= (2 * p.playerSecond.doublepriest);
             }
             p.minionGetDamageOrHeal(target, -heal);
             

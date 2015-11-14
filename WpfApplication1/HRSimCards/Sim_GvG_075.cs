@@ -13,7 +13,7 @@ namespace HRSim
         {
             if (triggerEffectMinion.own == summonedMinion.own)
             {
-                List<Minion> temp = (triggerEffectMinion.own) ? p.enemyMinions : p.ownMinions;
+                List<Minion> temp = (triggerEffectMinion.own) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
                 Minion m = p.searchRandomMinion(temp, Playfield.searchmode.searchHighestHP);
                 if (m != null)
                 {

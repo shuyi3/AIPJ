@@ -10,7 +10,7 @@ namespace HRSim
 
         public override void onDeathrattle(Playfield p, Minion m)
 		{
-			List<Minion> temp = (m.own) ? p.enemyMinions : p.ownMinions;
+			List<Minion> temp = (m.own) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
             foreach (Minion mm in temp)
             {
                 p.minionGetBuffed(mm, 8, 0);

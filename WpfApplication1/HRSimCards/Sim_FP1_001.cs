@@ -10,9 +10,9 @@ namespace HRSim
         //    todesröcheln:/ stellt beim feindlichen helden 5 leben wieder her.
         public override void onDeathrattle(Playfield p, Minion m)
         {
-            int heal = (m.own) ? p.getMinionHeal(5) : p.getEnemyMinionHeal(5);
+            int heal = p.getMinionHeal(5, m.own);
 
-            p.minionGetDamageOrHeal(m.own ? p.enemyHero : p.ownHero, -heal);
+            p.minionGetDamageOrHeal(m.own ? p.playerSecond.ownHero : p.playerFirst.ownHero, -heal);
         }
 
     }

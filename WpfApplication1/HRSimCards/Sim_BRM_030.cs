@@ -10,7 +10,7 @@ namespace HRSim
 		
 		public override void getBattlecryEffect(Playfield p, Minion m, Minion target, int choice)
 		{
-            TAG_CLASS opponentHeroClass = (m.own) ? p.enemyHeroStartClass : p.ownHeroStartClass;
+            TAG_CLASS opponentHeroClass = (m.own) ? p.playerSecond.ownHeroStartClass : p.playerFirst.ownHeroStartClass;
 
             switch (opponentHeroClass)
             {

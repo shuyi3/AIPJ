@@ -12,7 +12,7 @@ namespace HRSim
 
 		public override void getBattlecryEffect(Playfield p, Minion m, Minion target, int choice)
         {
-            int zonepos = (m.own) ? p.enemyMinions.Count : p.ownMinions.Count;
+            int zonepos = (m.own) ? p.playerSecond.ownMinions.Count : p.playerFirst.ownMinions.Count;
             p.callKid(kid, zonepos, !m.own);
         }
 	}

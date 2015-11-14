@@ -12,11 +12,11 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.spellpower++;
+                p.playerFirst.spellpower++;
             }
             else
             {
-                p.enemyspellpower++;
+                p.playerSecond.spellpower++;
             }
         }
 
@@ -24,11 +24,11 @@ namespace HRSim
         {
             if (m.own)
             {
-                p.spellpower--;
+                p.playerFirst.spellpower--;
             }
             else
             {
-                p.enemyspellpower--;
+                p.playerSecond.spellpower--;
             }
         }
 

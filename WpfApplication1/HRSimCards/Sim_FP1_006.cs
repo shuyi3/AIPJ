@@ -11,7 +11,7 @@ namespace HRSim
 
         public override void onDeathrattle(Playfield p, Minion m)
         {
-            p.minionGetDamageOrHeal(m.own ? p.ownHero : p.enemyHero, 3);
+            p.minionGetDamageOrHeal(m.own ? p.playerFirst.ownHero : p.playerSecond.ownHero, 3);
         }
 
     }

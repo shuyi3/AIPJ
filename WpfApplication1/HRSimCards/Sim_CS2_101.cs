@@ -12,7 +12,7 @@ namespace HRSim
 //    heldenfähigkeit/\nruft einen rekruten der silbernen hand (1/1) herbei.
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            int posi = (ownplay) ? p.ownMinions.Count : p.enemyMinions.Count;
+            int posi = (ownplay) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
 
             p.callKid(kid, posi, ownplay);
         }

@@ -14,7 +14,7 @@ namespace HRSim
         public override void onDeathrattle(Playfield p, Minion m)
         {
             
-            int pos = (m.own) ? p.ownMinions.Count : p.enemyMinions.Count;
+            int pos = (m.own) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
             p.callKid(kid, pos, m.own);
         }
 

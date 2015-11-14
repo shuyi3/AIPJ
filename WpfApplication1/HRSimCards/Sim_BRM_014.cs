@@ -10,7 +10,7 @@ namespace HRSim
 
         public override void getBattlecryEffect(Playfield p, Minion m, Minion target, int choice)
         {
-            int cardsCount = (m.own) ? p.owncards.Count : p.enemyAnzCards;
+            int cardsCount = (m.own) ? p.playerFirst.owncards.Count : p.playerSecond.owncards.Count;
             if (cardsCount <= 0)
             {
                 p.minionGetBuffed(m, 3, 3);

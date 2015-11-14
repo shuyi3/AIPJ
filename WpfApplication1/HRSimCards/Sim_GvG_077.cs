@@ -13,14 +13,14 @@ namespace HRSim
         {
             if (triggerEffectMinion.own)
             {
-                if (p.ownMinions.Count == 1)
+                if (p.playerFirst.ownMinions.Count == 1)
                 {
                     p.minionGetDestroyed(triggerEffectMinion);
                 }
             }
             else
             {
-                if (p.enemyMinions.Count == 1)
+                if (p.playerSecond.ownMinions.Count == 1)
                 {
                     p.minionGetDestroyed(triggerEffectMinion);
                 }

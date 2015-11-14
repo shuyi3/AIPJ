@@ -15,28 +15,36 @@ namespace HRSim
                 Minion target = new Minion();
                 if (turnEndOfOwner)
                 {
-                    if (p.enemyMinions.Count > 0)
+                    if (p.playerSecond.ownMinions.Count > 0)
                     {
-                        target = p.searchRandomMinion(p.enemyMinions, Playfield.searchmode.searchLowestHP); //damage the lowest (pessimistic variant)
+                        target = p.searchRandomMinion(p.playerSecond.ownMinions, Playfield.searchmode.searchLowestHP); //damage the lowest (pessimistic variant)
+                        if (target == null) {
+                            target = p.searchRandomMinion(p.playerSecond.ownMinions, Playfield.searchmode.searchLowestHP); //damage the lowest (pessimistic variant)
+                        }
                     }
                     else
                     {
-                        target = p.enemyHero;
+                        target = p.playerSecond.ownHero;
                     }
                 }
                 else
                 {
-                    if (p.ownMinions.Count > 0)
+                    if (p.playerFirst.ownMinions.Count > 0)
                     {
-                        target = p.searchRandomMinion(p.ownMinions, Playfield.searchmode.searchHighestAttack); //damage the Highest (pessimistic variant)
+                        target = p.searchRandomMinion(p.playerFirst.ownMinions, Playfield.searchmode.searchHighestAttack); //damage the Highest (pessimistic variant)
+                        if (target == null) {
+                            target = p.searchRandomMinion(p.playerFirst.ownMinions, Playfield.searchmode.searchHighestAttack); //damage the Highest (pessimistic variant)
+                        }
                     }
                     else
                     {
-                        target = p.ownHero;
+                        target = p.playerFirst.ownHero;
                     }
-                }
+                }           
                 p.minionGetDamageOrHeal(target, 8);
                 triggerEffectMinion.stealth = false;
+                //Implementation is this right?
+                //p.doDmgTriggers();
             }
         }
     }

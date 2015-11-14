@@ -11,24 +11,23 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            foreach (Minion m in p.ownMinions)
+            foreach (Minion m in p.playerFirst.ownMinions)
             {
                 m.stealth = false;
             }
-            foreach (Minion m in p.enemyMinions)
+            foreach (Minion m in p.playerSecond.ownMinions)
             {
                 m.stealth = false;
             }
             if (ownplay)
             {
-                p.enemySecretCount = 0;
-                p.enemySecretList.Clear();
+                p.playerSecond.ownSecretsIDList.Clear();
             }
             else
             {
-                p.ownSecretsIDList.Clear();
+                p.playerFirst.ownSecretsIDList.Clear();
             }
-            p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
         }
 
     }

@@ -10,10 +10,10 @@ namespace HRSim
 //    zieht 4 karten.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            p.drawACard(CardDB.cardName.unknown, ownplay);
-            p.drawACard(CardDB.cardName.unknown, ownplay);
-            p.drawACard(CardDB.cardName.unknown, ownplay);
-            p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
 		}
 
 	}

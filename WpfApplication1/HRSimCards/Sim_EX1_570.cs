@@ -13,13 +13,13 @@ namespace HRSim
 		{
             if (ownplay)
             {
-                p.minionGetTempBuff(p.ownHero, 4, 0);
-                p.minionGetArmor(p.ownHero, 4);
+                p.minionGetTempBuff(p.playerFirst.ownHero, 4, 0);
+                p.minionGetArmor(p.playerFirst.ownHero, 4);
             }
             else
             {
-                p.minionGetTempBuff(p.enemyHero, 4, 0);
-                p.minionGetArmor(p.enemyHero, 4);
+                p.minionGetTempBuff(p.playerSecond.ownHero, 4, 0);
+                p.minionGetArmor(p.playerSecond.ownHero, 4);
 
             }
 		}

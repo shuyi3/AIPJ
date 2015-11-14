@@ -15,11 +15,11 @@ namespace HRSim
 
             if (ownplay)
             {
-                dmg = (p.ownHero.Hp <= 12) ? p.getSpellDamageDamage(6) : p.getSpellDamageDamage(4);
+                dmg = (p.playerFirst.ownHero.Hp <= 12) ? p.getSpellDamageDamage(6, ownplay) : p.getSpellDamageDamage(4, ownplay);
             }
             else
             {
-                dmg = (p.enemyHero.Hp <= 12) ? p.getEnemySpellDamageDamage(6) : p.getEnemySpellDamageDamage(4);
+                dmg = (p.playerSecond.ownHero.Hp <= 12) ? p.getSpellDamageDamage(6, ownplay) : p.getSpellDamageDamage(4, ownplay);
             }
             p.minionGetDamageOrHeal(target, dmg);
 		}

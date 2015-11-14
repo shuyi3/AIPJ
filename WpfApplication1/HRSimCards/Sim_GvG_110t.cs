@@ -13,7 +13,7 @@ namespace HRSim
 
         public override void onDeathrattle(Playfield p, Minion m)
         {
-            List<Minion> temp = (m.own) ? p.enemyMinions : p.ownMinions;
+            List<Minion> temp = (m.own) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
             if (temp.Count >= 1 && temp.Count >=1 )
             {
                 var found = p.searchRandomMinion(temp, Playfield.searchmode.searchHighestHP);
@@ -24,7 +24,7 @@ namespace HRSim
             }
             else
             {
-                p.minionGetDamageOrHeal(((m.own)?p.enemyHero : p.ownHero), 2);
+                p.minionGetDamageOrHeal(((m.own)?p.playerSecond.ownHero : p.playerFirst.ownHero), 2);
             }
 
         }

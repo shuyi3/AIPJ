@@ -11,9 +11,9 @@ namespace HRSim
 
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
-            p.mana = Math.Min(10, p.mana+1);
-            p.ownMaxMana = Math.Min(10, p.ownMaxMana+1);
-            p.enemyMaxMana = Math.Min(10, p.enemyMaxMana+1);
+            p.playerFirst.mana = Math.Min(10, p.playerFirst.mana+1);
+            p.playerFirst.ownMaxMana = Math.Min(10, p.playerFirst.ownMaxMana+1);
+            p.playerSecond.ownMaxMana = Math.Min(10, p.playerSecond.ownMaxMana+1);
         }
 
 

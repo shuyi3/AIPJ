@@ -11,7 +11,7 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            p.mana++;
+            p.playerFirst.mana++;
         }
 
 

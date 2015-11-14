@@ -12,7 +12,7 @@ namespace HRSim
 		{
             if (own.own)
             {
-                p.doublepriest++;
+                p.playerFirst.doublepriest++;
             }
 		}
 
@@ -20,7 +20,7 @@ namespace HRSim
         {
             if (m.own)
             {
-                p.doublepriest--;
+                p.playerFirst.doublepriest--;
             }
         }
 

@@ -13,7 +13,7 @@ namespace HRSim
 			if(m.own)
 			{
 				bool dragonInHand = false;
-				foreach (Handmanager.Handcard hc in p.owncards)
+				foreach (Handmanager.Handcard hc in p.playerFirst.owncards)
 				{
 					if ((TAG_RACE)hc.card.race == TAG_RACE.DRAGON)
 					{

@@ -16,7 +16,7 @@ namespace HRSim
 			{
 				for (int i = 0; i < diedMinions; i++)
 				{
-					int pos = (m.own) ? p.ownMinions.Count : p.enemyMinions.Count;
+					int pos = (m.own) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
 					p.callKid(kid, pos, m.own);
 				}
             }

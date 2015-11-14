@@ -15,13 +15,13 @@ namespace HRSim
 
             if (m.own)
             {
-                List<Minion> temp2 = new List<Minion>(p.ownMinions);
+                List<Minion> temp2 = new List<Minion>(p.playerFirst.ownMinions);
                 temp2.Sort((a, b) => -a.Angr.CompareTo(b.Angr));
                 temp.AddRange(temp2);
             }
             else
             {
-                List<Minion> temp2 = new List<Minion>(p.enemyMinions);
+                List<Minion> temp2 = new List<Minion>(p.playerSecond.ownMinions);
                 temp2.Sort((a, b) => a.Angr.CompareTo(b.Angr));
                 temp.AddRange(temp2);
             }

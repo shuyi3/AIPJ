@@ -4,7 +4,7 @@ using System.Text;
 
 namespace HRSim
 {
-	class Sim_EX1_306 : SimTemplate //succubus
+	class Sim_EX1_306 : SimTemplate //succubus //TODO: rework
 	{
 
 //    kampfschrei:/ werft eine zufällige karte ab.
@@ -12,18 +12,15 @@ namespace HRSim
 		{
             if (own.own)
             {
-                p.owncarddraw -= Math.Min(1, p.owncards.Count);
-                p.owncards.RemoveRange(0, Math.Min(1, p.owncards.Count));
+                p.playerFirst.owncarddraw -= Math.Min(1, p.playerFirst.owncards.Count);
+                p.playerFirst.owncards.RemoveRange(0, Math.Min(1, p.playerFirst.owncards.Count));
                 p.triggerCardsChanged(true);
             }
             else
             {
-                if (p.enemyAnzCards >= 1)
-                {
-                    p.enemycarddraw--;
-                    p.enemyAnzCards--;
-                    p.triggerCardsChanged(false);
-                }
+                p.playerSecond.owncarddraw -= Math.Min(1, p.playerSecond.owncards.Count);
+                p.playerSecond.owncards.RemoveRange(0, Math.Min(1, p.playerSecond.owncards.Count));
+                p.triggerCardsChanged(false);
             }
 		}
 

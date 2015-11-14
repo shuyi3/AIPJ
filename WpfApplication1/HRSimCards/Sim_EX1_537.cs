@@ -11,9 +11,9 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg1 = (ownplay) ? p.getSpellDamageDamage(5) : p.getEnemySpellDamageDamage(5);
-            int dmg2 = (ownplay) ? p.getSpellDamageDamage(2) : p.getEnemySpellDamageDamage(2);
-            List<Minion> temp = (target.own) ? p.ownMinions : p.enemyMinions;
+            int dmg1 = p.getSpellDamageDamage(5, ownplay);
+            int dmg2 = p.getSpellDamageDamage(2, ownplay);
+            List<Minion> temp = (target.own) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             p.minionGetDamageOrHeal(target, dmg1);
             foreach (Minion m in temp)
             {

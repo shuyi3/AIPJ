@@ -14,7 +14,7 @@ namespace HRSim
         {
             if (own.own)
             {
-                foreach (Minion m in p.ownMinions)
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if (m.zonepos-1 == own.zonepos || m.zonepos + 1 == own.zonepos)
                     {
@@ -24,7 +24,7 @@ namespace HRSim
             }
             else
             {
-                foreach (Minion m in p.enemyMinions)
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (m.zonepos-1 == own.zonepos || m.zonepos + 1 == own.zonepos)
                     {
@@ -40,7 +40,7 @@ namespace HRSim
         {
             if (own.own)
             {
-                foreach (Minion m in p.ownMinions)
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if (m.zonepos - 1 == own.zonepos || m.zonepos + 1 == own.zonepos)
                     {
@@ -50,7 +50,7 @@ namespace HRSim
             }
             else
             {
-                foreach (Minion m in p.enemyMinions)
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (m.zonepos - 1 == own.zonepos || m.zonepos + 1 == own.zonepos)
                     {

@@ -11,16 +11,16 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
 			
-			p.mana = Math.Min(10, p.mana++);
+			p.playerFirst.mana = Math.Min(10, p.playerFirst.mana++);
 			if (ownplay)
 			{
-				p.ownMaxMana = Math.Min(10, p.ownMaxMana++);
+				p.playerFirst.ownMaxMana = Math.Min(10, p.playerFirst.ownMaxMana++);
 			}
 			else
 			{
-				p.enemyMaxMana = Math.Min(10, p.enemyMaxMana++);
+				p.playerSecond.ownMaxMana = Math.Min(10, p.playerSecond.ownMaxMana++);
 			}
         }
 	}

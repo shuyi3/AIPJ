@@ -12,7 +12,7 @@ namespace HRSim
 		{
             if (ownplay)
             {
-                p.playedPreparation = true;
+                p.playerFirst.playedPreparation = true;
             }
 		}
 

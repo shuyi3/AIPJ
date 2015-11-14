@@ -13,12 +13,12 @@ namespace HRSim
             p.drawACard(CardDB.cardName.bananas, !own.own, true);
             if (own.own)
             {
-                p.enemycarddraw -= 1;
+                p.playerSecond.owncarddraw -= 1;
             }
             p.drawACard(CardDB.cardName.bananas, !own.own, true);
             if (own.own)
             {
-                p.enemycarddraw -= 1;
+                p.playerSecond.owncarddraw -= 1;
             }
 		}
 

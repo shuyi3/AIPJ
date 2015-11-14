@@ -11,7 +11,7 @@ namespace HRSim
 
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
-            int anz = (own.own) ? p.enemyAnzCards : p.owncards.Count;
+            int anz = (own.own) ? p.playerSecond.owncards.Count : p.playerFirst.owncards.Count;
             if (anz >= 6)
             {
                 p.minionGetBuffed(own, 4, 0);

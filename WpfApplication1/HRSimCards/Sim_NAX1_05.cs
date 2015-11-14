@@ -9,22 +9,22 @@ namespace HRSim
         //Deal $3 damage to all enemy minions. Restore #3 Health to your hero.
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            int dmg = (ownplay)? p.getSpellDamageDamage(3) : p.getEnemySpellDamageDamage(3);
-            int heal = (ownplay) ? p.getSpellHeal(3) : p.getEnemySpellHeal(3) ;
+            int dmg = p.getSpellDamageDamage(3, ownplay);
+            int heal = p.getSpellHeal(3, ownplay);
             if (ownplay)
             {
-                p.minionGetDamageOrHeal(p.ownHero, -heal);
-                p.minionGetDamageOrHeal(p.enemyHero, dmg);
-                foreach (Minion m in p.enemyMinions)
+                p.minionGetDamageOrHeal(p.playerFirst.ownHero, -heal);
+                p.minionGetDamageOrHeal(p.playerSecond.ownHero, dmg);
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     p.minionGetDamageOrHeal(m, dmg);
                 }
             }
             else 
             {
-                p.minionGetDamageOrHeal(p.enemyHero, -heal);
-                p.minionGetDamageOrHeal(p.ownHero, dmg);
-                foreach (Minion m in p.ownMinions)
+                p.minionGetDamageOrHeal(p.playerSecond.ownHero, -heal);
+                p.minionGetDamageOrHeal(p.playerFirst.ownHero, dmg);
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     p.minionGetDamageOrHeal(m, dmg);
                 }

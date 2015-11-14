@@ -12,14 +12,14 @@ namespace HRSim
 		{
             if (own.own)
             {
-                if (p.ownWeaponDurability >= 1)
+                if (p.playerFirst.ownWeaponDurability >= 1)
                 {
                     p.minionGetCharge(own);
                 }
             }
             else
             {
-                if (p.enemyWeaponDurability >= 1)
+                if (p.playerSecond.ownWeaponDurability >= 1)
                 {
                     p.minionGetCharge(own);
                 }

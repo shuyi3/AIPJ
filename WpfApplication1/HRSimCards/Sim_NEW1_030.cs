@@ -13,13 +13,13 @@ namespace HRSim
             p.allMinionsGetDestroyed();
             if (own.own)
             {
-                p.owncards.Clear();
+                p.playerFirst.owncards.Clear();
                 p.triggerCardsChanged(true);
             }
             else
             {
-                p.enemycarddraw = 0;
-                p.enemyAnzCards = 0;
+                p.playerSecond.owncarddraw = 0;
+                p.playerSecond.owncards.Clear();
                 p.triggerCardsChanged(false);
             }
 		}

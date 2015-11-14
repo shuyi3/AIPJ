@@ -18,7 +18,7 @@ namespace HRSim
             }
             else
             {
-                int dmg = (ownplay) ? p.getSpellDamageDamage(5) : p.getEnemySpellDamageDamage(5);
+                int dmg = p.getSpellDamageDamage(5, ownplay);
 
                 p.minionGetDamageOrHeal(target, dmg);
             }

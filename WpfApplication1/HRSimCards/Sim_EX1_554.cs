@@ -14,14 +14,14 @@ namespace HRSim
         {
             if (ownplay)
             {
-                int posi = p.ownMinions.Count;
+                int posi = p.playerFirst.ownMinions.Count;
                 p.callKid(kid, posi, true);
                 p.callKid(kid, posi, true);
                 p.callKid(kid, posi, true);
             }
             else
             {
-                int posi = p.enemyMinions.Count;
+                int posi = p.playerSecond.ownMinions.Count;
                 p.callKid(kid, posi, false);
                 p.callKid(kid, posi, false);
                 p.callKid(kid, posi, false);

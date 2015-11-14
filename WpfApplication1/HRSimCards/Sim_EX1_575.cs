@@ -12,7 +12,7 @@ namespace HRSim
         {
             if (turnEndOfOwner == triggerEffectMinion.own)
             {
-                p.drawACard(CardDB.cardName.unknown, turnEndOfOwner);
+                p.drawACard(p.getArandomCardFromDeck(turnEndOfOwner), turnEndOfOwner);
             }
         }
 

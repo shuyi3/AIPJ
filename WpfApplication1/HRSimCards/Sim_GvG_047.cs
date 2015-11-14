@@ -12,7 +12,7 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            List<Minion> temp = (ownplay)? p.enemyMinions : p.ownMinions;
+            List<Minion> temp = (ownplay)? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
             if (temp.Count >= 1)
             {
                 // Drew: Null check for searchRandomMinion.
@@ -22,7 +22,7 @@ namespace HRSim
                     p.minionGetDestroyed(found);
                 }
             }
-            if (p.cardsPlayedThisTurn >= 1) p.lowerWeaponDurability(1000, !ownplay);
+            if (p.playerFirst.cardsPlayedThisTurn >= 1) p.lowerWeaponDurability(1000, !ownplay);
         }
 
 

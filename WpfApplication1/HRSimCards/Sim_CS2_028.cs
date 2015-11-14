@@ -10,9 +10,9 @@ namespace HRSim
 //Deal 2 damage to all enemy minions and Freeze them.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg = (ownplay) ? p.getSpellDamageDamage(2) : p.getEnemySpellDamageDamage(2);
+            int dmg = p.getSpellDamageDamage(2, ownplay);
             p.allMinionOfASideGetDamage(!ownplay, dmg, true);
-			List<Minion> temp = (ownplay) ? p.enemyMinions : p.ownMinions;
+			List<Minion> temp = (ownplay) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
             foreach (Minion t in temp)
             {
                 t.frozen = true;

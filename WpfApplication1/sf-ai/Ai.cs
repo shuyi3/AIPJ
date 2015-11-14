@@ -128,7 +128,7 @@
 
             if (isLethalCheck) this.posmoves[0].enemySecretList.Clear();
             this.mainTurnSimulator.doallmoves(this.posmoves[0], isLethalCheck);
-
+            ////HRSim.Helpfunctions.Instance.logTime("do all moves");
             Playfield bestplay = this.mainTurnSimulator.bestboard;
             float bestval = this.mainTurnSimulator.bestmoveValue;
 
@@ -150,7 +150,12 @@
             this.bestmove = null;
             foreach (Action a in bestplay.playactions)
             {
-                this.bestActions.Add(new Action(a));
+                Action aa = new Action(a);
+                if (aa.actionType == actionEnum.playcard && aa.card.entity == 1020)
+                {
+                    int debug1 = 1;
+                } 
+                this.bestActions.Add(aa);
                 a.print(sf.Helpfunctions);
             }
             //this.bestActions.Add(new Action(actionEnum.endturn, null, null, 0, null, 0, 0));
@@ -158,6 +163,36 @@
             if (this.bestActions.Count >= 1)
             {
                 this.bestmove = this.bestActions[0];
+                //debug checking best moves
+                //Playfield pp = new Playfield(sf);
+                //Handmanager.Handcard ha = null;
+                //if (bestmove.actionType == actionEnum.playcard)
+                //{
+                //    if (bestmove.card.entity == 1020)
+                //    {
+                //        int debug1 = 1;
+                //    }
+                //    if (bestmove.card != null)
+                //    {
+                //        foreach (Handmanager.Handcard hh in pp.owncards)
+                //        {
+                //            if (hh.entity == bestmove.card.entity)
+                //            {
+                //                ha = hh;
+                //                break;
+                //            }
+                //        }
+                //        if (bestmove.actionType == actionEnum.useHeroPower)
+                //        {
+                //            ha = pp.isOwnTurn ? pp.ownHeroAblility : pp.enemyHeroAblility;
+                //        }
+                //    }
+                //    if (ha == null)
+                //    {
+                //        //there is a bug
+                //        int debug = 1;
+                //    }
+                //} 
                 this.bestActions.RemoveAt(0);
             }
             this.bestmoveValue = bestval;
@@ -172,7 +207,7 @@
             {
                 nextMoveGuess.mana = -100;
             }
-
+            ////HRSim.Helpfunctions.Instance.logTime("do all actions");
         }
 
         public void setBestMoves(List<Action> alist, float value)
@@ -184,7 +219,12 @@
             foreach (Action a in alist)
             {
                 help.logg("-a-");
-                this.bestActions.Add(new Action(a));
+                //Action aa = new Action(a);
+                //if (aa.actionType == actionEnum.playcard && aa.card.entity == 1020)
+                //{
+                //    int debug1 = 1;
+                //}
+                //this.bestActions.Add(aa);
                 this.bestActions[this.bestActions.Count - 1].print(sf.Helpfunctions);
             }
             //this.bestActions.Add(new Action(actionEnum.endturn, null, null, 0, null, 0, 0));
@@ -224,6 +264,28 @@
             {
                 nextMoveGuess.mana = -100;
             }
+
+            //if (bestmove != null && bestmove.actionType == actionEnum.playcard)
+            //{
+            //    Playfield ppTest = new Playfield(sf);
+            //    if (bestmove.card.entity == 1020)
+            //    {
+            //        int debug1 = 1;
+            //    }
+            //    bool isCardValid = false;
+            //    foreach (Handmanager.Handcard hh in ppTest.owncards)
+            //    {
+            //        if (hh.entity == bestmove.card.entity)
+            //        {
+            //            isCardValid = true;
+            //            break;
+            //        }
+            //    }
+            //    if (!isCardValid)
+            //    {
+            //        int debug = 1;
+            //    }
+            //}
         }
 
         public void doNextCalcedMove()
@@ -266,7 +328,27 @@
                 //help.logg("nd trn");
                 nextMoveGuess.mana = -100;
             }
-
+            //if (bestmove != null && bestmove.actionType == actionEnum.playcard)
+            //{
+            //    Playfield ppTest = new Playfield(sf);
+            //    if (bestmove.card.entity == 1020)
+            //    {
+            //        int debug1 = 1;
+            //    }
+            //    bool isCardValid = false;
+            //    foreach (Handmanager.Handcard hh in ppTest.owncards)
+            //    {
+            //        if (hh.entity == bestmove.card.entity)
+            //        {
+            //            isCardValid = true;
+            //            break;
+            //        }
+            //    }
+            //    if (!isCardValid)
+            //    {
+            //        int debug = 1;
+            //    }
+            //}
         }
 
         public void dosomethingclever(Behavior bbase)
@@ -275,6 +357,7 @@
             //turncheck
             //help.moveMouse(950,750);
             //help.Screenshot();
+                     
             this.botBase = bbase;
             hp.updatePositions();
 
@@ -287,12 +370,21 @@
              }
              */
             //help.logg("is hero ready?" + posmoves[0].ownHeroReady);
+            ////HRSim.Helpfunctions.Instance.logTime("do sth to update");
 
             help.loggonoff(false);
             //do we need to recalc?
             help.logg("recalc-check###########");
+            //foreach (Action a in this.bestActions)
+            //{
+            //    a.print(help);
+            //}
             if (this.dontRecalc && posmoves[0].isEqual(this.nextMoveGuess, true))
             {
+                //foreach (Action a in this.bestActions)
+                //{
+                //    a.print(help);
+                //} 
                 doNextCalcedMove();
             }
             else
@@ -303,6 +395,7 @@
                 if (useLethalCheck)
                 {
                     strt = DateTime.Now;
+                    //HRSim.Helpfunctions.Instance.startTimer();
                     doallmoves(false, true);
                     help.logg("calculated " + (DateTime.Now - strt).TotalSeconds);
                 }
@@ -314,12 +407,12 @@
                     posmoves[0].sEnemTurn = sf.Settings.simulateEnemysTurn;
                     help.logg("no lethal, do something random######");
                     strt = DateTime.Now;
+                    //HRSim.Helpfunctions.Instance.startTimer();
                     doallmoves(false, false);
                     help.logg("calculated " + (DateTime.Now - strt).TotalSeconds);
 
                 }
             }
-
 
             //help.logging(true);
 

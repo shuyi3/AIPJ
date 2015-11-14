@@ -14,14 +14,14 @@ namespace HRSim
             {
                 for(int i = 0;i< p.tempTrigger.ownMinionsGotDmg;i++)
                 {
-					p.minionGetArmor(p.ownHero, 1);
+					p.minionGetArmor(p.playerFirst.ownHero, 1);
                 }
             }
             else
             {
                 for (int i = 0; i < p.tempTrigger.enemyMinionsGotDmg; i++)
                 {
-                    p.minionGetArmor(p.enemyHero, 1);
+                    p.minionGetArmor(p.playerSecond.ownHero, 1);
                 }
             }
         }

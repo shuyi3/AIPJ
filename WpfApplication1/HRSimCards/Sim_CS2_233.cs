@@ -10,7 +10,7 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            int damage = (ownplay) ? p.getSpellDamageDamage(p.ownWeaponAttack) : p.getEnemySpellDamageDamage(p.enemyWeaponAttack);
+            int damage = p.getSpellDamageDamage(p.playerFirst.ownWeaponAttack, ownplay);
             
             p.allCharsOfASideGetDamage(!ownplay, damage);
             //destroy own weapon

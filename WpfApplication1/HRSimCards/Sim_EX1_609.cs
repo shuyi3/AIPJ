@@ -11,7 +11,7 @@ namespace HRSim
 
         public override void onSecretPlay(Playfield p, bool ownplay, Minion target, int number)
         {
-            int dmg = (ownplay) ? p.getSpellDamageDamage(4) : p.getEnemySpellDamageDamage(4);
+            int dmg = p.getSpellDamageDamage(4, ownplay);
 
             p.minionGetDamageOrHeal(target, dmg);
         }

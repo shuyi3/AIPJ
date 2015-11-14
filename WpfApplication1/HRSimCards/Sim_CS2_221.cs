@@ -12,18 +12,18 @@ namespace HRSim
         {
             if (m.own)
             {
-                if (p.ownWeaponDurability >= 1)
+                if (p.playerFirst.ownWeaponDurability >= 1)
                 {
-                    p.minionGetBuffed(p.ownHero, 2, 0);
-                    p.ownWeaponAttack += 2;
+                    p.minionGetBuffed(p.playerFirst.ownHero, 2, 0);
+                    p.playerFirst.ownWeaponAttack += 2;
                 }
             }
             else 
             {
-                if (p.enemyWeaponDurability >= 1)
+                if (p.playerSecond.ownWeaponDurability >= 1)
                 {
-                    p.enemyWeaponAttack += 2;
-                    p.minionGetBuffed(p.enemyHero, 2, 0);
+                    p.playerSecond.ownWeaponAttack += 2;
+                    p.minionGetBuffed(p.playerSecond.ownHero, 2, 0);
                 }
             }
         }
@@ -32,18 +32,18 @@ namespace HRSim
         {
             if (m.own)
             {
-                if (p.ownWeaponDurability >= 1)
+                if (p.playerFirst.ownWeaponDurability >= 1)
                 {
-                    p.minionGetBuffed(p.ownHero, -2, 0);
-                    p.ownWeaponAttack -= 2;
+                    p.minionGetBuffed(p.playerFirst.ownHero, -2, 0);
+                    p.playerFirst.ownWeaponAttack -= 2;
                 }
             }
             else
             {
-                if (p.enemyWeaponDurability >= 1)
+                if (p.playerSecond.ownWeaponDurability >= 1)
                 {
-                    p.enemyWeaponAttack -= 2;
-                    p.minionGetBuffed(p.enemyHero, -2, 0);
+                    p.playerSecond.ownWeaponAttack -= 2;
+                    p.minionGetBuffed(p.playerSecond.ownHero, -2, 0);
                 }
             }
         }

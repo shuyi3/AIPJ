@@ -13,11 +13,11 @@ namespace HRSim
         {
             if (m.own)
             {
-                p.ownDeckSize++;
+                p.playerFirst.ownDeckSize++;
             }
             else
             {
-                p.enemyDeckSize++;
+                p.playerSecond.ownDeckSize++;
             }
         }
 

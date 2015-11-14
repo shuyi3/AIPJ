@@ -13,7 +13,7 @@ namespace HRSim
         {
 
             int bonusattack = 0;
-            List<Minion> temp  = (own.own) ? p.ownMinions : p.enemyMinions;
+            List<Minion> temp  = (own.own) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             foreach (Minion m in temp)
             {
                 if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET) bonusattack++;

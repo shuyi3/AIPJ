@@ -10,11 +10,11 @@ namespace HRSim
         //    verursacht $5 schaden. stellt bei eurem helden #5 leben wieder her.
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            int dmg = (ownplay) ? p.getSpellDamageDamage(5) : p.getEnemySpellDamageDamage(5);
+            int dmg = p.getSpellDamageDamage(5, ownplay);
             p.minionGetDamageOrHeal(target, dmg);
-            int heal = (ownplay) ? p.getSpellHeal(5) : p.getEnemySpellHeal(5);
+            int heal = p.getSpellHeal(5, ownplay);
 
-            p.minionGetDamageOrHeal(ownplay ? p.ownHero : p.enemyHero, -heal);
+            p.minionGetDamageOrHeal(ownplay ? p.playerFirst.ownHero : p.playerSecond.ownHero, -heal);
         }
 
     }

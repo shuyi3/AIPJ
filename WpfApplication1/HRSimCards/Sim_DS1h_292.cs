@@ -14,12 +14,12 @@ namespace HRSim
             int dmg = 2;
             if (ownplay)
             {
-                if (p.doublepriest >= 1) dmg *= (2 * p.doublepriest);
+                if (p.playerFirst.doublepriest >= 1) dmg *= (2 * p.playerFirst.doublepriest);
                 p.minionGetDamageOrHeal(target, dmg);
             }
             else
             {
-                if (p.enemydoublepriest >= 1) dmg *= (2 * p.enemydoublepriest);
+                if (p.playerSecond.doublepriest >= 1) dmg *= (2 * p.playerSecond.doublepriest);
                 p.minionGetDamageOrHeal(target, dmg);
             }
 

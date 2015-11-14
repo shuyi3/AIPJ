@@ -14,7 +14,7 @@ namespace HRSim
             {
                 for (int i = 0; i < m.anzGotDmg; i++)
                 {
-					p.minionGetDamageOrHeal(m.own ? p.enemyHero : p.ownHero, 2);
+					p.minionGetDamageOrHeal(m.own ? p.playerSecond.ownHero : p.playerFirst.ownHero, 2);
                 }
                 m.anzGotDmg = 0;
             }

@@ -12,7 +12,7 @@ namespace HRSim
             Minion newTarget = null;
             if (ownplay)
             {
-                foreach (Minion m in p.enemyMinions)
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (target.entitiyID != m.entitiyID && attacker.entitiyID != m.entitiyID)
                     {
@@ -22,7 +22,7 @@ namespace HRSim
 
                 if (newTarget == null)
                 {
-                    foreach (Minion m in p.ownMinions)
+                    foreach (Minion m in p.playerFirst.ownMinions)
                     {
                         if (target.entitiyID != m.entitiyID && attacker.entitiyID != m.entitiyID)
                         {
@@ -33,13 +33,13 @@ namespace HRSim
 
                 if (newTarget == null)
                 {
-                    newTarget = p.enemyHero;
+                    newTarget = p.playerSecond.ownHero;
                 }
             }
 
             else
             {
-                foreach (Minion m in p.ownMinions)
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if (target.entitiyID != m.entitiyID && attacker.entitiyID != m.entitiyID)
                     {
@@ -49,7 +49,7 @@ namespace HRSim
 
                 if (newTarget == null)
                 {
-                    foreach (Minion m in p.enemyMinions)
+                    foreach (Minion m in p.playerSecond.ownMinions)
                     {
                         if (target.entitiyID != m.entitiyID && attacker.entitiyID != m.entitiyID)
                         {
@@ -60,7 +60,7 @@ namespace HRSim
 
                 if (newTarget == null)
                 {
-                    newTarget = p.ownHero;
+                    newTarget = p.playerFirst.ownHero;
                 }
             }
 

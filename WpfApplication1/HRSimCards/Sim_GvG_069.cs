@@ -13,13 +13,13 @@ namespace HRSim
         {
             if (own.own)
             {
-                int heal = p.getMinionHeal(8);
-                p.minionGetDamageOrHeal(p.ownHero, -heal, true);
+                int heal = p.getMinionHeal(8, own.own);
+                p.minionGetDamageOrHeal(p.playerFirst.ownHero, -heal, true);
             }
             else
             {
-                int heal = p.getEnemyMinionHeal(8);
-                p.minionGetDamageOrHeal(p.enemyHero, -heal, true);
+                int heal = p.getMinionHeal(8, own.own);
+                p.minionGetDamageOrHeal(p.playerSecond.ownHero, -heal, true);
             }
         }
 

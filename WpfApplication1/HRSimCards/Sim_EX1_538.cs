@@ -13,8 +13,8 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int anz = p.enemyMinions.Count;
-            int posi = p.ownMinions.Count;
+            int anz = p.playerSecond.ownMinions.Count;
+            int posi = p.playerFirst.ownMinions.Count;
             
             for (int i = 0; i < anz; i++)
             {

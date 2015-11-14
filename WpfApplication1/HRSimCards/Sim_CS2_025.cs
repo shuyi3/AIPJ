@@ -10,7 +10,7 @@ namespace HRSim
 //    fügt allen feindlichen dienern $1 schaden zu.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg = (ownplay) ? p.getSpellDamageDamage(1) : p.getEnemySpellDamageDamage(1);
+            int dmg = p.getSpellDamageDamage(1, ownplay);
             p.allMinionOfASideGetDamage(!ownplay, dmg);
 		}
 

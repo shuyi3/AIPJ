@@ -14,19 +14,19 @@ namespace HRSim
 		{
             if (own.own)
             {
-                p.ownHeroAblility.card = card;
-                p.ownHeroName = HeroEnum.lordjaraxxus;
-                p.ownHero.Hp = own.Hp;
-                p.ownHero.maxHp = own.maxHp;
+                p.playerFirst.ownHeroAblility.card = card;
+                p.playerFirst.ownHeroName = HeroEnum.lordjaraxxus;
+                p.playerFirst.ownHero.Hp = own.Hp;
+                p.playerFirst.ownHero.maxHp = own.maxHp;
 
                 p.equipWeapon(weapon, own.own);
             }
             else 
             {
-                p.enemyHeroAblility.card = card;
-                p.enemyHeroName = HeroEnum.lordjaraxxus;
-                p.enemyHero.Hp = own.Hp;
-                p.enemyHero.maxHp = own.maxHp;
+                p.playerSecond.ownHeroAblility.card = card;
+                p.playerSecond.ownHeroName = HeroEnum.lordjaraxxus;
+                p.playerSecond.ownHero.Hp = own.Hp;
+                p.playerSecond.ownHero.maxHp = own.maxHp;
 
                 p.equipWeapon(weapon, own.own);
             }

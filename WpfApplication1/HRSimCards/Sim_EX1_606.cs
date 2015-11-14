@@ -12,13 +12,13 @@ namespace HRSim
 		{
             if (ownplay)
             {
-                p.minionGetArmor(p.ownHero, 5);
+                p.minionGetArmor(p.playerFirst.ownHero, 5);
             }
             else
             {
-                p.minionGetArmor(p.enemyHero, 5);
+                p.minionGetArmor(p.playerSecond.ownHero, 5);
             }
-            p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
 		}
 
 	}

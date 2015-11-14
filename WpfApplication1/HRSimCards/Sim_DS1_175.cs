@@ -12,16 +12,16 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnTimberWolfs++;
-                foreach (Minion m in p.ownMinions)
+                p.playerFirst.anzOwnTimberWolfs++;
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET && m.entitiyID != own.entitiyID) p.minionGetBuffed(m, 1, 0);
                 }
             }
             else
             {
-                p.anzEnemyTimberWolfs++;
-                foreach (Minion m in p.enemyMinions)
+                p.playerSecond.anzOwnTimberWolfs++;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET && m.entitiyID != own.entitiyID) p.minionGetBuffed(m, 1, 0);
                 }
@@ -33,16 +33,16 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnTimberWolfs--;
-                foreach (Minion m in p.ownMinions)
+                p.playerFirst.anzOwnTimberWolfs--;
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET && m.entitiyID != own.entitiyID) p.minionGetBuffed(m, -1, 0);
                 }
             }
             else
             {
-                p.anzEnemyTimberWolfs--;
-                foreach (Minion m in p.enemyMinions)
+                p.playerSecond.anzOwnTimberWolfs--;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET && m.entitiyID != own.entitiyID) p.minionGetBuffed(m, -1, 0);
                 }

@@ -11,20 +11,20 @@ namespace HRSim
 		{
             if (own.own)
             {
-                if (p.ownWeaponDurability >= 1)
+                if (p.playerFirst.ownWeaponDurability >= 1)
                 {
-                    p.ownWeaponDurability++;
-                    p.ownWeaponAttack++;
-                    p.minionGetBuffed(p.ownHero, 1, 0);
+                    p.playerFirst.ownWeaponDurability++;
+                    p.playerFirst.ownWeaponAttack++;
+                    p.minionGetBuffed(p.playerFirst.ownHero, 1, 0);
                 }
             }
             else
             {
-                if (p.enemyWeaponDurability >= 1)
+                if (p.playerSecond.ownWeaponDurability >= 1)
                 {
-                    p.enemyWeaponDurability++;
-                    p.enemyWeaponAttack++;
-                    p.minionGetBuffed(p.enemyHero, 1, 0);
+                    p.playerSecond.ownWeaponDurability++;
+                    p.playerSecond.ownWeaponAttack++;
+                    p.minionGetBuffed(p.playerSecond.ownHero, 1, 0);
                 }
             }
 		}

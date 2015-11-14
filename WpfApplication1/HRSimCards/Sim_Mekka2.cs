@@ -15,9 +15,9 @@ namespace HRSim
             {
 
                 Minion tm = null;
-                int hl = (triggerEffectMinion.own) ? p.getMinionHeal(6) : p.getEnemyMinionHeal(6);
+                int hl = p.getMinionHeal(6, triggerEffectMinion.own);
                 int heal = 0;
-                foreach (Minion m in p.ownMinions)
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if (m.maxHp - m.Hp > heal)
                     {
@@ -25,7 +25,7 @@ namespace HRSim
                         heal = m.maxHp - m.Hp;
                     }
                 }
-                foreach (Minion m in p.enemyMinions)
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (m.maxHp - m.Hp > heal)
                     {
@@ -39,7 +39,7 @@ namespace HRSim
                 }
                 else
                 {
-                    p.minionGetDamageOrHeal(p.ownHero.Hp < 30 ? p.ownHero : p.enemyHero, -hl);
+                    p.minionGetDamageOrHeal(p.playerFirst.ownHero.Hp < 30 ? p.playerFirst.ownHero : p.playerSecond.ownHero, -hl);
                 }
 
             }

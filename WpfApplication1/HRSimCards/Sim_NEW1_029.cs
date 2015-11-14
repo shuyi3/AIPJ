@@ -11,8 +11,26 @@ namespace HRSim
         //todo implement the nomanacosts for the enemyturn
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
-            if (own.own) p.weHavePlayedMillhouseManastorm = true;
-		}
+            //add #enemy millhouse played by 1
+            if (own.own) //playerFirst
+            {
+                p.playerSecond.enemyMillhouse++;
+                foreach (Handmanager.Handcard h in p.playerSecond.owncards)
+                {
+                    if (h.card.type == CardDB.cardtype.SPELL)
+                        h.manacost = 0;
+                }
+            }
+            else
+            {
+                p.playerFirst.enemyMillhouse++;
+                foreach (Handmanager.Handcard h in p.playerFirst.owncards)
+                {
+                    if (h.card.type == CardDB.cardtype.SPELL)
+                        h.manacost = 0;
+                }
+            }
+        }
 
 
 	}

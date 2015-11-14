@@ -13,7 +13,7 @@ namespace HRSim
         {
             for (int i = 0; i < 5; i++)
             {
-                int posi = (ownplay) ? p.ownMinions.Count : p.enemyMinions.Count;
+                int posi = (ownplay) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
                 p.callKid(kid, posi, ownplay);
             }
         }

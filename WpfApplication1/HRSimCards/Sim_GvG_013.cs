@@ -13,7 +13,7 @@ namespace HRSim
         {
             if ((TAG_RACE)summonedMinion.handcard.card.race == TAG_RACE.MECHANICAL)
             {
-                List<Minion> temp = (triggerEffectMinion.own) ? p.ownMinions : p.enemyMinions;
+                List<Minion> temp = (triggerEffectMinion.own) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
 
                 foreach (Minion m in temp)
                 {
@@ -31,7 +31,7 @@ namespace HRSim
 			int diedMinions = (m.own)? p.tempTrigger.ownMechanicDied : p.tempTrigger.enemyMechanicDied;
             if (diedMinions >= 1)
 			{
-				List<Minion> temp = (m.own) ? p.ownMinions : p.enemyMinions;
+				List<Minion> temp = (m.own) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
 				bool hasmechanics = false;
                 foreach (Minion mTmp in temp) //check if we have more mechanics, or debuff him
                 {

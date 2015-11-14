@@ -11,7 +11,7 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int heal = (ownplay) ? p.getSpellHeal(8) : p.getEnemySpellHeal(8);
+            int heal = p.getSpellHeal(8, ownplay);
             p.minionGetDamageOrHeal(target, -heal);
             
 		}

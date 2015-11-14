@@ -10,7 +10,7 @@ namespace HRSim
 
 		public override void onDeathrattle(Playfield p, Minion m)
 		{
-            List<Minion> temp = (m.own) ? p.ownMinions : p.enemyMinions;
+            List<Minion> temp = (m.own) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             foreach (Minion mnn in temp)
             {
                 if (mnn.zonepos == m.zonepos + 1 || mnn.zonepos + 1 == m.zonepos)

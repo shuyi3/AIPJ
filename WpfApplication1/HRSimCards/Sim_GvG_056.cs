@@ -13,32 +13,32 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.enemyDeckSize++;
-                if (p.enemyDeckSize <= 6)
+                p.playerSecond.ownDeckSize++;
+                if (p.playerSecond.ownDeckSize <= 6)
                 {
-                    p.minionGetDamageOrHeal(p.enemyHero, Math.Min(10, p.enemyHero.Hp-1), true);
-                    p.evaluatePenality -= 6;
+                    p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(10, p.playerSecond.ownHero.Hp-1), true);
+                    //p.evaluatePenality -= 6;
                 }
                 else
                 {
-                    if (p.enemyDeckSize <= 16)
+                    if (p.playerSecond.ownDeckSize <= 16)
                     {
-                        p.minionGetDamageOrHeal(p.enemyHero, Math.Min(5, p.enemyHero.Hp - 1), true);
-                        p.evaluatePenality -= 8;
+                        p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(5, p.playerSecond.ownHero.Hp - 1), true);
+                        //p.evaluatePenality -= 8;
                     }
                     else
                     {
-                        if (p.enemyDeckSize <= 26)
+                        if (p.playerSecond.ownDeckSize <= 26)
                         {
-                            p.minionGetDamageOrHeal(p.enemyHero, Math.Min(2, p.enemyHero.Hp - 1), true);
-                            p.evaluatePenality -= 10;
+                            p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(2, p.playerSecond.ownHero.Hp - 1), true);
+                            //p.evaluatePenality -= 10;
                         }
                     }
                 }
             }
             else
             {
-                p.ownDeckSize++;
+                p.playerFirst.ownDeckSize++;
             }
         }
 

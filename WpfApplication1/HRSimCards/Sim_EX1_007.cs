@@ -13,7 +13,7 @@ namespace HRSim
             {
                 for (int i = 0; i < triggerEffectMinion.anzGotDmg; i++)
                 {
-                    p.drawACard(CardDB.cardName.unknown, triggerEffectMinion.own);
+                    p.drawACard(p.getArandomCardFromDeck(triggerEffectMinion.own), triggerEffectMinion.own);
                 }
                 triggerEffectMinion.anzGotDmg = 0;
             }

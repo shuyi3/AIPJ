@@ -11,8 +11,8 @@ namespace HRSim
 
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
-            List<Minion> temp = (own.own) ? p.enemyMinions : p.ownMinions;
-            int times = (own.own) ? p.getSpellDamageDamage(4) : p.getEnemySpellDamageDamage(4);
+            List<Minion> temp = (own.own) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
+            int times = p.getSpellDamageDamage(4, own.own);
 
             if (temp.Count >= 1)
             {

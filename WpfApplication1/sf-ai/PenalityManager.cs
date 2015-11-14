@@ -1311,6 +1311,12 @@
                 return pen;
             }
 
+            //implementation
+            if (name == CardDB.cardName.kidnapper && target == null)
+            {
+                return 15;
+            }
+
             //------------------------------------------------------------------------------------------------------
             Minion m = target;
 

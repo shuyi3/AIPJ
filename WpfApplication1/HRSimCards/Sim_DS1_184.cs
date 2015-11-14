@@ -11,9 +11,9 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            //TODO NOT SUPPORTED YET
-            p.drawACard(CardDB.cardName.unknown, ownplay);
-            //p.evaluatePenality += 100;
+            //TODO: NOT SUPPORTED YET
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
+            ////p.evaluatePenality += 100;
 		}
 
 	}

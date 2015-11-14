@@ -84,7 +84,7 @@
                     foreach (Minion trgt in trgts)
                     {
                         if (trgt.isHero) continue;
-                        Action a = new Action(actionEnum.useHeroPower, posmoves[0].enemyHeroAblility, null, 0, trgt, abilityPenality, 0);
+                        Action a = new Action(actionEnum.useHeroPower, posmoves[0].enemyHeroAblility, null, 0, trgt, abilityPenality, 0);                     
                         Playfield pf = new Playfield(posmoves[0]);
                         pf.doAction(a);
                         posmoves.Add(pf);

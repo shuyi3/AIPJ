@@ -15,8 +15,8 @@ namespace HRSim
             if (target.Angr>0)
             {
                 int dmg = target.Angr;
-                List<Minion> temp = (ownplay) ? p.enemyMinions : p.ownMinions;
-                foreach (Minion m in p.enemyMinions)
+                List<Minion> temp = (ownplay) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (m.zonepos + 1 == target.zonepos || m.zonepos-1 == target.zonepos)
                     {

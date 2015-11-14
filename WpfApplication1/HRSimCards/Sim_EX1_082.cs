@@ -13,15 +13,15 @@ namespace HRSim
             int anz = 3;
             for (int i = 0; i < anz; i++)
             {
-                if (p.ownHero.Hp <= anz)
+                if (p.playerFirst.ownHero.Hp <= anz)
                 {
-                    p.minionGetDamageOrHeal(p.ownHero, 1);
+                    p.minionGetDamageOrHeal(p.playerFirst.ownHero, 1);
                     continue;
                 }
-                List<Minion> temp = new List<Minion>(p.enemyMinions);
+                List<Minion> temp = new List<Minion>(p.playerSecond.ownMinions);
                 if (temp.Count == 0)
                 {
-                    temp.AddRange(p.ownMinions);
+                    temp.AddRange(p.playerFirst.ownMinions);
                 }
                 temp.Sort((a, b) => a.Hp.CompareTo(b.Hp));//destroys the weakest
 
@@ -30,7 +30,7 @@ namespace HRSim
                     p.minionGetDamageOrHeal(m, 1);
                     break;
                 }
-                p.minionGetDamageOrHeal(p.enemyHero, 1);
+                p.minionGetDamageOrHeal(p.playerSecond.ownHero, 1);
             }
 		}
 

@@ -10,7 +10,7 @@ namespace HRSim
 	
         public override void getBattlecryEffect(Playfield p, Minion m, Minion target, int choice)
         {
-			List<Minion> temp = (m.own) ? p.enemyMinions : p.ownMinions;
+			List<Minion> temp = (m.own) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
 			
             foreach (Minion mnn in temp)
             {

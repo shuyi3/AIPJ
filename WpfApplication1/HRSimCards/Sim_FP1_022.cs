@@ -14,7 +14,7 @@ namespace HRSim
             if (m.own)
             {
                 List<Handmanager.Handcard> temp = new List<Handmanager.Handcard>();
-                foreach (Handmanager.Handcard hc in p.owncards)
+                foreach (Handmanager.Handcard hc in p.playerFirst.owncards)
                 {
                     if ((TAG_RACE)hc.card.race == TAG_RACE.DEMON)
                     {
@@ -26,17 +26,17 @@ namespace HRSim
 
                 foreach (Handmanager.Handcard mnn in temp)
                 {
-                    p.callKid(mnn.card, p.ownMinions.Count, true);
-                    p.removeCard(mnn);
+                    p.callKid(mnn.card, p.playerFirst.ownMinions.Count, true);
+                    p.removeCard(mnn, true);
                     break;
                 }
 
             }
             else
             {
-                if (p.enemyAnzCards >= 1)
+                if (p.playerSecond.owncards.Count >= 1)
                 {
-                    p.callKid(c, p.enemyMinions.Count , false);
+                    p.callKid(c, p.playerSecond.ownMinions.Count , false);
                 }
             }
         }

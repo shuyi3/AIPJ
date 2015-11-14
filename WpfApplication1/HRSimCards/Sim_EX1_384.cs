@@ -14,13 +14,13 @@ namespace HRSim
             // optimistic
 
             int i = 0;
-            List<Minion> temp = (ownplay) ? p.enemyMinions : p.ownMinions;
-            int times = (ownplay) ? p.getSpellDamageDamage(8) : p.getEnemySpellDamageDamage(8);
+            List<Minion> temp = (ownplay) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
+            int times = p.getSpellDamageDamage(8, ownplay);
 
-            if ((ownplay && p.enemyHero.Hp <= times) || (!ownplay && p.ownHero.Hp <= times))
+            if ((ownplay && p.playerSecond.ownHero.Hp <= times) || (!ownplay && p.playerFirst.ownHero.Hp <= times))
             {
-                if (ownplay) p.minionGetDamageOrHeal(p.enemyHero, p.enemyHero.Hp - 1);
-                else p.minionGetDamageOrHeal(p.ownHero, p.ownHero.Hp - 1);
+                if (ownplay) p.minionGetDamageOrHeal(p.playerSecond.ownHero, p.playerSecond.ownHero.Hp - 1);
+                else p.minionGetDamageOrHeal(p.playerFirst.ownHero, p.playerFirst.ownHero.Hp - 1);
             }
             else
             {
@@ -50,13 +50,13 @@ namespace HRSim
                         }
                         else
                         {
-                            p.minionGetDamageOrHeal(ownplay ? p.enemyHero : p.ownHero, 1);
+                            p.minionGetDamageOrHeal(ownplay ? p.playerSecond.ownHero : p.playerFirst.ownHero, 1);
                         }
 
                     }
                     else
                     {
-                        p.minionGetDamageOrHeal(ownplay ? p.enemyHero : p.ownHero, 1);
+                        p.minionGetDamageOrHeal(ownplay ? p.playerSecond.ownHero : p.playerFirst.ownHero, 1);
                     }
 
                     i++;

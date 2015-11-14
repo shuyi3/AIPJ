@@ -13,7 +13,7 @@ namespace HRSim
         {
             if (c.type == CardDB.cardtype.SPELL && wasOwnCard == triggerEffectMinion.own)
             {
-                p.drawACard(CardDB.cardName.unknown, wasOwnCard);
+                p.drawACard(p.getArandomCardFromDeck(wasOwnCard), wasOwnCard);
             }
 
         }

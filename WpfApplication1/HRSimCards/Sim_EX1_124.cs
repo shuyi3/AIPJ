@@ -10,8 +10,8 @@ namespace HRSim
 //    verursacht $2 schaden. combo:/ verursacht stattdessen $4 schaden.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg = (ownplay) ? p.getSpellDamageDamage(4) : p.getEnemySpellDamageDamage(4);
-            if (p.cardsPlayedThisTurn == 0) dmg = (ownplay) ? p.getSpellDamageDamage(2) : p.getEnemySpellDamageDamage(2);
+            int dmg = p.getSpellDamageDamage(4, ownplay);
+            if (p.playerFirst.cardsPlayedThisTurn == 0) dmg = p.getSpellDamageDamage(2, ownplay);
             p.minionGetDamageOrHeal(target, dmg);
 		}
 

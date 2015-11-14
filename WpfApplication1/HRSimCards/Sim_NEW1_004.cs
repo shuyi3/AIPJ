@@ -11,53 +11,63 @@ namespace HRSim
         //todo clear playfield
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            p.anzOwnRaidleader = 0;
-            p.anzEnemyRaidleader = 0;
-            p.anzOwnStormwindChamps = 0;
-            p.anzEnemyStormwindChamps = 0;
-            p.anzOwnTundrarhino = 0;
-            p.anzEnemyTundrarhino = 0;
-            p.anzOwnTimberWolfs = 0;
-            p.anzEnemyTimberWolfs = 0;
-            p.anzMurlocWarleader = 0;
-            p.anzGrimscaleOracle = 0;
-            p.anzOwnAuchenaiSoulpriest = 0;
-            p.anzEnemyAuchenaiSoulpriest = 0;
-            p.anzOwnsorcerersapprentice = 0;
-            p.anzOwnsorcerersapprenticeStarted = 0;
-            p.anzEnemysorcerersapprentice = 0;
-            p.anzEnemysorcerersapprenticeStarted = 0;
-            p.anzOwnSouthseacaptain = 0;
-            p.anzEnemySouthseacaptain = 0;
-            p.anzEnemyTaunt = 0;
-            p.doublepriest = 0;
-            p.enemydoublepriest = 0;
-            p.ownBaronRivendare = 0;
-            p.enemyBaronRivendare = 0;
-            p.anzOwnChromaggus = 0;
-            p.anzEnemyChromaggus = 0;
+            p.playerFirst.anzOwnRaidleader = 0;
+            p.playerFirst.anzOwnStormwindChamps = 0;
+            p.playerFirst.anzOwnTundrarhino = 0;
+            p.playerFirst.anzOwnTimberWolfs = 0;
+            p.playerFirst.anzMurlocWarleader = 0;
+            p.playerFirst.anzGrimscaleOracle = 0;
+            p.playerFirst.anzOwnAuchenaiSoulpriest = 0;
+            p.playerFirst.anzOwnsorcerersapprentice = 0;
+            p.playerFirst.anzOwnsorcerersapprenticeStarted = 0;
+            p.playerFirst.anzOwnSouthseacaptain = 0;
+            p.playerFirst.doublepriest = 0;
+            p.playerFirst.ownBaronRivendare = 0;
+            p.playerFirst.anzOwnChromaggus = 0;
 
-            p.spellpower = 0;
-            p.enemyspellpower = 0;
+            p.playerFirst.spellpower = 0;
 
+            p.playerFirst.winzigebeschwoererin = 0;
+            p.playerFirst.managespenst = 0;
+            p.playerFirst.soeldnerDerVenture = 0;
+            p.playerFirst.beschwoerungsportal = 0;
+            p.playerFirst.nerubarweblord = 0;
 
+            //second
+            p.playerSecond.anzOwnRaidleader = 0;
+            p.playerSecond.anzOwnStormwindChamps = 0;
+            p.playerSecond.anzOwnTundrarhino = 0;
+            p.playerSecond.anzOwnTimberWolfs = 0;
+            p.playerSecond.anzMurlocWarleader = 0;
+            p.playerSecond.anzGrimscaleOracle = 0;
+            p.playerSecond.anzOwnAuchenaiSoulpriest = 0;
+            p.playerSecond.anzOwnsorcerersapprentice = 0;
+            p.playerSecond.anzOwnsorcerersapprenticeStarted = 0;
+            p.playerSecond.anzOwnSouthseacaptain = 0;
+            p.playerSecond.doublepriest = 0;
+            p.playerSecond.ownBaronRivendare = 0;
+            p.playerSecond.anzOwnChromaggus = 0;
 
-            p.winzigebeschwoererin = 0;
-            p.managespenst = 0;
-            p.soeldnerDerVenture = 0;
-            p.beschwoerungsportal = 0;
-            p.nerubarweblord = 0;
+            p.playerSecond.spellpower = 0;
 
-            foreach (Minion m in p.ownMinions)
+            p.playerSecond.winzigebeschwoererin = 0;
+            p.playerSecond.managespenst = 0;
+            p.playerSecond.soeldnerDerVenture = 0;
+            p.playerSecond.beschwoerungsportal = 0;
+            p.playerSecond.nerubarweblord = 0;
+
+            foreach (Minion m in p.playerFirst.ownMinions)
             {
                 p.drawACard(m.name, true, true);
             }
-            foreach (Minion m in p.enemyMinions)
+
+            foreach (Minion m in p.playerSecond.ownMinions)
             {
                 p.drawACard(m.name, false, true);
             }
-            p.ownMinions.Clear();
-            p.enemyMinions.Clear();
+
+            p.playerFirst.ownMinions.Clear();
+            p.playerSecond.ownMinions.Clear();
 
         }
 

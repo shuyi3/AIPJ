@@ -10,7 +10,7 @@ namespace HRSim
         //todo: bonus for it?
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
         }
 
     }

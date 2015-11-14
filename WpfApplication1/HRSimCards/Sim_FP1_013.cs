@@ -15,7 +15,7 @@ namespace HRSim
                 if (triggerEffectMinion.own == m.own)
                 {
                     CardDB.Card card = CardDB.Instance.getCardDataFromID(m.cardid);
-                    p.callKid(card, p.ownMinions.Count, m.own);
+                    p.callKid(card, p.playerFirst.ownMinions.Count, m.own);
                 }
             }
         }

@@ -10,7 +10,7 @@ namespace HRSim
 //    kampfschrei:/ erhält +1/+1 für jeden anderen befreundeten diener auf dem schlachtfeld.
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
-            int buff = (own.own) ? p.ownMinions.Count : p.enemyMinions.Count;
+            int buff = (own.own) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
             p.minionGetBuffed(own, buff, buff);
 		}
 

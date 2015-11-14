@@ -13,7 +13,7 @@ namespace HRSim
         public override void onTurnStartTrigger(Playfield p, Minion triggerEffectMinion, bool turnStartOfOwner)
         {
             if(turnStartOfOwner != triggerEffectMinion.own) return;
-            List<Minion> temp = (turnStartOfOwner) ? p.ownMinions : p.enemyMinions;
+            List<Minion> temp = (turnStartOfOwner) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             int anz =0;
             foreach (Minion m in temp)
             {
@@ -32,7 +32,7 @@ namespace HRSim
                     }
                 }
 
-                int pos = (triggerEffectMinion.own) ? p.ownMinions.Count : p.enemyMinions.Count;
+                int pos = (triggerEffectMinion.own) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
                 p.callKid(kid, pos, triggerEffectMinion.own,false, true); // we allow to summon one minion more (because 3 are destroyed)
             }
         }

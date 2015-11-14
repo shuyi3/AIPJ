@@ -258,7 +258,7 @@ namespace HRSim
             this.enemyBlessingOfWisdom = m.enemyBlessingOfWisdom;
             this.spellpower = m.spellpower;
 
-            this.Hp = m.Hp;
+            this.Hp = (m.Hp > 0)? m.Hp: m.maxHp;
             this.maxHp = m.maxHp;
             this.armor = m.armor;
 
@@ -366,11 +366,11 @@ namespace HRSim
                 {
                     if (isMinionAttack)
                     {
-                        p.lostDamage += damage - 1;
+                        p.playerFirst.lostDamage += damage - 1;
                     }
                     else
                     {
-                        p.lostDamage += (damage - 1) * (damage - 1);
+                        p.playerFirst.lostDamage += (damage - 1) * (damage - 1);
                     }
                 }
                 return;
@@ -382,11 +382,11 @@ namespace HRSim
             {
                 if (isMinionAttack)
                 {
-                    p.lostDamage += (damage - this.Hp);
+                    p.playerFirst.lostDamage += (damage - this.Hp);
                 }
                 else
                 {
-                    p.lostDamage += (damage - this.Hp) * (damage - this.Hp);
+                    p.playerFirst.lostDamage += (damage - this.Hp) * (damage - this.Hp);
                 }
             }
 
@@ -399,7 +399,7 @@ namespace HRSim
 
             if (heal >= 1)
             {
-                if (own && !dontCalcLostDmg && heal <= 999 && this.Hp + heal > this.maxHp) p.lostHeal += this.Hp + heal - this.maxHp;
+                if (own && !dontCalcLostDmg && heal <= 999 && this.Hp + heal > this.maxHp) p.playerFirst.lostHeal += this.Hp + heal - this.maxHp;
 
                 this.Hp = this.Hp + Math.Min(heal, this.maxHp - this.Hp);
             }
@@ -494,7 +494,7 @@ namespace HRSim
             else
             {
                 p.tempTrigger.enemyMinionsDied++;
-                if (this.taunt) p.anzEnemyTaunt--;
+                //if (this.taunt) p.anzEnemyTaunt--;
                 if (this.handcard.card.race == 20)
                 {
                     p.tempTrigger.enemyBeastDied++;
@@ -513,6 +513,7 @@ namespace HRSim
             {
                 GraveYardItem gyi = new GraveYardItem(this.handcard.card.cardIDenum, this.entitiyID, this.own);
                 p.diedMinions.Add(gyi);
+                p.graveYard.Add(gyi);
             }
         }
 
@@ -535,11 +536,11 @@ namespace HRSim
         public void becomeSilence(Playfield p)
         {
 
-            if (own) p.spellpower -= spellpower;
+            if (own) p.playerFirst.spellpower -= spellpower;
             else
             {
-                p.enemyspellpower -= spellpower;
-                if (this.taunt) p.anzEnemyTaunt--;
+                p.playerSecond.spellpower -= spellpower;
+                //if (this.taunt) p.anzEnemyTaunt--;
             }
             spellpower = 0;
 

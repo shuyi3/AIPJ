@@ -13,16 +13,16 @@ namespace HRSim
         {
             if (turnEndOfOwner == triggerEffectMinion.own)
             {
-                foreach (Minion m in p.enemyMinions)
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (triggerEffectMinion.entitiyID != m.entitiyID) p.minionGetDamageOrHeal(m, 2);
                 }
-                foreach (Minion m in p.ownMinions)
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if (triggerEffectMinion.entitiyID != m.entitiyID) p.minionGetDamageOrHeal(m, 2);
                 }
-                p.minionGetDamageOrHeal(p.ownHero, 2);
-                p.minionGetDamageOrHeal(p.enemyHero, 2);
+                p.minionGetDamageOrHeal(p.playerFirst.ownHero, 2);
+                p.minionGetDamageOrHeal(p.playerSecond.ownHero, 2);
             }
         }
 

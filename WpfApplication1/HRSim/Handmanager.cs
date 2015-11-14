@@ -7,6 +7,7 @@
 
         public class Handcard
         {
+            public int permCostChange = 0;
             public int position = 0;
             public int entity = -1;
             public int manacost = 1000;
@@ -20,6 +21,7 @@
             }
             public Handcard(Handcard hc)
             {
+                this.permCostChange = hc.permCostChange;
                 this.position = hc.position;
                 this.entity = hc.entity;
                 this.manacost = hc.manacost;
@@ -44,14 +46,14 @@
                 this.addattack = 0;
                 this.addHp = 0;
             }
-            public int getManaCost(Playfield p)
+            public int getManaCost(Playfield p, bool own)
             {
-                return this.card.getManaCost(p, this.manacost);
+                return this.card.getManaCost(p, this.manacost, own);
             }
 
-            public bool canplayCard(Playfield p)
+            public bool canplayCard(Playfield p, bool own)
             {
-                return this.card.canplayCard(p, this.manacost);
+                return this.card.canplayCard(p, this.manacost, own);
             }
         }
 

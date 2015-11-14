@@ -10,7 +10,7 @@ namespace HRSim
 //    fügt einem diener schaden zu, der dem angriff eures helden entspricht.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg = (ownplay) ? p.getSpellDamageDamage(p.ownHero.Angr) : p.getEnemySpellDamageDamage(p.enemyHero.Angr);
+            int dmg = p.getSpellDamageDamage(p.playerFirst.ownHero.Angr, ownplay);
             p.minionGetDamageOrHeal(target, dmg);
 		}
 

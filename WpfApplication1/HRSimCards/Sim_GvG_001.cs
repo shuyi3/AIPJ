@@ -13,9 +13,8 @@ namespace HRSim
         {
             // optimistic
 
-            List<Minion> temp = (ownplay) ? p.enemyMinions : p.ownMinions;
-            int times = (ownplay) ? p.getSpellDamageDamage(4) : p.getEnemySpellDamageDamage(4);
-
+            List<Minion> temp = (ownplay) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
+            int times = p.getSpellDamageDamage(4, ownplay);
             if (temp.Count >= 1)
             {
                 //search Minion with lowest hp

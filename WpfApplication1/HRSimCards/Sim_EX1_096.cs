@@ -11,7 +11,7 @@ namespace HRSim
 
         public override void onDeathrattle(Playfield p, Minion m)
         {
-            p.drawACard(CardDB.cardName.unknown, m.own);
+            p.drawACard(p.getArandomCardFromDeck(m.own), m.own);
         }
 
 	}

@@ -10,19 +10,18 @@ namespace HRSim
 //    zauberschaden +1/. kampfschrei:/ zieht eine karte.
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
-           
-            p.drawACard(CardDB.cardName.unknown, own.own);
+            p.drawACard(p.getArandomCardFromDeck(own.own), own.own);
 		}
 
         public override void onAuraStarts(Playfield p, Minion m)
         {
             if (m.own)
             {
-                p.spellpower++;
+                p.playerFirst.spellpower++;
             }
             else
             {
-                p.enemyspellpower++;
+                p.playerSecond.spellpower++;
             }
         }
 
@@ -30,11 +29,11 @@ namespace HRSim
         {
             if (m.own)
             {
-                p.spellpower--;
+                p.playerFirst.spellpower--;
             }
             else
             {
-                p.enemyspellpower--;
+                p.playerSecond.spellpower--;
             }
         }
 

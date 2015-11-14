@@ -12,11 +12,17 @@ namespace HRSim
         {
             if (ownplay)
             {
-                p.ownDeckSize += 3;
+                p.playerFirst.ownDeckSize += 3;
+                p.homeDeck.Add(target.handcard.card);
+                p.homeDeck.Add(target.handcard.card);
+                p.homeDeck.Add(target.handcard.card);
             }
             else
             {
-                p.enemyDeckSize += 3;
+                p.playerSecond.ownDeckSize += 3;
+                p.awayDeck.Add(target.handcard.card);
+                p.awayDeck.Add(target.handcard.card);
+                p.awayDeck.Add(target.handcard.card);
             }
         }
     }

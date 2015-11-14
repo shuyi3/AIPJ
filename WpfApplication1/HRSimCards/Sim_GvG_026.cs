@@ -13,11 +13,11 @@ namespace HRSim
         {
             if (ownplay)
             {
-                p.doDeathrattles(new List<Minion>(p.ownMinions));
+                p.doDeathrattles(new List<Minion>(p.playerFirst.ownMinions));
             }
             else
             {
-                p.doDeathrattles(new List<Minion>(p.enemyMinions));
+                p.doDeathrattles(new List<Minion>(p.playerSecond.ownMinions));
             }
         }
 

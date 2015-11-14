@@ -13,7 +13,7 @@ namespace HRSim
             if (ownplay)
             {
                 bool haspet = false;
-                foreach (Minion m in p.ownMinions)
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET)
                     {
@@ -22,8 +22,8 @@ namespace HRSim
                     }
                 }
 
-                int dmg = (ownplay) ? p.getSpellDamageDamage(3) : p.getEnemySpellDamageDamage(3);
-                if (haspet) dmg = (ownplay) ? p.getSpellDamageDamage(5) : p.getEnemySpellDamageDamage(5);
+                int dmg = p.getSpellDamageDamage(3, ownplay);
+                if (haspet) dmg = p.getSpellDamageDamage(5, ownplay);
                 p.minionGetDamageOrHeal(target, dmg);
             }
 		}

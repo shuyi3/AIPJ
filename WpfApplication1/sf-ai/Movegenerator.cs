@@ -67,6 +67,26 @@
                 }
             }
 
+            foreach (Action a in ret)
+            {
+                if (a.actionType == actionEnum.playcard)
+                {
+                    bool isCardValid = false;
+                    foreach (Handmanager.Handcard hh in p.owncards)
+                    {
+                        if (hh.entity == a.card.entity)
+                        {
+                            isCardValid = true;
+                            break;
+                        }
+                    }
+                    if (!isCardValid)
+                    {
+                        int debug1 = 1;
+                    }
+                }
+            }
+
           //get targets for Hero weapon and Minions  ###################################################################################
 
             trgts = p.getAttackTargets(true, isLethalCheck);
@@ -123,12 +143,27 @@
                     if (cardplayPenality <= 499)
                     {
                         Action a = new Action(actionEnum.useHeroPower, p.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0);
+                        //if (trgt.own == true)
+                        //{
+                        //    sf.helpfunctions.logg("ping on own minion");
+                        //} 
                         ret.Add(a);
                     }
                 }
             }
 
             return ret;
+        }
+
+        //implememtation
+        public Action getRandomMove(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
+        {
+            List<Action> actions = getMoveList(p, isLethalCheck, usePenalityManager, useCutingTargets);
+            if (actions.Count > 0)
+            {
+                return actions[HRSim.GameManager.getRNG().Next(actions.Count)];
+            }
+            return null;
         }
 
         //turndeep = progress of current players turn
@@ -157,6 +192,9 @@
                     {
                         if (trgt.isHero) continue;//dont target hero
                         Action a = new Action(actionEnum.useHeroPower, null, null, 0, trgt, abilityPenality, 0);
+                        //if (trgt.own == true) {
+                        //    sf.helpfunctions.logg("ping on own minion");
+                        //}
                         ret.Add(a);
                     }
                 }

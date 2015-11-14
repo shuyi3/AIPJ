@@ -13,7 +13,7 @@ namespace HRSim
         {
             if (triggerEffectMinion.own == turnEndOfOwner)
             {
-                int heal = (triggerEffectMinion.own) ? p.getMinionHeal(1) : p.getEnemyMinionHeal(1);
+                int heal =  p.getMinionHeal(1, triggerEffectMinion.own);
                 p.allMinionOfASideGetDamage(turnEndOfOwner, -heal);
             }
         }

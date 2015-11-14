@@ -15,7 +15,7 @@ namespace HRSim
             {
                 Minion tm = null;
                 int ges = 1000;
-                foreach (Minion m in p.ownMinions)
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if (m.Angr + m.Hp < ges)
                     {
@@ -23,7 +23,7 @@ namespace HRSim
                         ges = m.Angr + m.Hp;
                     }
                 }
-                foreach (Minion m in p.enemyMinions)
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (m.Angr + m.Hp < ges)
                     {

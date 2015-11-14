@@ -12,7 +12,8 @@ namespace HRSim
         {
             if (triggerEffectMinion.own == turnStartOfOwner)
             {
-                p.drawACard(CardDB.cardName.unknown, turnStartOfOwner);
+                if (GameManager.getRNG().NextDouble() < 0.5)
+                    p.drawACard(p.getArandomCardFromDeck(turnStartOfOwner), turnStartOfOwner);
             }
         }
 

@@ -8,12 +8,12 @@ namespace HRSim
     {
         public override void onAuraStarts(Playfield p, Minion own)
         {
-            p.anzGrimscaleOracle++;
-            foreach (Minion m in p.ownMinions)
+            p.playerFirst.anzGrimscaleOracle++;
+            foreach (Minion m in p.playerFirst.ownMinions)
             {
                 if ((TAG_RACE)m.handcard.card.race == TAG_RACE.MURLOC && own.entitiyID != m.entitiyID) p.minionGetBuffed(m, 1, 0);
             }
-            foreach (Minion m in p.enemyMinions)
+            foreach (Minion m in p.playerSecond.ownMinions)
             {
                 if ((TAG_RACE)m.handcard.card.race == TAG_RACE.MURLOC && own.entitiyID != m.entitiyID) p.minionGetBuffed(m, 1, 0);
             }
@@ -21,12 +21,12 @@ namespace HRSim
 
         public override void onAuraEnds(Playfield p, Minion m)
         {
-            p.anzGrimscaleOracle--;
-            foreach (Minion mn in p.ownMinions)
+            p.playerFirst.anzGrimscaleOracle--;
+            foreach (Minion mn in p.playerFirst.ownMinions)
             {
                 if ((TAG_RACE)mn.handcard.card.race == TAG_RACE.MURLOC && mn.entitiyID != m.entitiyID) p.minionGetBuffed(m, -1, 0);
             }
-            foreach (Minion mn in p.enemyMinions)
+            foreach (Minion mn in p.playerSecond.ownMinions)
             {
                 if ((TAG_RACE)mn.handcard.card.race == TAG_RACE.MURLOC && mn.entitiyID != m.entitiyID) p.minionGetBuffed(m, -1, 0);
             }

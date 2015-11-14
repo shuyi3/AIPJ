@@ -10,7 +10,7 @@ namespace HRSim
 //    geheimnis:/ wenn euer held angegriffen wird, erleiden alle feinde $2 schaden.
         public override void onSecretPlay(Playfield p, bool ownplay, int number)
         {
-            int dmg = (ownplay) ? p.getSpellDamageDamage(2) : p.getEnemySpellDamageDamage(2);
+            int dmg = p.getSpellDamageDamage(2, ownplay);
             p.allMinionOfASideGetDamage(!ownplay, dmg);
         }
 

@@ -11,7 +11,7 @@ namespace HRSim
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
 
-            int pos = (own.own) ? p.enemyMinions.Count : p.ownMinions.Count;
+            int pos = (own.own) ? p.playerSecond.ownMinions.Count : p.playerFirst.ownMinions.Count;
             p.callKid(kid, pos, !own.own);
             p.callKid(kid, pos, !own.own);
 		}

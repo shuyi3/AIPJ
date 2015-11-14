@@ -12,13 +12,13 @@ namespace HRSim
 //    kampfschrei:/ verwandelt einen anderen zufälligen diener in einen teufelssaurier (5/5) oder ein eichhörnchen (1/1).
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
-            int oc = p.ownMinions.Count;
-            int ec = p.enemyMinions.Count;
+            int oc = p.playerFirst.ownMinions.Count;
+            int ec = p.playerSecond.ownMinions.Count;
             if (oc == 0 && ec == 0) return;
             if (oc > ec)
             {
-                List<Minion> temp = new List<Minion>(p.ownMinions);
-                temp.AddRange(p.enemyMinions);
+                List<Minion> temp = new List<Minion>(p.playerFirst.ownMinions);
+                temp.AddRange(p.playerSecond.ownMinions);
                 temp.Sort((a, b) => a.Hp.CompareTo(b.Hp));//transform the weakest
                 foreach (Minion m in temp)
                 {
@@ -28,8 +28,8 @@ namespace HRSim
             }
             else
             {
-                List<Minion> temp = new List<Minion>(p.ownMinions);
-                temp.AddRange(p.enemyMinions);
+                List<Minion> temp = new List<Minion>(p.playerFirst.ownMinions);
+                temp.AddRange(p.playerSecond.ownMinions);
                 temp.Sort((a, b) => -a.Hp.CompareTo(b.Hp));//transform the strongest
                 foreach (Minion m in temp)
                 {

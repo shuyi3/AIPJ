@@ -12,11 +12,11 @@ namespace HRSim
 		{
             if (own.own)
             {
-                p.ownMaxMana--;
+                p.playerFirst.ownMaxMana--;
             }
             else
             {
-                p.enemyMaxMana--;
+                p.playerSecond.ownMaxMana--;
             }
 		}
 

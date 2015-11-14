@@ -10,7 +10,7 @@ namespace HRSim
         //    kampfschrei: /fügt dem feindlichen helden 3 schaden zu.
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
-            p.minionGetDamageOrHeal(own.own ? p.enemyHero : p.ownHero, 3);
+            p.minionGetDamageOrHeal(own.own ? p.playerSecond.ownHero : p.playerFirst.ownHero, 3);
         }
 
     }

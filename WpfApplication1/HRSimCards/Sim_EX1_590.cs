@@ -11,7 +11,7 @@ namespace HRSim
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
             int shilds = 0;
-            foreach (Minion m in p.ownMinions)
+            foreach (Minion m in p.playerFirst.ownMinions)
             {
                 if (m.divineshild)
                 {
@@ -19,7 +19,7 @@ namespace HRSim
                     shilds++;
                 }
             }
-            foreach (Minion m in p.enemyMinions)
+            foreach (Minion m in p.playerSecond.ownMinions)
             {
                 if (m.divineshild)
                 {

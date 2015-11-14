@@ -11,11 +11,11 @@ namespace HRSim
            
             if (own.own)
             {
-                p.spellpower++;
+                p.playerFirst.spellpower++;
             }
             else
             {
-                p.enemyspellpower++;
+                p.playerSecond.spellpower++;
             }
         }
 
@@ -23,17 +23,17 @@ namespace HRSim
         {
             if (m.own)
             {
-                p.spellpower--;
+                p.playerFirst.spellpower--;
             }
             else
             {
-                p.enemyspellpower--;
+                p.playerSecond.spellpower--;
             }
         }
 
         public override void onDeathrattle(Playfield p, Minion m)
         {
-            p.drawACard(CardDB.cardName.unknown, m.own);
+            p.drawACard(p.getArandomCardFromDeck(m.own), m.own);
         }
 
     }

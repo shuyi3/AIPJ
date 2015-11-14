@@ -12,16 +12,16 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnSouthseacaptain++;
-                foreach (Minion m in p.ownMinions)
+                p.playerFirst.anzOwnSouthseacaptain++;
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if((TAG_RACE)m.handcard.card.race == TAG_RACE.PIRATE && own.entitiyID != m.entitiyID) p.minionGetBuffed(m, 1, 1);
                 }
             }
             else
             {
-                p.anzEnemySouthseacaptain++;
-                foreach (Minion m in p.enemyMinions)
+                p.playerSecond.anzOwnSouthseacaptain++;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PIRATE && own.entitiyID != m.entitiyID) p.minionGetBuffed(m, 1, 1);
                 }
@@ -33,16 +33,16 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnSouthseacaptain--;
-                foreach (Minion m in p.ownMinions)
+                p.playerFirst.anzOwnSouthseacaptain--;
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PIRATE && own.entitiyID != m.entitiyID) p.minionGetBuffed(m, -1, -1);
                 }
             }
             else
             {
-                p.anzEnemySouthseacaptain--;
-                foreach (Minion m in p.enemyMinions)
+                p.playerSecond.anzOwnSouthseacaptain--;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PIRATE && own.entitiyID != m.entitiyID) p.minionGetBuffed(m, -1, -1);
                 }

@@ -10,19 +10,19 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            List<Minion> temp = (ownplay) ? p.ownMinions : p.enemyMinions;
+            List<Minion> temp = (ownplay) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             target.handcard.card.sim_card.onAuraEnds(p, target);
             temp.Remove(target);
 
             if (ownplay)
             {
                 p.tempTrigger.enemyMininsChanged = true;
-                p.enemyDeckSize++;
+                p.playerSecond.ownDeckSize++;
             }
             else
             {
                 p.tempTrigger.ownMinionsChanged = true;
-                p.ownDeckSize++;
+                p.playerFirst.ownDeckSize++;
             }
         }
     }

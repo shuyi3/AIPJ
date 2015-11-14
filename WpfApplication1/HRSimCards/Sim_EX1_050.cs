@@ -10,10 +10,19 @@ namespace HRSim
 //    kampfschrei:/ jeder spieler zieht 2 karten.
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
-            p.drawACard(CardDB.cardName.unknown, true);
-            p.drawACard(CardDB.cardName.unknown, true);
-            p.drawACard(CardDB.cardName.unknown, false);
-            p.drawACard(CardDB.cardName.unknown, false);
+            if (p.isOwnTurn)
+            {
+                p.drawACard(p.getArandomCardFromDeck(true), true);
+                p.drawACard(p.getArandomCardFromDeck(true), true);
+                p.drawACard(p.getArandomCardFromDeck(false), false);
+                p.drawACard(p.getArandomCardFromDeck(false), false);
+            }
+            else {
+                p.drawACard(p.getArandomCardFromDeck(false), false);
+                p.drawACard(p.getArandomCardFromDeck(false), false);
+                p.drawACard(p.getArandomCardFromDeck(true), true);
+                p.drawACard(p.getArandomCardFromDeck(true), true);        
+            }
 
 		}
 

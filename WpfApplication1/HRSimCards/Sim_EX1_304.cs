@@ -10,7 +10,7 @@ namespace HRSim
 //    kampfschrei:/ vernichtet die benachbarten diener und verleiht ihm deren angriff und leben.
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
-            List<Minion> temp = (own.own) ? p.ownMinions : p.enemyMinions;
+            List<Minion> temp = (own.own) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
 
             int angr = 0;
             int hp = 0;

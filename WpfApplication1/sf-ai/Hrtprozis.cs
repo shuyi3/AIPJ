@@ -25,6 +25,8 @@
 
         Silverfish sf;
 
+        public int maxEntityID = 1000;
+
         public int attackFaceHp = 15;
         public int ownHeroFatigue = 0;
         public int ownDeckSize = 30;
@@ -115,6 +117,8 @@
 
         public void clearAll()
         {
+            maxEntityID = 1000;
+
             ownHeroEntity = -1;
             enemyHeroEntitiy = -1;
             currentMana = 0;
@@ -163,6 +167,19 @@
         {
             return this.ownPlayerController;
         }
+
+        //implementation
+
+        public void updateMaxEntity(int nextEntity) {
+            this.maxEntityID = nextEntity;
+        }
+
+        public int getMaxEntity() {
+            return this.maxEntityID;
+        }
+
+        //implementation
+
 
         public string heroIDtoName(string s)
         {

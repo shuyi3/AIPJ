@@ -13,11 +13,11 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnMechwarper++;
+                p.playerFirst.anzOwnMechwarper++;
             }
             else
             {
-                p.anzEnemyMechwarper++;
+                p.playerSecond.anzOwnMechwarper++;
 
             }
 
@@ -27,11 +27,11 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnMechwarper--;
+                p.playerFirst.anzOwnMechwarper--;
             }
             else
             {
-                p.anzEnemyMechwarper--;
+                p.playerSecond.anzOwnMechwarper--;
             }
         }
 

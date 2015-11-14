@@ -10,7 +10,7 @@ namespace HRSim
 	
         public override void getBattlecryEffect(Playfield p, Minion m, Minion target, int choice)
         {
-            int heroHealth = m.own ? p.enemyHero.Hp : p.ownHero.Hp;
+            int heroHealth = m.own ? p.playerSecond.ownHero.Hp : p.playerFirst.ownHero.Hp;
 			if(heroHealth <= 15) p.minionGetBuffed(m, 3, 3);
         }
 	}

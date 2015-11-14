@@ -10,7 +10,7 @@ namespace HRSim
 //    vernichtet einen befreundeten diener und fügt allen feindlichen dienern schaden zu, der seinem angriff entspricht.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int damage1 = (ownplay) ? p.getSpellDamageDamage(target.Angr) : p.getEnemySpellDamageDamage(target.Angr);
+            int damage1 = p.getSpellDamageDamage(target.Angr, ownplay);
 
             p.minionGetDestroyed(target);
 

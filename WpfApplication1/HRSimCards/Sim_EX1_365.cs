@@ -10,9 +10,9 @@ namespace HRSim
 //    zieht eine karte und verursacht schaden, der ihren kosten entspricht.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
 
-            int dmg = (ownplay) ? p.getSpellDamageDamage(3) : p.getEnemySpellDamageDamage(3);
+            int dmg = p.getSpellDamageDamage(3, ownplay);
             p.minionGetDamageOrHeal(target, dmg);
 		}
 

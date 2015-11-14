@@ -11,7 +11,7 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            p.mana = Math.Min(p.mana + 2, 10);
+            p.playerFirst.mana = Math.Min(p.playerFirst.mana + 2, 10);
 		}
 
 	}

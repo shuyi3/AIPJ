@@ -10,7 +10,7 @@ namespace HRSim
 //    todesröcheln:/ übernehmt die kontrolle über einen zufälligen feindlichen diener.
         public override void onDeathrattle(Playfield p, Minion m)
         {
-                List<Minion> tmp = (m.own) ? p.enemyMinions : p.ownMinions;
+                List<Minion> tmp = (m.own) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
                 if (tmp.Count >= 1)
                 {
                     Minion target = null;

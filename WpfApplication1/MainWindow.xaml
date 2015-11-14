@@ -16,7 +16,9 @@
         </Grid.RowDefinitions>
         <TextBlock HorizontalAlignment="Left" Margin="400,200,0,0" TextWrapping="Wrap"
 Text="TextBlock" VerticalAlignment="Top"/>
-        <TextBlock Name="LogTextBlock" Text="{Binding LogText}" Grid.Column="3" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top" Height="749" Width="290"/>
+        <ScrollViewer Grid.Column="3" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.RowSpan="2"  VerticalAlignment="Top" Height="696" Width="290">
+            <TextBlock Name="LogTextBlock" Text=""  TextWrapping="Wrap"/>
+        </ScrollViewer>
         <ListBox ItemsSource="{Binding OwnHandCards}" Grid.Column="1" HorizontalAlignment="Left" Height="146" Margin="88.6,540,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="449">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -77,7 +79,9 @@ Text="TextBlock" VerticalAlignment="Top"/>
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
         </ListBox>
-        <TextBlock Name="OwnHeroBlock" Text="{Binding OwnHeroText}" Grid.Column="1" HorizontalAlignment="Left" Margin="88.6,691,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBlock Name="EnemyHeroBlock" Text="{Binding EnemyHeroText}" Grid.Column="1" HorizontalAlignment="Left" Margin="88.6,10,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock Name="OwnHeroBlock" Text="" Grid.Column="1" HorizontalAlignment="Left" Margin="88.6,691,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock Name="EnemyHeroBlock" Text="" Grid.Column="1" HorizontalAlignment="Left" Margin="88.6,10,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Button Content="Play a Move" Click="MakeMove" Grid.Column="3" HorizontalAlignment="Left" Margin="10,711,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="109" RenderTransformOrigin="-0.645,0.079" Height="33"/>
+        <Button Content="Play a Game" Click="AutoPlay" Grid.Column="3" HorizontalAlignment="Left" Margin="190.6,711,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="109" RenderTransformOrigin="-0.645,0.079" Height="33"/>
     </Grid>
 </Window>

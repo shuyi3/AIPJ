@@ -11,7 +11,7 @@ namespace HRSim
         //todo does silenced count?
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
-            List<Minion> temp = (own.own) ? p.enemyMinions : p.ownMinions;
+            List<Minion> temp = (own.own) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
 
             int gain = 0;
             foreach (Minion m in temp)

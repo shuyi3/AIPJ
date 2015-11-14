@@ -11,12 +11,12 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            foreach (Minion m in p.ownMinions)
+            foreach (Minion m in p.playerFirst.ownMinions)
             {
                 p.minionGetDamageOrHeal(m, m.Angr, true);
             }
 
-            foreach (Minion m in p.enemyMinions)
+            foreach (Minion m in p.playerSecond.ownMinions)
             {
                 p.minionGetDamageOrHeal(m, m.Angr, true);
             }

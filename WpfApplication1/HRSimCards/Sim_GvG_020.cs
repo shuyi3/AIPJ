@@ -16,7 +16,7 @@ namespace HRSim
                 //count non-mechs
                 int ownNonMechs = 0;
                 Minion ownTemp = null;
-                foreach (Minion m in p.ownMinions)
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race != TAG_RACE.MECHANICAL)
                     {
@@ -27,7 +27,7 @@ namespace HRSim
 
                 int enemyNonMechs = 0;
                 Minion enemyTemp = null;
-                foreach (Minion m in p.enemyMinions)
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race != TAG_RACE.MECHANICAL)
                     {

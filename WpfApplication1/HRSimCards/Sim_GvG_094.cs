@@ -11,33 +11,29 @@ namespace HRSim
 
         public override void onTurnEndsTrigger(Playfield p, Minion triggerEffectMinion, bool turnEndOfOwner)
         {
-
-            int cardstodraw = 0;
-            if (p.owncards.Count <= 2)
+            if (triggerEffectMinion.own == turnEndOfOwner)
             {
-                cardstodraw = 3 - p.owncards.Count; 
-            }
+                Player mPlayer;
+                if (turnEndOfOwner)
+                {
+                    mPlayer = p.playerFirst;
+                }
+                else
+                {
+                    mPlayer = p.playerSecond;
+                }
 
-            for (int i = 0; i < cardstodraw; i++)
-            {
-                p.drawACard(CardDB.cardName.unknown, true);
-            }
-            cardstodraw = 0;
+                int cardstodraw = 0;
+                if (mPlayer.owncards.Count <= 2)
+                {
+                    cardstodraw = 3 - mPlayer.owncards.Count;
+                }
 
-            //draw enemys cards...
-            if (p.enemyAnzCards <= 2)
-            {
-                cardstodraw = 3 - p.enemyAnzCards;
+                for (int i = 0; i < cardstodraw; i++)
+                {
+                    p.drawACard(p.getArandomCardFromDeck(turnEndOfOwner), turnEndOfOwner);
+                }
             }
-
-            for (int i = 0; i < cardstodraw; i++)
-            {
-                p.drawACard(CardDB.cardName.unknown, false);
-            }
-
         }
-
-
     }
-
 }

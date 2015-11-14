@@ -14,7 +14,7 @@ namespace HRSim
             if (turnStartOfOwner && triggerEffectMinion.own == turnStartOfOwner)
             {
                 List<Handmanager.Handcard> temp2 = new List<Handmanager.Handcard>();
-                foreach (Handmanager.Handcard hc in p.owncards)
+                foreach (Handmanager.Handcard hc in p.playerFirst.owncards)
                 {
                     if (hc.card.type == CardDB.cardtype.MOB) temp2.Add(hc);
                 }
@@ -23,7 +23,7 @@ namespace HRSim
                 {
                     CardDB.Card c = CardDB.Instance.getCardDataFromID(mins.card.cardIDenum);
                     p.minionTransform(triggerEffectMinion, c);
-                    p.removeCard(mins);
+                    p.removeCard(mins, true);
                     p.drawACard(CardDB.cardName.alarmobot, true, true);
                     break;
                 }

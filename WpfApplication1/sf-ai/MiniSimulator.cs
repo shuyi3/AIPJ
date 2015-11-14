@@ -105,6 +105,8 @@
 
         public float doallmoves(Playfield playf, bool isLethalCheck)
         {
+            HRSim.Helpfunctions.Instance.startTimer();
+            List<Action> actions = null;
             if (botBase == null) botBase = sf.Ai.botBase;
             bool test = false;
             this.posmoves.Clear();
@@ -115,8 +117,11 @@
             int deep = 0;
             //sf.helpfunctions.logg("NXTTRN" + playf.mana + " " + posmoves.Count);
             this.calculated = 0;
+            //debug
+            //int loopNumber = 0;
             while (havedonesomething)
             {
+                //loopNumber++;
                 if (this.printNormalstuff) sf.Helpfunctions.logg("ailoop");
                 GC.Collect();
                 temp.Clear();
@@ -133,8 +138,37 @@
                     }
 
                     //gernerate actions and play them!
-                    List<Action> actions = sf.Movegenerator.getMoveList(p, isLethalCheck, usePenalityManager, useCutingTargets);
-                    
+                    actions = sf.Movegenerator.getMoveList(p, isLethalCheck, usePenalityManager, useCutingTargets);
+                    Playfield ppTest = new Playfield(sf);
+                    //if (loopNumber == 1)
+                    //{
+                    //    if (!p.isEqual(ppTest, false))
+                    //    {
+                    //        int debug = 1;
+                    //    }
+                    //    foreach (Action a in actions)
+                    //    {
+                    //        if (a.actionType == actionEnum.playcard)
+                    //        {
+                    //            if (a.card.entity == 1020) {
+                    //                int debug1 = 1;
+                    //            }
+                    //            bool isCardValid = false;
+                    //            foreach (Handmanager.Handcard hh in p.owncards)
+                    //            {
+                    //                if (hh.entity == a.card.entity)
+                    //                {
+                    //                    isCardValid = true;
+                    //                    break;
+                    //                }
+                    //            }
+                    //            if (!isCardValid)
+                    //            {
+                    //                int debug = 1;
+                    //            }
+                    //        }
+                    //    }
+                    //}
                     //sf.helpfunctions.ErrorLog(" ");
                     //sf.helpfunctions.ErrorLog(actions.Count + " Playfield: " + p.hashcode.ToString());
                     foreach (Action a in actions)
@@ -208,6 +242,7 @@
                         Playfield pf = new Playfield(p);
                         pf.doAction(a);
                         addToPosmoves(pf);
+                        //HRSim.Helpfunctions.Instance.logTime("action itr");
                     }
                     //sf.helpfunctions.ErrorLog("deep " + deep + " len " + this.posmoves.Count);
 
@@ -235,6 +270,8 @@
                     {
                         posmoves.Remove(p);
                     }
+
+                    //HRSim.Helpfunctions.Instance.logTime("tempp itr");
 
                     if (this.calculated > this.totalboards) break;
                 }
@@ -269,7 +306,9 @@
 
                 if (this.calculated > this.totalboards) break;
                 if (deep >= this.maxdeep) break;//remove this?
+                //HRSim.Helpfunctions.Instance.logTime("sth itr");
             }
+            //HRSim.Helpfunctions.Instance.logTime("done sth");
 
             foreach (Playfield p in posmoves)//temp
             {
@@ -295,6 +334,7 @@
             if (!isLethalCheck) this.dirtyTwoTurnSim /= 2;
 
             // sf.helpfunctions.logg("find best ");
+            ////HRSim.Helpfunctions.Instance.logTime("2 turn sim");
             if (posmoves.Count >= 1)
             {
                 float bestval = int.MinValue;
@@ -303,6 +343,7 @@
                 foreach (Playfield p in posmoves)//temp
                 {
                     float val = botBase.getPlayfieldValue(p);
+                    sf.helpfunctions.logg("move val:" + val);
                     if (bestval <= val)
                     {
                         if (bestval == val && bestanzactions < p.playactions.Count) continue;
@@ -310,13 +351,13 @@
                         bestval = val;
                         bestanzactions = p.playactions.Count;
                     }
-
+                    //HRSim.Helpfunctions.Instance.logTime("search best play itr");
                 }
-
+                //HRSim.Helpfunctions.Instance.logTime("search best play 1: " + posmoves.Count);
                 this.bestmove = bestplay.getNextAction();
                 this.bestmoveValue = bestval;
                 this.bestboard = new Playfield(bestplay);
-                //sf.helpfunctions.logg("return");
+                //HRSim.Helpfunctions.Instance.logTime("search best play 2");
                 return bestval;
             }
             //sf.helpfunctions.logg("return");

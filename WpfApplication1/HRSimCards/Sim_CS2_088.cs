@@ -10,9 +10,9 @@ namespace HRSim
         //    kampfschrei:/ stellt bei eurem helden 6 leben wieder her.
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
-            int heal = (own.own) ? p.getMinionHeal(6) : p.getEnemyMinionHeal(6);
+            int heal = p.getMinionHeal(6, own.own);
 
-            p.minionGetDamageOrHeal(own.own ? p.ownHero : p.enemyHero, -heal);
+            p.minionGetDamageOrHeal(own.own ? p.playerFirst.ownHero : p.playerSecond.ownHero, -heal);
         }
 
 

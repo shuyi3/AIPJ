@@ -12,16 +12,16 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnStormwindChamps++;
-                foreach (Minion m in p.ownMinions)
+                p.playerFirst.anzOwnStormwindChamps++;
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if (own.entitiyID != m.entitiyID) p.minionGetBuffed(m, 1, 1);
                 }
             }
             else
             {
-                p.anzEnemyStormwindChamps++;
-                foreach (Minion m in p.enemyMinions)
+                p.playerSecond.anzOwnStormwindChamps++;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (own.entitiyID != m.entitiyID) p.minionGetBuffed(m, 1, 1);
                 }
@@ -33,16 +33,16 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnStormwindChamps--;
-                foreach (Minion m in p.ownMinions)
+                p.playerFirst.anzOwnStormwindChamps--;
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if (own.entitiyID != m.entitiyID) p.minionGetBuffed(m, -1, -1);
                 }
             }
             else
             {
-                p.anzEnemyStormwindChamps--;
-                foreach (Minion m in p.enemyMinions)
+                p.playerSecond.anzOwnStormwindChamps--;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if (own.entitiyID != m.entitiyID) p.minionGetBuffed(m, -1, -1);
                 }

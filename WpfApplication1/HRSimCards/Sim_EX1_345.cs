@@ -12,8 +12,8 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            if (p.enemyDeckSize < 1) copymin = CardDB.Instance.getCardDataFromID(CardDB.cardIDEnum.EX1_345t); // Shadow of Nothing
-            p.callKid(copymin, p.ownMinions.Count, true);
+            if (p.playerSecond.ownDeckSize < 1) copymin = CardDB.Instance.getCardDataFromID(CardDB.cardIDEnum.EX1_345t); // Shadow of Nothing
+            p.callKid(copymin, p.playerFirst.ownMinions.Count, true);
 		}
 	}
 }

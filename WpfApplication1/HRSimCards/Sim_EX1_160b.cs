@@ -10,7 +10,7 @@ namespace HRSim
 //    verleiht euren dienern +1/+1.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            List<Minion> temp = (ownplay) ? p.ownMinions : p.enemyMinions;
+            List<Minion> temp = (ownplay) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             foreach (Minion m in temp)
             {
                 p.minionGetBuffed(m, 1, 1);

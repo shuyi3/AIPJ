@@ -12,9 +12,10 @@ namespace HRSim
         {
             if (m.own == turnEndOfOwner)
             {
-				foreach (Handmanager.Handcard hc in p.owncards)
+				foreach (Handmanager.Handcard hc in p.playerFirst.owncards)
                 {
                     if (hc.manacost >= 1) hc.manacost--;
+                    hc.permCostChange--;     
                 }
             }
         }

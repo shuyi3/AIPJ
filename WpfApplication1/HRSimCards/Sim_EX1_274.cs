@@ -12,7 +12,7 @@ namespace HRSim
         {
             if (triggerEffectMinion.own == turnEndOfOwner)
             {
-                int b = (turnEndOfOwner) ? p.ownSecretsIDList.Count : p.enemySecretCount;
+                int b = (turnEndOfOwner) ? p.playerFirst.ownSecretsIDList.Count : p.playerSecond.ownSecretsIDList.Count;
                 if (b >= 1) p.minionGetBuffed(triggerEffectMinion, 2, 2);
  
             }

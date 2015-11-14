@@ -12,11 +12,11 @@ namespace HRSim
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
 
-            foreach (Minion m in p.ownMinions)
+            foreach (Minion m in p.playerFirst.ownMinions)
             {
                 if (m.handcard.card.deathrattle) p.minionGetDamageOrHeal(m, 2);
             }
-            foreach (Minion m in p.enemyMinions)
+            foreach (Minion m in p.playerSecond.ownMinions)
             {
                 if (m.handcard.card.deathrattle) p.minionGetDamageOrHeal(m, 2);
             }

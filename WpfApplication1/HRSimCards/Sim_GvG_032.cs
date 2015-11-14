@@ -13,15 +13,15 @@ namespace HRSim
         {
             if (choice == 1)
             {
-				p.mana = Math.Min(10, p.mana+1);
-				p.ownMaxMana = Math.Min(10, p.ownMaxMana+1);
-				p.enemyMaxMana = Math.Min(10, p.enemyMaxMana+1);
+				p.playerFirst.mana = Math.Min(10, p.playerFirst.mana+1);
+				p.playerFirst.ownMaxMana = Math.Min(10, p.playerFirst.ownMaxMana+1);
+				p.playerSecond.ownMaxMana = Math.Min(10, p.playerSecond.ownMaxMana+1);
             }
 
-            if (choice == 2)
+            if (choice == 2)//TODO: need order here?
             {
-                p.drawACard(CardDB.cardName.unknown, true);
-                p.drawACard(CardDB.cardName.unknown, false);
+                p.drawACard(p.getArandomCardFromDeck(own.own), own.own);
+                p.drawACard(p.getArandomCardFromDeck(!own.own), !own.own);
             }
         }
 

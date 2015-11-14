@@ -10,7 +10,7 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            List<Minion> temp2 = (ownplay) ? new List<Minion>(p.enemyMinions) : new List<Minion>(p.ownMinions);
+            List<Minion> temp2 = (ownplay) ? new List<Minion>(p.playerSecond.ownMinions) : new List<Minion>(p.playerFirst.ownMinions);
             temp2.Sort((a, b) => a.Angr.CompareTo(b.Angr));
             foreach (Minion enemy in temp2)
             {

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace HRSim
 {
-    class Sim_FP1_004 : SimTemplate//* Mad Scientist
+    class Sim_FP1_004 : SimTemplate//* Mad Scientist //TODO: rework
     {
         // Deathrattle: Put a Secret: from your deck into the battlefield.
 
@@ -12,39 +12,71 @@ namespace HRSim
         {
             if (m.own)
             {
-                if (p.ownHeroStartClass == TAG_CLASS.MAGE)
+                CardDB.cardIDEnum secToDraw = p.getArandomSecretFromDeck(m.own);
+                if (secToDraw != CardDB.cardIDEnum.None)
                 {
-                    p.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_289);
-                }
-                if (p.ownHeroStartClass == TAG_CLASS.HUNTER)
-                {
-                    p.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_554);
-                }
-                if (p.ownHeroStartClass == TAG_CLASS.PALADIN)
-                {
-                    p.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_130);
+                    p.playerFirst.ownSecretsIDList.Add(secToDraw);
                 }
             }
             else
             {
-                if (p.enemyHeroStartClass == TAG_CLASS.MAGE || p.enemyHeroStartClass == TAG_CLASS.HUNTER || p.enemyHeroStartClass == TAG_CLASS.PALADIN)
+                CardDB.cardIDEnum secToDraw = p.getArandomSecretFromDeck(m.own);
+                if (secToDraw != CardDB.cardIDEnum.None)
                 {
-                    if (p.enemySecretCount <= 4)
-                    {
-                        p.enemySecretCount++;
-                        SecretItem si = Probabilitymaker.Instance.getNewSecretGuessedItem(p.getNextEntity(), p.ownHeroStartClass);
-                        if (p.enemyHeroStartClass == TAG_CLASS.PALADIN)
-                        {
-                            si.canBe_redemption = false;
-                        }
-                        //if (Settings.Instance.useSecretsPlayArround)
-                        //{
-                        //    p.enemySecretList.Add(si);
-                        //}
-                    }
+                    p.playerSecond.ownSecretsIDList.Add(secToDraw);
                 }
             }
         }
+
+        //public override void onDeathrattle(Playfield p, Minion m)
+        //{
+        //    if (m.own)
+        //    {
+        //        if (p.playerFirst.ownHeroStartClass == TAG_CLASS.MAGE)
+        //        {
+        //            p.playerFirst.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_289);
+        //        }
+        //        if (p.playerFirst.ownHeroStartClass == TAG_CLASS.HUNTER)
+        //        {
+        //            p.playerFirst.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_554);
+        //        }
+        //        if (p.playerFirst.ownHeroStartClass == TAG_CLASS.PALADIN)
+        //        {
+        //            p.playerFirst.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_130);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //if (p.playerSecond.ownHeroStartClass == TAG_CLASS.MAGE || p.playerSecond.ownHeroStartClass == TAG_CLASS.HUNTER || p.playerSecond.ownHeroStartClass == TAG_CLASS.PALADIN)
+        //        //{
+        //        //    if (p.playerSecond.ownSecretsIDList.Count <= 4)
+        //        //    {
+        //        //        p.playerSecond.ownSecretsIDList.Count++;
+        //        //        SecretItem si = Probabilitymaker.Instance.getNewSecretGuessedItem(p.getNextEntity(), p.playerFirst.ownHeroStartClass);
+        //        //        if (p.playerSecond.ownHeroStartClass == TAG_CLASS.PALADIN)
+        //        //        {
+        //        //            si.canBe_redemption = false;
+        //        //        }
+        //        //        //if (Settings.Instance.useSecretsPlayArround)
+        //        //        //{
+        //        //        //    p.playerSecond.ownSecretList.Add(si);
+        //        //        //}
+        //        //    }
+        //        //}
+        //        if (p.playerSecond.ownHeroStartClass == TAG_CLASS.MAGE)
+        //        {
+        //            p.playerSecond.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_289);
+        //        }
+        //        if (p.playerSecond.ownHeroStartClass == TAG_CLASS.HUNTER)
+        //        {
+        //            p.playerSecond.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_554);
+        //        }
+        //        if (p.playerSecond.ownHeroStartClass == TAG_CLASS.PALADIN)
+        //        {
+        //            p.playerSecond.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_130);
+        //        }
+        //    }
+        //}
     }
 
 }

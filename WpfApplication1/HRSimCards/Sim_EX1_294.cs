@@ -12,26 +12,26 @@ namespace HRSim
         public override void onSecretPlay(Playfield p, bool ownplay, Minion target, int number)
         {
 
-            int posi = (ownplay) ? p.ownMinions.Count : p.enemyMinions.Count;
+            int posi = (ownplay) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
             p.callKid(target.handcard.card, posi, ownplay);
             if (ownplay)
             {
-                if (p.ownMinions.Count >= 1 && p.ownMinions[p.ownMinions.Count - 1].name == target.handcard.card.name)
+                if (p.playerFirst.ownMinions.Count >= 1 && p.playerFirst.ownMinions[p.playerFirst.ownMinions.Count - 1].name == target.handcard.card.name)
                 {
-                    int e = p.ownMinions[p.ownMinions.Count - 1].entitiyID;
-                    p.ownMinions[p.ownMinions.Count - 1].setMinionTominion(target);
-                    p.ownMinions[p.ownMinions.Count - 1].entitiyID = e;
-                    p.ownMinions[p.ownMinions.Count - 1].own = true;
+                    int e = p.playerFirst.ownMinions[p.playerFirst.ownMinions.Count - 1].entitiyID;
+                    p.playerFirst.ownMinions[p.playerFirst.ownMinions.Count - 1].setMinionTominion(target);
+                    p.playerFirst.ownMinions[p.playerFirst.ownMinions.Count - 1].entitiyID = e;
+                    p.playerFirst.ownMinions[p.playerFirst.ownMinions.Count - 1].own = true;
                 }
             }
             else
             {
-                if (p.enemyMinions.Count >= 1 && p.enemyMinions[p.enemyMinions.Count - 1].name == target.handcard.card.name)
+                if (p.playerSecond.ownMinions.Count >= 1 && p.playerSecond.ownMinions[p.playerSecond.ownMinions.Count - 1].name == target.handcard.card.name)
                 {
-                    int e = p.enemyMinions[p.enemyMinions.Count - 1].entitiyID;
-                    p.enemyMinions[p.enemyMinions.Count - 1].setMinionTominion(target);
-                    p.enemyMinions[p.enemyMinions.Count - 1].entitiyID = e;
-                    p.enemyMinions[p.enemyMinions.Count - 1].own = false;
+                    int e = p.playerSecond.ownMinions[p.playerSecond.ownMinions.Count - 1].entitiyID;
+                    p.playerSecond.ownMinions[p.playerSecond.ownMinions.Count - 1].setMinionTominion(target);
+                    p.playerSecond.ownMinions[p.playerSecond.ownMinions.Count - 1].entitiyID = e;
+                    p.playerSecond.ownMinions[p.playerSecond.ownMinions.Count - 1].own = false;
                 }
             }
         }

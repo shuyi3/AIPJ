@@ -13,7 +13,7 @@ namespace HRSim
 		{
 
 
-            int dmg = (ownplay) ? p.getSpellDamageDamage(2) : p.getEnemySpellDamageDamage(2);
+            int dmg = p.getSpellDamageDamage(2, ownplay);
 
             bool summondemon = false;
 
@@ -26,7 +26,7 @@ namespace HRSim
 
             if (summondemon)
             {
-                int posi = (ownplay) ? p.ownMinions.Count : p.enemyMinions.Count;
+                int posi = (ownplay) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
                 
                 p.callKid(kid, posi, ownplay);
             }

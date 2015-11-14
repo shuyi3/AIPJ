@@ -15,18 +15,18 @@ namespace HRSim
 			int cardCount = 0;
             if (ownplay)
             {
-				cardCount = p.owncards.Count;
-                if (p.doublepriest >= 1) dmg *= (2 * p.doublepriest);
+				cardCount = p.playerFirst.owncards.Count;
+                if (p.playerFirst.doublepriest >= 1) dmg *= (2 * p.playerFirst.doublepriest);
             }
             else
             {
-				cardCount = p.enemyAnzCards;
-                if (p.enemydoublepriest >= 1) dmg *= (2 * p.enemydoublepriest);
+				cardCount = p.playerSecond.owncards.Count;
+                if (p.playerSecond.doublepriest >= 1) dmg *= (2 * p.playerSecond.doublepriest);
             }
 						
             for (int i = 0; i < cardCount; i++)
             {
-				var found = (ownplay)? p.searchRandomMinion(p.ownMinions, Playfield.searchmode.searchHighAttackLowHP) : p.searchRandomMinion(p.enemyMinions, Playfield.searchmode.searchHighAttackLowHP);
+				var found = (ownplay)? p.searchRandomMinion(p.playerFirst.ownMinions, Playfield.searchmode.searchHighAttackLowHP) : p.searchRandomMinion(p.playerSecond.ownMinions, Playfield.searchmode.searchHighAttackLowHP);
 				if (found != null)
 				{
 					p.minionGetDamageOrHeal(found, dmg);

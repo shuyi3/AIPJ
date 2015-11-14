@@ -13,8 +13,8 @@ namespace HRSim
         {
             p.minionGetBuffed(target, 2, 4);
             target.spellpower++;
-            if (target.own) p.spellpower++;
-            else p.enemyspellpower++;
+            if (target.own) p.playerFirst.spellpower++;
+            else p.playerSecond.spellpower++;
 
         }
 

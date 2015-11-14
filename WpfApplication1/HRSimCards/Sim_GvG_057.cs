@@ -13,15 +13,15 @@ namespace HRSim
         {
             if (ownplay)
             {
-                int heal = p.getSpellHeal(4);
-                p.minionGetDamageOrHeal(p.ownHero, -heal);
-                p.minionGetTempBuff(p.ownHero, 2, 0);
+                int heal = p.getSpellHeal(4, ownplay);
+                p.minionGetDamageOrHeal(p.playerFirst.ownHero, -heal);
+                p.minionGetTempBuff(p.playerFirst.ownHero, 2, 0);
             }
             else
             {
-                int heal = p.getEnemySpellHeal(4);
-                p.minionGetDamageOrHeal(p.enemyHero, -heal);
-                p.minionGetTempBuff(p.enemyHero, 2, 0);
+                int heal = p.getSpellHeal(4, ownplay);
+                p.minionGetDamageOrHeal(p.playerSecond.ownHero, -heal);
+                p.minionGetTempBuff(p.playerSecond.ownHero, 2, 0);
             }
 
         }

@@ -14,7 +14,7 @@ namespace HRSim
 		{
             if (choice == 1)
             {
-                List<Minion> temp = (ownplay) ? p.ownMinions : p.enemyMinions;
+                List<Minion> temp = (ownplay) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
                 foreach (Minion m in temp)
                 {
                     p.minionGetBuffed(m, 1, 1);
@@ -22,7 +22,7 @@ namespace HRSim
             }
             if (choice == 2)
             {
-                int posi = (ownplay) ? p.ownMinions.Count : p.enemyMinions.Count;
+                int posi = (ownplay) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
                 p.callKid(kid, posi, true);
                 
             }

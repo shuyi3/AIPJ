@@ -13,7 +13,7 @@ namespace HRSim
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
             p.equipWeapon(w, ownplay);
-            List<Minion> temp = (ownplay) ? p.ownMinions : p.enemyMinions;
+            List<Minion> temp = (ownplay) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             if (temp.Count <= 0) return;
             // Drew: Null check for searchRandomMinion.
             var found = p.searchRandomMinion(temp, Playfield.searchmode.searchLowestAttack);

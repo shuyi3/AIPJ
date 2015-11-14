@@ -16,26 +16,26 @@ namespace HRSim
             number = 0;
             if (ownplay)
             {
-                int posi = p.ownMinions.Count;
+                int posi = p.playerFirst.ownMinions.Count;
                 p.callKid(kid, posi, true);
-                if (p.ownMinions.Count >= 1)
+                if (p.playerFirst.ownMinions.Count >= 1)
                 {
-                    if (p.ownMinions[p.ownMinions.Count - 1].name == CardDB.cardName.spellbender)
+                    if (p.playerFirst.ownMinions[p.playerFirst.ownMinions.Count - 1].name == CardDB.cardName.spellbender)
                     {
-                        number = p.ownMinions[p.ownMinions.Count - 1].entitiyID;
+                        number = p.playerFirst.ownMinions[p.playerFirst.ownMinions.Count - 1].entitiyID;
                     }
                 }
             }
             else
             {
-                int posi = p.enemyMinions.Count;
+                int posi = p.playerSecond.ownMinions.Count;
                 p.callKid(kid, posi, false);
 
-                if (p.enemyMinions.Count >= 1)
+                if (p.playerSecond.ownMinions.Count >= 1)
                 {
-                    if (p.enemyMinions[p.enemyMinions.Count - 1].name == CardDB.cardName.spellbender)
+                    if (p.playerSecond.ownMinions[p.playerSecond.ownMinions.Count - 1].name == CardDB.cardName.spellbender)
                     {
-                        number = p.enemyMinions[p.enemyMinions.Count - 1].entitiyID;
+                        number = p.playerSecond.ownMinions[p.playerSecond.ownMinions.Count - 1].entitiyID;
                     }
                 }
             }

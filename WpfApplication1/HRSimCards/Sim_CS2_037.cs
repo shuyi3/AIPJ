@@ -10,7 +10,7 @@ namespace HRSim
 //    fügt einem feindlichen charakter $1 schaden zu und friert/ ihn ein.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg = (ownplay) ? p.getSpellDamageDamage(1) : p.getEnemySpellDamageDamage(1);
+            int dmg = p.getSpellDamageDamage(1, ownplay);
             target.frozen = true;
             p.minionGetDamageOrHeal(target, dmg);
             

@@ -11,12 +11,12 @@ namespace HRSim
 //    der erste diener, den ihr in einem zug ausspielt, kostet (1) weniger.
         public override void onAuraStarts(Playfield p, Minion own)
 		{
-            if (own.own) p.winzigebeschwoererin++;
+            if (own.own) p.playerFirst.winzigebeschwoererin++;
 		}
 
         public override void onAuraEnds(Playfield p, Minion m)
         {
-            if (m.own) p.winzigebeschwoererin--;
+            if (m.own) p.playerFirst.winzigebeschwoererin--;
         }
 
 	}

@@ -11,7 +11,14 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            p.drawACard(CardDB.cardName.unknown, ownplay, true);
+            p.drawACard(CardDB.Instance.getRandomCollectibleCardName(), ownplay, true);
+            if (ownplay)
+            {
+                p.playerFirst.owncards[p.playerFirst.owncards.Count - 1].manacost -= 3;
+            }
+            else {
+                p.playerSecond.owncards[p.playerSecond.owncards.Count - 1].manacost -= 3;
+            }
         }
 
     }

@@ -11,22 +11,19 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg = (ownplay) ? p.getSpellDamageDamage(4) : p.getEnemySpellDamageDamage(4);
+            int dmg = p.getSpellDamageDamage(4, ownplay);
             p.minionGetDamageOrHeal(target, dmg);
             if (ownplay)
             {
-                p.owncarddraw -= Math.Min(1, p.owncards.Count);
-                p.owncards.RemoveRange(0, Math.Min(1, p.owncards.Count));
+                p.playerFirst.owncarddraw -= Math.Min(1, p.playerFirst.owncards.Count);
+                p.playerFirst.owncards.RemoveRange(0, Math.Min(1, p.playerFirst.owncards.Count));
                 p.triggerCardsChanged(true);
             }
             else
             {
-                if (p.enemyAnzCards >= 1)
-                {
-                    p.enemycarddraw--;
-                    p.enemyAnzCards--;
-                    p.triggerCardsChanged(false);
-                }
+                p.playerSecond.owncarddraw -= Math.Min(1, p.playerSecond.owncards.Count);
+                p.playerSecond.owncards.RemoveRange(0, Math.Min(1, p.playerSecond.owncards.Count));
+                p.triggerCardsChanged(true);
             }
 		}
 

@@ -113,7 +113,7 @@ namespace HRSim
                 Minion m = new Minion { entitiyID = targetEnt };
                 this.target = m;
 
-                this.own = p.ownHero;
+                this.own = p.playerFirst.ownHero;
 
             }
 
@@ -162,7 +162,7 @@ namespace HRSim
         public Action(HREngine.Bots.Action a)
         {
             this.actionType = (actionEnum)Enum.Parse(typeof(actionEnum), a.actionType.ToString());
-            this.card = new Handmanager.Handcard(a.card);
+            this.card = a.card == null? null : new Handmanager.Handcard(a.card);
             this.place = a.place;
             if (a.own != null)
             {
@@ -193,10 +193,10 @@ namespace HRSim
                 {
                     string playaction = "play ";
 
-                    playaction += "id " + this.card.entity;
+                    playaction += "id " + this.card.entity + ", card:" + this.card.card.name;
                     if (this.target != null)
                     {
-                        playaction += " target " + this.target.entitiyID;
+                        playaction += " target " + this.target.entitiyID + "(" + this.target.name + ")";
                     }
 
                     if (this.place >= 0)
@@ -210,18 +210,18 @@ namespace HRSim
                 }
                 if (this.actionType == actionEnum.attackWithMinion)
                 {
-                    help.writeToBuffer("attack " + this.own.entitiyID + " enemy " + this.target.entitiyID);
+                    help.writeToBuffer("attack " + this.own.entitiyID + " enemy " + this.target.entitiyID + "(" + this.target.name + ")");
                 }
                 if (this.actionType == actionEnum.attackWithHero)
                 {
-                    help.writeToBuffer("heroattack " + this.target.entitiyID);
+                    help.writeToBuffer("heroattack " + this.target.entitiyID + "(" + this.target.name + ")");
                 }
                 if (this.actionType == actionEnum.useHeroPower)
                 {
 
                     if (this.target != null)
                     {
-                        help.writeToBuffer("useability on target " + this.target.entitiyID);
+                        help.writeToBuffer("useability on target " + this.target.entitiyID + "(" + this.target.name + ")");
                     }
                     else
                     {
@@ -234,10 +234,10 @@ namespace HRSim
             {
                 string playaction = "play ";
 
-                playaction += "id " + this.card.entity;
+                playaction += "id " + this.card.entity + ", card:" + this.card.card.name;
                 if (this.target != null)
                 {
-                    playaction += " target " + this.target.entitiyID;
+                    playaction += " target " + this.target.entitiyID + "(" + this.target.name + ")";
                 }
 
                 if (this.place >= 0)
@@ -251,18 +251,18 @@ namespace HRSim
             }
             if (this.actionType == actionEnum.attackWithMinion)
             {
-                help.logg("attacker: " + this.own.entitiyID + " enemy: " + this.target.entitiyID);
+                help.logg("attacker: " + this.own.entitiyID + " enemy: " + this.target.entitiyID + "(" + this.target.name + ")");
             }
             if (this.actionType == actionEnum.attackWithHero)
             {
-                help.logg("attack with hero, enemy: " + this.target.entitiyID);
+                help.logg("attack with hero, enemy: " + this.target.entitiyID + "(" + this.target.name + ")");
             }
             if (this.actionType == actionEnum.useHeroPower)
             {
                 help.logg("useability ");
                 if (this.target != null)
                 {
-                    help.logg("on enemy: " + this.target.entitiyID);
+                    help.logg("on enemy: " + this.target.entitiyID + "(" + this.target.name + ")");
                 }
             }
             help.logg("");

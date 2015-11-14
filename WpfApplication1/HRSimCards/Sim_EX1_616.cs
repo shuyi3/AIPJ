@@ -10,12 +10,12 @@ namespace HRSim
 //    alle diener kosten (1) mehr.
         public override void onAuraStarts(Playfield p, Minion own)
 		{
-            p.managespenst ++;
+            p.playerFirst.managespenst ++;
 		}
 
         public override void onAuraEnds(Playfield p, Minion m)
         {
-            p.managespenst--;
+            p.playerFirst.managespenst--;
         }
 
 	}

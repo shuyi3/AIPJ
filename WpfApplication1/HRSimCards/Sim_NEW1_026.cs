@@ -12,7 +12,7 @@ namespace HRSim
         {
             if (wasOwnCard == triggerEffectMinion.own && c.type == CardDB.cardtype.SPELL)
             {
-                int place = (wasOwnCard)? p.ownMinions.Count : p.enemyMinions.Count;
+                int place = (wasOwnCard)? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
                 p.callKid(card, place, wasOwnCard);
             }
         }

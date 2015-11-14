@@ -12,8 +12,8 @@ namespace HRSim
         {
             if (turnStartOfOwner == triggerEffectMinion.own)
             {
-                int heal = (turnStartOfOwner) ? p.getMinionHeal(3) : p.getEnemyMinionHeal(3);
-                List<Minion> temp = (turnStartOfOwner) ? p.ownMinions : p.enemyMinions;
+                int heal = p.getMinionHeal(3, turnStartOfOwner);
+                List<Minion> temp = (turnStartOfOwner) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
                 if (temp.Count >= 1)
                 {
                     bool healed = false;
@@ -29,12 +29,12 @@ namespace HRSim
 
                     if (!healed)
                     {
-                        p.minionGetDamageOrHeal(turnStartOfOwner ? p.ownHero : p.enemyHero, -heal);
+                        p.minionGetDamageOrHeal(turnStartOfOwner ? p.playerFirst.ownHero : p.playerSecond.ownHero, -heal);
                     }
                 }
                 else
                 {
-                    p.minionGetDamageOrHeal(turnStartOfOwner ? p.ownHero : p.enemyHero, -heal);
+                    p.minionGetDamageOrHeal(turnStartOfOwner ? p.playerFirst.ownHero : p.playerSecond.ownHero, -heal);
                 }
 
             }

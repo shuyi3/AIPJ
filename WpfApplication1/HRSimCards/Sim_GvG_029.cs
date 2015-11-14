@@ -13,7 +13,7 @@ namespace HRSim
         {
             Handmanager.Handcard c = null;
             int sum = 10000;
-            foreach (Handmanager.Handcard hc in p.owncards)
+            foreach (Handmanager.Handcard hc in p.playerFirst.owncards)
             {
                 if (hc.card.type == CardDB.cardtype.MOB)
                 {
@@ -27,16 +27,16 @@ namespace HRSim
             }
             if (sum < 9999)
             {
-                p.callKid(c.card, p.ownMinions.Count, true);
-                p.removeCard(c);
+                p.callKid(c.card, p.playerFirst.ownMinions.Count, true);
+                p.removeCard(c, true);
                 p.triggerCardsChanged(true);
             }
 
 
-            if (p.enemyAnzCards >= 2)
+            if (p.playerSecond.owncards.Count >= 2)
             {
-                p.callKid(c.card, p.enemyMinions.Count, false);
-                p.enemyAnzCards--;
+                p.callKid(c.card, p.playerSecond.ownMinions.Count, false);
+                p.removeCard(c, false);
                 p.triggerCardsChanged(false);
             }
         }

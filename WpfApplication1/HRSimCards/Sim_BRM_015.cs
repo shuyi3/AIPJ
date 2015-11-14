@@ -11,10 +11,10 @@ namespace HRSim
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
 			int dmg = 1;
-			int heroHealth = (ownplay) ? p.ownHero.Hp : p.enemyHero.Hp;
+			int heroHealth = (ownplay) ? p.playerFirst.ownHero.Hp : p.playerSecond.ownHero.Hp;
 			if(heroHealth <= 12) dmg = 3;
-			
-            dmg = (ownplay) ? p.getSpellDamageDamage(dmg) : p.getEnemySpellDamageDamage(dmg);
+
+            dmg = p.getSpellDamageDamage(dmg, ownplay);
             p.allMinionsGetDamage(dmg);
 		}
 	}

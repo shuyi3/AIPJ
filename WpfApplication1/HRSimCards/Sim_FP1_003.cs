@@ -13,7 +13,7 @@ namespace HRSim
             if (triggerEffectMinion.playedThisTurn && triggerEffectMinion.own == turnEndOfOwner)
             {
                 p.callKid(triggerEffectMinion.handcard.card, triggerEffectMinion.zonepos, turnEndOfOwner);
-                List<Minion> temp = (turnEndOfOwner) ? p.ownMinions : p.enemyMinions;
+                List<Minion> temp = (turnEndOfOwner) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
                 foreach (Minion mnn in temp)
                 {
                     if (mnn.name == CardDB.cardName.echoingooze && triggerEffectMinion.entitiyID != mnn.entitiyID)

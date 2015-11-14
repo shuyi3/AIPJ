@@ -15,14 +15,14 @@ namespace HRSim
 			{
 				for (int i = 0; i < diedMinions; i++)
 				{
-					p.drawACard(CardDB.cardName.unknown, m.own);
+                    p.drawACard(p.getArandomCardFromDeck(m.own), m.own);
 				}
 			}
 			else if(p.tempTrigger.enemyMinionsDied > 0 && !m.own)
 			{
 				for (int i = 0; i < diedMinions; i++)
 				{
-					p.drawACard(CardDB.cardName.unknown, m.own);
+                    p.drawACard(p.getArandomCardFromDeck(!m.own), !m.own);
 				}
 			}
 			

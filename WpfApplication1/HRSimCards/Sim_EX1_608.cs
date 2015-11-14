@@ -12,11 +12,11 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnsorcerersapprentice++;
+                p.playerFirst.anzOwnsorcerersapprentice++;
             }
             else
             {
-                p.anzEnemysorcerersapprentice++;
+                p.playerSecond.anzOwnsorcerersapprentice++;
                 
             }
 
@@ -26,11 +26,11 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnsorcerersapprentice--;
+                p.playerFirst.anzOwnsorcerersapprentice--;
             }
             else
             {
-                p.anzEnemysorcerersapprentice--;
+                p.playerSecond.anzOwnsorcerersapprentice--;
             }
         }
 	}

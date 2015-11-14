@@ -235,7 +235,7 @@ namespace HREngine.Bots
                 help.logg("useability ");
                 if (this.target != null)
                 {
-                    help.logg("on enemy: " + this.target.entitiyID);
+                    help.logg("on enemy: " + this.target.entitiyID + " own:" + this.target.own);
                 }
             }
             help.logg("");

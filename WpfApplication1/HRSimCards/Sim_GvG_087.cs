@@ -13,40 +13,40 @@ namespace HRSim
         {
             if (m.own) 
             {
-                if(p.ownHeroName == HeroEnum.hunter)   p.weHaveSteamwheedleSniper = true;
+                if (p.playerFirst.ownHeroName == HeroEnum.hunter) p.playerFirst.weHaveSteamwheedleSniper = true;
             }
             else
             {
-                if (p.enemyHeroName == HeroEnum.hunter) p.enemyHaveSteamwheedleSniper = true;
+                if (p.playerSecond.ownHeroName == HeroEnum.hunter) p.playerSecond.weHaveSteamwheedleSniper = true;
             }
         }
 
         public override void  onAuraEnds(Playfield p, Minion m)
         {
-            if (m.own && p.ownHeroName == HeroEnum.hunter)
+            if (m.own && p.playerFirst.ownHeroName == HeroEnum.hunter)
             {
                 bool hasss = false;
-                foreach (Minion mnn in p.ownMinions)
+                foreach (Minion mnn in p.playerFirst.ownMinions)
                 {
                     if (!mnn.silenced && m.name == CardDB.cardName.steamwheedlesniper)
                     {
                         hasss = true;
                     }
                 }
-                p.weHaveSteamwheedleSniper = hasss;
+                p.playerFirst.weHaveSteamwheedleSniper = hasss;
                
             }
-            if (!m.own && p.enemyHeroName == HeroEnum.hunter)
+            if (!m.own && p.playerSecond.ownHeroName == HeroEnum.hunter)
             {
                 bool hasss = false;
-                foreach (Minion mnn in p.enemyMinions)
+                foreach (Minion mnn in p.playerSecond.ownMinions)
                 {
                     if (!mnn.silenced && m.name == CardDB.cardName.steamwheedlesniper)
                     {
                         hasss = true;
                     }
                 }
-                p.enemyHaveSteamwheedleSniper = hasss;
+                p.playerSecond.weHaveSteamwheedleSniper = hasss;
             }
         }
 

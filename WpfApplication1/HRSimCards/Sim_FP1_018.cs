@@ -13,13 +13,13 @@ namespace HRSim
         {
             if (ownplay)
             {
-                p.drawACard(p.revivingOwnMinion, ownplay, true);
-                p.drawACard(p.revivingOwnMinion, ownplay, true);
+                p.drawACard(p.playerFirst.revivingOwnMinion, ownplay, true);
+                p.drawACard(p.playerFirst.revivingOwnMinion, ownplay, true);
             }
             else
             {
-                p.drawACard(p.revivingEnemyMinion, ownplay, true);
-                p.drawACard(p.revivingEnemyMinion, ownplay, true);
+                p.drawACard(p.playerSecond.revivingOwnMinion, ownplay, true);
+                p.drawACard(p.playerSecond.revivingOwnMinion, ownplay, true);
             }
 
         }

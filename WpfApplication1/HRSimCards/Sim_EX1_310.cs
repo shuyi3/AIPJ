@@ -12,9 +12,9 @@ namespace HRSim
 		{
             if (own.own)
             {
-                int anz = Math.Min(2, p.owncards.Count);
-                p.owncarddraw -= anz;
-                p.owncards.RemoveRange(0, anz);
+                int anz = Math.Min(2, p.playerFirst.owncards.Count);
+                p.playerFirst.owncarddraw -= anz;
+                p.playerFirst.owncards.RemoveRange(0, anz);
                 if (anz >= 1)
                 {
                     p.triggerCardsChanged(true);
@@ -23,16 +23,11 @@ namespace HRSim
             }
             else
             {
-                if (p.enemyAnzCards >= 1)
+                int anz = Math.Min(2, p.playerSecond.owncards.Count);
+                p.playerSecond.owncarddraw -= anz;
+                p.playerSecond.owncards.RemoveRange(0, anz);
+                if (anz >= 1)
                 {
-                    p.enemycarddraw--;
-                    p.enemyAnzCards--;
-                    p.triggerCardsChanged(false);
-                }
-                if (p.enemyAnzCards >= 1)
-                {
-                    p.enemycarddraw--;
-                    p.enemyAnzCards--;
                     p.triggerCardsChanged(false);
                 }
             }

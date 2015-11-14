@@ -13,26 +13,26 @@ namespace HRSim
             int dmg = 8;
             if (ownplay)
             {
-                if (p.doublepriest >= 1) dmg *= (2 * p.doublepriest);
-				if (p.enemyMinions.Count > 0)
+                if (p.playerFirst.doublepriest >= 1) dmg *= (2 * p.playerFirst.doublepriest);
+				if (p.playerSecond.ownMinions.Count > 0)
 				{
-					target = p.searchRandomMinion(p.enemyMinions, Playfield.searchmode.searchLowestHP); //damage the lowest (pessimistic variant)
+					target = p.searchRandomMinion(p.playerSecond.ownMinions, Playfield.searchmode.searchLowestHP); //damage the lowest (pessimistic variant)
 				}
 				else
 				{
-					target = p.enemyHero;
+					target = p.playerSecond.ownHero;
 				}
             }
             else
             {
-                if (p.enemydoublepriest >= 1) dmg *= (2 * p.enemydoublepriest);
-				if (p.ownMinions.Count > 0)
+                if (p.playerSecond.doublepriest >= 1) dmg *= (2 * p.playerSecond.doublepriest);
+				if (p.playerFirst.ownMinions.Count > 0)
 				{
-					target = p.searchRandomMinion(p.ownMinions, Playfield.searchmode.searchHighestAttack); //damage the Highest (pessimistic variant)
+					target = p.searchRandomMinion(p.playerFirst.ownMinions, Playfield.searchmode.searchHighestAttack); //damage the Highest (pessimistic variant)
 				}
 				else
 				{
-					target = p.ownHero;
+					target = p.playerFirst.ownHero;
 				}
             }			
             p.minionGetDamageOrHeal(target, dmg);

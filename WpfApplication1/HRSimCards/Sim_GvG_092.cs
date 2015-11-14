@@ -11,7 +11,11 @@ namespace HRSim
 
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
-            p.drawACard(CardDB.cardName.unknown, own.own);
+            CardDB.Card randomCard = CardDB.Instance.getCardData(p.getArandomCardFromDeck(own.own));
+            if (randomCard.type == CardDB.cardtype.MOB) {
+                randomCard = CardDB.Instance.getCardDataFromID(CardDB.cardIDEnum.Mekka4t);
+            }
+            p.drawACard(randomCard.name, own.own);
         }
 
     }

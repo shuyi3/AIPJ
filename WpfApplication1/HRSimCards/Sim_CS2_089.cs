@@ -10,7 +10,7 @@ namespace HRSim
 //    stellt #6 leben wieder her.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int heal = (ownplay) ? p.getSpellHeal(6) : p.getEnemySpellHeal(6);
+            int heal = p.getSpellHeal(6, ownplay);
             p.minionGetDamageOrHeal(target, -heal);
 		}
 

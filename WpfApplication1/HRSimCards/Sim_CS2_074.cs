@@ -12,18 +12,18 @@ namespace HRSim
 		{
             if (ownplay)
             {
-                if (p.ownWeaponDurability >= 1)
+                if (p.playerFirst.ownWeaponDurability >= 1)
                 {
-                    p.ownWeaponAttack += 2;
-                    p.ownHero.Angr += 2;
+                    p.playerFirst.ownWeaponAttack += 2;
+                    p.playerFirst.ownHero.Angr += 2;
                 }
             }
             else
             {
-                if (p.enemyWeaponDurability >= 1)
+                if (p.playerSecond.ownWeaponDurability >= 1)
                 {
-                    p.enemyWeaponAttack += 2;
-                    p.enemyHero.Angr += 2;
+                    p.playerSecond.ownWeaponAttack += 2;
+                    p.playerSecond.ownHero.Angr += 2;
                 }
             }
 		}

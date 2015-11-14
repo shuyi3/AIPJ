@@ -12,10 +12,10 @@ namespace HRSim
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
 
-            int count = (ownplay) ? p.enemyMinions.Count : p.ownMinions.Count;
+            int count = (ownplay) ? p.playerSecond.ownMinions.Count : p.playerFirst.ownMinions.Count;
             if (count >= 1)
             {
-                List<Minion> temp2 = (ownplay) ? new List<Minion>(p.enemyMinions) : new List<Minion>(p.ownMinions);
+                List<Minion> temp2 = (ownplay) ? new List<Minion>(p.playerSecond.ownMinions) : new List<Minion>(p.playerFirst.ownMinions);
                 temp2.Sort((a, b) => a.Hp.CompareTo(b.Hp));//damage the lowest
                 foreach (Minion mins in temp2)
                 {
@@ -25,15 +25,15 @@ namespace HRSim
             }
             else
             {
-                p.minionGetDamageOrHeal(ownplay ? p.enemyHero : p.ownHero, 8);
+                p.minionGetDamageOrHeal(ownplay ? p.playerSecond.ownHero : p.playerFirst.ownHero, 8);
             }
 
             p.doDmgTriggers();
 
-            count = (ownplay) ? p.enemyMinions.Count : p.ownMinions.Count;
+            count = (ownplay) ? p.playerSecond.ownMinions.Count : p.playerFirst.ownMinions.Count;
             if (count >= 1)
             {
-                List<Minion> temp2 = (ownplay) ? new List<Minion>(p.enemyMinions) : new List<Minion>(p.ownMinions);
+                List<Minion> temp2 = (ownplay) ? new List<Minion>(p.playerSecond.ownMinions) : new List<Minion>(p.playerFirst.ownMinions);
                 temp2.Sort((a, b) => a.Hp.CompareTo(b.Hp));//damage the lowest
                 foreach (Minion mins in temp2)
                 {
@@ -43,7 +43,7 @@ namespace HRSim
             }
             else
             {
-                p.minionGetDamageOrHeal(ownplay ? p.enemyHero : p.ownHero, 8);
+                p.minionGetDamageOrHeal(ownplay ? p.playerSecond.ownHero : p.playerFirst.ownHero, 8);
             }
 
         }

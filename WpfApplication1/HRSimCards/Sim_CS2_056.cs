@@ -11,18 +11,18 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
 
             int dmg = 2;
             if (ownplay)
             {
-                if (p.doublepriest >= 1) dmg *= (2 * p.doublepriest);
-                p.minionGetDamageOrHeal(p.ownHero, dmg);
+                if (p.playerFirst.doublepriest >= 1) dmg *= (2 * p.playerFirst.doublepriest);
+                p.minionGetDamageOrHeal(p.playerFirst.ownHero, dmg);
             }
             else
             {
-                if (p.enemydoublepriest >= 1) dmg *= (2 * p.enemydoublepriest);
-                p.minionGetDamageOrHeal(p.enemyHero, dmg);
+                if (p.playerSecond.doublepriest >= 1) dmg *= (2 * p.playerSecond.doublepriest);
+                p.minionGetDamageOrHeal(p.playerSecond.ownHero, dmg);
             }
         }
 

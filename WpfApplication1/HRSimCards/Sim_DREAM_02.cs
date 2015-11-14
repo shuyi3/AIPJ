@@ -11,17 +11,17 @@ namespace HRSim
 
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg = (ownplay) ? p.getSpellDamageDamage(5) : p.getEnemySpellDamageDamage(5);
-            foreach (Minion m in p.ownMinions)
+            int dmg = p.getSpellDamageDamage(5, ownplay);
+            foreach (Minion m in p.playerFirst.ownMinions)
             {
                 if (m.name != CardDB.cardName.ysera) p.minionGetDamageOrHeal(m, dmg);
             }
-            foreach (Minion m in p.enemyMinions)
+            foreach (Minion m in p.playerSecond.ownMinions)
             {
                 if (m.name != CardDB.cardName.ysera) p.minionGetDamageOrHeal(m, dmg);
             }
-            p.minionGetDamageOrHeal(p.ownHero, dmg);
-            p.minionGetDamageOrHeal(p.enemyHero, dmg);
+            p.minionGetDamageOrHeal(p.playerFirst.ownHero, dmg);
+            p.minionGetDamageOrHeal(p.playerSecond.ownHero, dmg);
 
 		}
 

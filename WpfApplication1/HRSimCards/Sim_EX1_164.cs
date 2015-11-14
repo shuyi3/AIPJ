@@ -15,21 +15,21 @@ namespace HRSim
             {
 				if (ownplay)
 				{
-					p.mana = Math.Min(10, p.mana+2);
-					p.ownMaxMana = Math.Min(10, p.ownMaxMana+2);
+					p.playerFirst.mana = Math.Min(10, p.playerFirst.mana+2);
+					p.playerFirst.ownMaxMana = Math.Min(10, p.playerFirst.ownMaxMana+2);
 				}
 				else
 				{
-					p.mana = Math.Min(10, p.mana+2);
-					p.enemyMaxMana = Math.Min(10, p.enemyMaxMana+2);
+					p.playerFirst.mana = Math.Min(10, p.playerFirst.mana+2);
+					p.playerSecond.ownMaxMana = Math.Min(10, p.playerSecond.ownMaxMana+2);
 				}
             }
             if (choice == 2)
             {
                 //this.owncarddraw+=3;
-                p.drawACard(CardDB.cardName.unknown, ownplay);
-                p.drawACard(CardDB.cardName.unknown, ownplay);
-                p.drawACard(CardDB.cardName.unknown, ownplay);
+                p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
+                p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
+                p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
             }
         }
 

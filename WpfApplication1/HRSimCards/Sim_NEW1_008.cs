@@ -12,13 +12,13 @@ namespace HRSim
         {
             if (choice == 2)
             {
-                int heal = (own.own) ? p.getMinionHeal(5) : p.getEnemyMinionHeal(5);
+                int heal = p.getMinionHeal(5, own.own);
                 p.minionGetDamageOrHeal(target, -heal);
             }
             else
             {
-                p.drawACard(CardDB.cardName.unknown, own.own);
-                p.drawACard(CardDB.cardName.unknown, own.own);
+                p.drawACard(p.getArandomCardFromDeck(own.own), own.own);
+                p.drawACard(p.getArandomCardFromDeck(own.own), own.own);
             }
         }
 

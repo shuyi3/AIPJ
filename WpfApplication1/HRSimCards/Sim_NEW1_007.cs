@@ -13,12 +13,12 @@ namespace HRSim
 		{
             if (choice == 1)
             {
-                int dmg = (ownplay) ? p.getSpellDamageDamage(5) : p.getEnemySpellDamageDamage(5);
+                int dmg = p.getSpellDamageDamage(5, ownplay);
                 p.minionGetDamageOrHeal(target, dmg);
             }
             if (choice == 2)
             {
-                int damage = (ownplay) ? p.getSpellDamageDamage(2) : p.getEnemySpellDamageDamage(2);
+                int damage = p.getSpellDamageDamage(2, ownplay);
                 p.allMinionOfASideGetDamage(!ownplay, damage);
             }
 

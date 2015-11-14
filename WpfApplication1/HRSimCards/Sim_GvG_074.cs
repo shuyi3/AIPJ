@@ -4,7 +4,7 @@ using System.Text;
 
 namespace HRSim
 {
-    class Sim_GVG_074 : SimTemplate //Kezan Mystic
+    class Sim_GVG_074 : SimTemplate //Kezan Mystic //TODO£ºrework
     {
         //todo better!
         //  Battlecry: Take control of a random enemy Secret;. 
@@ -13,22 +13,22 @@ namespace HRSim
         {
             if (own.own)
             {
-                if (p.enemySecretList.Count >= 1)
+                if (p.playerSecond.ownSecretsIDList.Count >= 1)
                 {
-                    if (p.enemyHeroStartClass == TAG_CLASS.HUNTER) p.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_610);
-                    if (p.enemyHeroStartClass == TAG_CLASS.MAGE) p.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_594);
-                    if (p.enemyHeroStartClass == TAG_CLASS.PALADIN) p.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_130);
+                    if (p.playerSecond.ownHeroStartClass == TAG_CLASS.HUNTER) p.playerFirst.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_610);
+                    if (p.playerSecond.ownHeroStartClass == TAG_CLASS.MAGE) p.playerFirst.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_594);
+                    if (p.playerSecond.ownHeroStartClass == TAG_CLASS.PALADIN) p.playerFirst.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_130);
 
-                    if (p.enemyHeroStartClass != TAG_CLASS.HUNTER && p.enemyHeroStartClass != TAG_CLASS.MAGE && p.enemyHeroStartClass != TAG_CLASS.PALADIN) p.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_130);
+                    if (p.playerSecond.ownHeroStartClass != TAG_CLASS.HUNTER && p.playerSecond.ownHeroStartClass != TAG_CLASS.MAGE && p.playerSecond.ownHeroStartClass != TAG_CLASS.PALADIN) p.playerFirst.ownSecretsIDList.Add(CardDB.cardIDEnum.EX1_130);
                     
-                    p.enemySecretList.RemoveAt(0);
+                    p.playerSecond.ownSecretsIDList.RemoveAt(0);
                 }
             }
             else
             {
-                if (p.ownSecretsIDList.Count >= 1)
+                if (p.playerFirst.ownSecretsIDList.Count >= 1)
                 {
-                    p.ownSecretsIDList.RemoveAt(0);
+                    p.playerFirst.ownSecretsIDList.RemoveAt(0);
                     SecretItem s = new SecretItem();
                     s.canBe_avenge = false;
                     s.canBe_counterspell = false;
@@ -51,7 +51,7 @@ namespace HRSim
                     s.entityId = 1050;
                     s.canBe_explosive=true;
 
-                    p.enemySecretList.Add(s);
+                    //p.playerSecond.ownSecretsIDList.Add(s);
                 }
             }
         }

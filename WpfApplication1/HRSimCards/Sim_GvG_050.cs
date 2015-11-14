@@ -11,14 +11,14 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            int dmg = (ownplay) ? p.getSpellDamageDamage(1) : p.getEnemySpellDamageDamage(1);
+            int dmg = p.getSpellDamageDamage(1, ownplay);
 
             int minHp = 100000;
-            foreach (Minion m in p.ownMinions)
+            foreach (Minion m in p.playerFirst.ownMinions)
             {
                 if (m.Hp < minHp) minHp = m.Hp;
             }
-            foreach (Minion m in p.enemyMinions)
+            foreach (Minion m in p.playerSecond.ownMinions)
             {
                 if (m.Hp < minHp) minHp = m.Hp;
             }

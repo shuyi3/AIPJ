@@ -10,10 +10,10 @@ namespace HRSim
 //    fügt einem feind $4 schaden und allen anderen feinden $1 schaden zu.
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            int dmg = (ownplay)? p.getSpellDamageDamage(1) : p.getEnemySpellDamageDamage(1);
-            int dmg1 = (ownplay) ? p.getSpellDamageDamage(4) : p.getEnemySpellDamageDamage(4);
+            int dmg = p.getSpellDamageDamage(1, ownplay);
+            int dmg1 = p.getSpellDamageDamage(4, ownplay);
 
-            List<Minion> temp = (ownplay) ? p.enemyMinions : p.ownMinions;
+            List<Minion> temp = (ownplay) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
             p.minionGetDamageOrHeal(target, dmg1);
             foreach (Minion m in temp)
             {
@@ -24,16 +24,16 @@ namespace HRSim
             }
             if (ownplay)
             {
-                if (p.enemyHero.entitiyID != target.entitiyID)
+                if (p.playerSecond.ownHero.entitiyID != target.entitiyID)
                 {
-                    p.minionGetDamageOrHeal(p.enemyHero, dmg);
+                    p.minionGetDamageOrHeal(p.playerSecond.ownHero, dmg);
                 }
             }
             else
             {
-                if (p.ownHero.entitiyID != target.entitiyID)
+                if (p.playerFirst.ownHero.entitiyID != target.entitiyID)
                 {
-                    p.minionGetDamageOrHeal(p.ownHero, dmg);
+                    p.minionGetDamageOrHeal(p.playerFirst.ownHero, dmg);
                 }
                 
             }

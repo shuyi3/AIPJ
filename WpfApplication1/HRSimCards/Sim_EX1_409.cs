@@ -12,11 +12,11 @@ namespace HRSim
 		{
             if (ownplay)
             {
-                if (p.ownWeaponName != CardDB.cardName.unknown)
+                if (p.playerFirst.ownWeaponName != CardDB.cardName.unknown)
                 {
-                    p.ownWeaponAttack++;
-                    p.ownWeaponDurability++;
-                    p.minionGetBuffed(p.ownHero, 1, 0);
+                    p.playerFirst.ownWeaponAttack++;
+                    p.playerFirst.ownWeaponDurability++;
+                    p.minionGetBuffed(p.playerFirst.ownHero, 1, 0);
                 }
                 else
                 {
@@ -26,11 +26,11 @@ namespace HRSim
             }
             else
             {
-                if (p.enemyWeaponName != CardDB.cardName.unknown)
+                if (p.playerSecond.ownWeaponName != CardDB.cardName.unknown)
                 {
-                    p.enemyWeaponAttack++;
-                    p.enemyWeaponDurability++;
-                    p.minionGetBuffed(p.enemyHero, 1, 0);
+                    p.playerSecond.ownWeaponAttack++;
+                    p.playerSecond.ownWeaponDurability++;
+                    p.minionGetBuffed(p.playerSecond.ownHero, 1, 0);
                 }
                 else
                 {

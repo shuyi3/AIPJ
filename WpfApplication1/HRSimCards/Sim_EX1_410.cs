@@ -13,7 +13,7 @@ namespace HRSim
 		{
 
 
-            int dmg = (ownplay) ? p.getSpellDamageDamage(p.ownHero.armor) : p.getEnemySpellDamageDamage(p.enemyHero.armor);
+            int dmg = (ownplay) ? p.getSpellDamageDamage(p.playerFirst.ownHero.armor, ownplay) : p.getSpellDamageDamage(p.playerSecond.ownHero.armor, ownplay);
             p.minionGetDamageOrHeal(target, dmg);
 		}
 

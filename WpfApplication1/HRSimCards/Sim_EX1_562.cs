@@ -12,7 +12,7 @@ namespace HRSim
 //    kampfschrei:/ ruft welplinge (1/1) herbei, bis eure seite des schlachtfelds voll ist.
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
-            int kids = 7 - p.ownMinions.Count;
+            int kids = 7 - p.playerFirst.ownMinions.Count;
            
             for (int i = 0; i < kids; i++)
             {

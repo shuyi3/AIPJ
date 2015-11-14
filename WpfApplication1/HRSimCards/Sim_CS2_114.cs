@@ -12,8 +12,8 @@ namespace HRSim
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
             //TODO delete new list
-            int damage = (ownplay) ? p.getSpellDamageDamage(2) : p.getEnemySpellDamageDamage(2);
-            List<Minion> temp2 = (ownplay) ? new List<Minion>(p.enemyMinions) : new List<Minion>(p.ownMinions) ;
+            int damage = p.getSpellDamageDamage(2, ownplay);
+            List<Minion> temp2 = (ownplay) ? new List<Minion>(p.playerSecond.ownMinions) : new List<Minion>(p.playerFirst.ownMinions) ;
             temp2.Sort((a, b) => a.Hp.CompareTo(b.Hp));
             int i = 0;
             foreach (Minion enemy in temp2)

@@ -13,7 +13,7 @@ namespace HRSim
         {
             if (triggerEffectMinion.entitiyID != summonedMinion.entitiyID && triggerEffectMinion.own == summonedMinion.own)
             {
-                List<Minion> temp = (triggerEffectMinion.own) ? p.enemyMinions : p.ownMinions;
+                List<Minion> temp = (triggerEffectMinion.own) ? p.playerSecond.ownMinions : p.playerFirst.ownMinions;
 
                 if (temp.Count >= 1)
                 {
@@ -41,13 +41,13 @@ namespace HRSim
                     }
                     else
                     {
-                        p.minionGetDamageOrHeal(triggerEffectMinion.own ? p.enemyHero : p.ownHero, 1);
+                        p.minionGetDamageOrHeal(triggerEffectMinion.own ? p.playerSecond.ownHero : p.playerFirst.ownHero, 1);
                     }
 
                 }
                 else
                 {
-                    p.minionGetDamageOrHeal(triggerEffectMinion.own ? p.enemyHero : p.ownHero, 1);
+                    p.minionGetDamageOrHeal(triggerEffectMinion.own ? p.playerSecond.ownHero : p.playerFirst.ownHero, 1);
                 }
 
                 triggerEffectMinion.stealth = false;

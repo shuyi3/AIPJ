@@ -14,7 +14,7 @@ namespace HRSim
         {
             p.equipWeapon(w, ownplay);
 
-            List<Minion> temp = (ownplay) ? p.ownMinions : p.enemyMinions;
+            List<Minion> temp = (ownplay) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
             bool hasmech = false;
             foreach (Minion m in temp)
             {
@@ -25,13 +25,13 @@ namespace HRSim
             {
                 if (ownplay)
                 {
-                    p.ownWeaponAttack += 2;
-                    p.minionGetBuffed(p.ownHero, 2, 0);
+                    p.playerFirst.ownWeaponAttack += 2;
+                    p.minionGetBuffed(p.playerFirst.ownHero, 2, 0);
                 }
                 else
                 {
-                    p.enemyWeaponAttack += 2;
-                    p.minionGetBuffed(p.enemyHero, 2, 0);
+                    p.playerSecond.ownWeaponAttack += 2;
+                    p.minionGetBuffed(p.playerSecond.ownHero, 2, 0);
                 }
             }
 
@@ -42,7 +42,7 @@ namespace HRSim
         {
             if ((TAG_RACE)summonedMinion.handcard.card.race == TAG_RACE.MECHANICAL)
             {
-                List<Minion> temp = (triggerEffectMinion.own) ? p.ownMinions : p.enemyMinions;
+                List<Minion> temp = (triggerEffectMinion.own) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
 
                 foreach (Minion m in temp)
                 {
@@ -53,13 +53,13 @@ namespace HRSim
                 //we had no mechanical, but now!
                 if (triggerEffectMinion.own)
                 {
-                    p.ownWeaponAttack += 2;
-                    p.minionGetBuffed(p.ownHero, 2, 0);
+                    p.playerFirst.ownWeaponAttack += 2;
+                    p.minionGetBuffed(p.playerFirst.ownHero, 2, 0);
                 }
                 else
                 {
-                    p.enemyWeaponAttack += 2;
-                    p.minionGetBuffed(p.enemyHero, 2, 0);
+                    p.playerSecond.ownWeaponAttack += 2;
+                    p.minionGetBuffed(p.playerSecond.ownHero, 2, 0);
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace HRSim
 			int diedMinions = (m.own)? p.tempTrigger.ownMechanicDied : p.tempTrigger.enemyMechanicDied;
             if (diedMinions >= 1)
 			{
-				List<Minion> temp = (m.own) ? p.ownMinions : p.enemyMinions;
+				List<Minion> temp = (m.own) ? p.playerFirst.ownMinions : p.playerSecond.ownMinions;
 				bool hasmechanics = false;
                 foreach (Minion mTmp in temp) //check if we have more mechanics, or debuff him
                 {
@@ -80,13 +80,13 @@ namespace HRSim
                 {
 					if(m.own)
 					{
-						p.ownWeaponAttack -= 2;
-						p.minionGetBuffed(p.ownHero, -2, 0);
+						p.playerFirst.ownWeaponAttack -= 2;
+						p.minionGetBuffed(p.playerFirst.ownHero, -2, 0);
 					}
 					else
 					{
-                        p.enemyWeaponAttack -= 2;
-                        p.minionGetBuffed(p.enemyHero, -2, 0);
+                        p.playerSecond.ownWeaponAttack -= 2;
+                        p.minionGetBuffed(p.playerSecond.ownHero, -2, 0);
 					}
                 }
             }

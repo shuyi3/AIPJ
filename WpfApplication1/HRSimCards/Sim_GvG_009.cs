@@ -12,8 +12,8 @@ namespace HRSim
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
             int dmg = 3;
-            p.minionGetDamageOrHeal(p.enemyHero, dmg, true);
-            p.minionGetDamageOrHeal(p.ownHero, dmg, true);
+            p.minionGetDamageOrHeal(p.playerSecond.ownHero, dmg, true);
+            p.minionGetDamageOrHeal(p.playerFirst.ownHero, dmg, true);
         }
 
 

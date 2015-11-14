@@ -11,7 +11,7 @@ namespace HRSim
 
         public override void onAMinionGotHealedTrigger(Playfield p, Minion triggerEffectMinion, bool ownerOfMinionGotHealed)
         {
-            p.drawACard(CardDB.cardName.unknown, triggerEffectMinion.own);
+            p.drawACard(p.getArandomCardFromDeck(triggerEffectMinion.own), triggerEffectMinion.own);
         }
 
 	}

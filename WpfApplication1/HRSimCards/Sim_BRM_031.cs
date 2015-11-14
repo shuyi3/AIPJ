@@ -10,14 +10,14 @@ namespace HRSim
 		
         public override void onAuraStarts(Playfield p, Minion own)
         {
-            if (own.own) p.anzOwnChromaggus++;
-            else p.anzEnemyChromaggus++;
+            if (own.own) p.playerFirst.anzOwnChromaggus++;
+            else p.playerSecond.anzOwnChromaggus++;
         }
 
         public override void onAuraEnds(Playfield p, Minion own)
         {
-            if (own.own) p.anzOwnChromaggus--;
-            else p.anzEnemyChromaggus--;
+            if (own.own) p.playerFirst.anzOwnChromaggus--;
+            else p.playerSecond.anzOwnChromaggus--;
         }
 	}
 }

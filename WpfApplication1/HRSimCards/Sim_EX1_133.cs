@@ -11,8 +11,8 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            int dmg = (ownplay) ? p.getSpellDamageDamage(1) : p.getEnemySpellDamageDamage(1);
-            if (p.cardsPlayedThisTurn >= 1) dmg = (ownplay) ? p.getSpellDamageDamage(2) : p.getEnemySpellDamageDamage(2);
+            int dmg = p.getSpellDamageDamage(1, ownplay);
+            if (p.playerFirst.cardsPlayedThisTurn >= 1) dmg = p.getSpellDamageDamage(2, ownplay);
             p.minionGetDamageOrHeal(target, dmg);
             p.equipWeapon(w, ownplay);
         }

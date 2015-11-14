@@ -12,17 +12,17 @@ namespace HRSim
             if (own.own)
             {
                 //this.owncarddraw += enemyWeaponDurability;
-                for (int i = 0; i < p.enemyWeaponDurability; i++)
+                for (int i = 0; i < p.playerSecond.ownWeaponDurability; i++)
                 {
-                    p.drawACard(CardDB.cardName.unknown, true);
+                    p.drawACard(p.getArandomCardFromDeck(true), true);
                 }
                 p.lowerWeaponDurability(1000, false);
             }
             else
             {
-                for (int i = 0; i < p.enemyWeaponDurability; i++)
+                for (int i = 0; i < p.playerSecond.ownWeaponDurability; i++)
                 {
-                    p.drawACard(CardDB.cardName.unknown, false);
+                    p.drawACard(p.getArandomCardFromDeck(false), false);
                 }
                 p.lowerWeaponDurability(1000, true);
             }

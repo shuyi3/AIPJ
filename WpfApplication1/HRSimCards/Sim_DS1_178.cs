@@ -13,16 +13,16 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnTundrarhino++;
-                foreach (Minion m in p.ownMinions)
+                p.playerFirst.anzOwnTundrarhino++;
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET) p.minionGetCharge(m);
                 }
             }
             else
             {
-                p.anzEnemyTundrarhino++;
-                foreach (Minion m in p.enemyMinions)
+                p.playerSecond.anzOwnTundrarhino++;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET) p.minionGetCharge(m);
                 }
@@ -34,16 +34,16 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnTundrarhino--;
-                foreach (Minion m in p.ownMinions)
+                p.playerFirst.anzOwnTundrarhino--;
+                foreach (Minion m in p.playerFirst.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET) p.minionLostCharge(m);
                 }
             }
             else
             {
-                p.anzEnemyTundrarhino--;
-                foreach (Minion m in p.enemyMinions)
+                p.playerSecond.anzOwnTundrarhino--;
+                foreach (Minion m in p.playerSecond.ownMinions)
                 {
                     if ((TAG_RACE)m.handcard.card.race == TAG_RACE.PET) p.minionLostCharge(m);
                 }

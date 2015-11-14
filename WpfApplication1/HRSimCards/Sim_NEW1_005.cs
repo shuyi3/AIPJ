@@ -10,7 +10,15 @@ namespace HRSim
 //    combo:/ lasst einen diener auf die hand seines besitzers zurückkehren.
 		public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
 		{
-            if (p.cardsPlayedThisTurn >= 1) p.minionReturnToHand(target,target.own, 0);
+            if (own.own)
+            {
+                if (p.playerFirst.cardsPlayedThisTurn >= 1) p.minionReturnToHand(target, target.own, 0);
+            }
+            else
+            {
+                if (p.playerSecond.cardsPlayedThisTurn >= 1) p.minionReturnToHand(target, target.own, 0);
+            }
+
 		}
 
 

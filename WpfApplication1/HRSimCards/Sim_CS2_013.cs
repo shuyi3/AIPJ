@@ -12,9 +12,9 @@ namespace HRSim
 		{
             if (ownplay)
             {
-                if (p.ownMaxMana < 10)
+                if (p.playerFirst.ownMaxMana < 10)
                 {
-                    p.ownMaxMana++;
+                    p.playerFirst.ownMaxMana++;
                 }
                 else
                 {
@@ -24,9 +24,9 @@ namespace HRSim
             }
             else
             {
-                if (p.enemyMaxMana < 10)
+                if (p.playerSecond.ownMaxMana < 10)
                 {
-                    p.enemyMaxMana++;
+                    p.playerSecond.ownMaxMana++;
                 }
                 else
                 {

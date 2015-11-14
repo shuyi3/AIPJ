@@ -15,7 +15,7 @@ namespace HRSim
         {
             for (int i = 0; i < 3; i++)
             {
-                int pos = (ownplay) ? p.ownMinions.Count : p.enemyMinions.Count;
+                int pos = (ownplay) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
                 p.callKid(kid, pos, ownplay);
             }
             p.equipWeapon(w, ownplay);

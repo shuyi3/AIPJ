@@ -12,11 +12,11 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnAuchenaiSoulpriest++;
+                p.playerFirst.anzOwnAuchenaiSoulpriest++;
             }
             else
             {
-                p.anzEnemyAuchenaiSoulpriest++;
+                p.playerSecond.anzOwnAuchenaiSoulpriest++;
             }
 
         }
@@ -25,11 +25,11 @@ namespace HRSim
         {
             if (own.own)
             {
-                p.anzOwnAuchenaiSoulpriest--;
+                p.playerFirst.anzOwnAuchenaiSoulpriest--;
             }
             else
             {
-                p.anzEnemyAuchenaiSoulpriest--;
+                p.playerSecond.anzOwnAuchenaiSoulpriest--;
             }
         }
 

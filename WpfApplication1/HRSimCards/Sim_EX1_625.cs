@@ -15,20 +15,20 @@ namespace HRSim
         {
             if (ownplay)
             {
-                if (p.ownHeroAblility.card.cardIDenum == CardDB.cardIDEnum.CS1h_001) // lesser heal becomes mind spike
+                if (p.playerFirst.ownHeroAblility.card.cardIDenum == CardDB.cardIDEnum.CS1h_001) // lesser heal becomes mind spike
                 {
-                    p.ownHeroAblility.card = mindspike;
-                    p.ownAbilityReady = true;
+                    p.playerFirst.ownHeroAblility.card = mindspike;
+                    p.playerFirst.ownAbilityReady = true;
                 }
                 else
                 {
-                    p.ownHeroAblility.card = shatter;  // mindspike becomes mind shatter
-                    p.ownAbilityReady = true;
+                    p.playerFirst.ownHeroAblility.card = shatter;  // mindspike becomes mind shatter
+                    p.playerFirst.ownAbilityReady = true;
                 }
             }
             else
             {
-                p.enemyHeroAblility.card = p.enemyHeroAblility.card.cardIDenum == CardDB.cardIDEnum.CS1h_001 ? this.mindspike : this.shatter;
+                p.playerSecond.ownHeroAblility.card = p.playerSecond.ownHeroAblility.card.cardIDenum == CardDB.cardIDEnum.CS1h_001 ? this.mindspike : this.shatter;
             }
         }
 

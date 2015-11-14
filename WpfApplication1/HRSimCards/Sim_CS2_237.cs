@@ -12,7 +12,7 @@ namespace HRSim
         {
             if (triggerEffectMinion.own == summonedMinion.own && (TAG_RACE)summonedMinion.handcard.card.race == TAG_RACE.PET)
             {
-                p.drawACard(CardDB.cardName.unknown, triggerEffectMinion.own);
+                p.drawACard(p.getArandomCardFromDeck(triggerEffectMinion.own), triggerEffectMinion.own);
             }
         }
 

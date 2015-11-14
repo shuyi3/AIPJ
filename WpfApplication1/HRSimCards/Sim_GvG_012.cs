@@ -13,11 +13,11 @@ namespace HRSim
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            int heal = (ownplay) ? p.getSpellHeal(3) : p.getEnemySpellHeal(3);
+            int heal = p.getSpellHeal(3, ownplay);
             p.minionGetDamageOrHeal(target, -heal);
             if (target.Hp < target.maxHp)
             {
-                int posi = (ownplay) ? p.ownMinions.Count : p.enemyMinions.Count;
+                int posi = (ownplay) ? p.playerFirst.ownMinions.Count : p.playerSecond.ownMinions.Count;
                 p.callKid(kid, posi, ownplay);
             }
         }

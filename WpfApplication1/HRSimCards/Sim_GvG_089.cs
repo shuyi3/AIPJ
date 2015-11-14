@@ -13,10 +13,10 @@ namespace HRSim
         {
             if (turnEndOfOwner == triggerEffectMinion.own)
             {
-                if (((turnEndOfOwner) ? p.ownSecretsIDList.Count : p.enemySecretList.Count) >= 1)
+                if (((turnEndOfOwner) ? p.playerFirst.ownSecretsIDList.Count : p.playerSecond.ownSecretsIDList.Count) >= 1)
                 {
-                    int heal = (turnEndOfOwner) ? p.getMinionHeal(4) : p.getEnemyMinionHeal(4);
-                    p.minionGetDamageOrHeal(((turnEndOfOwner) ? p.ownHero : p.enemyHero), -heal, true);
+                    int heal = p.getMinionHeal(4, turnEndOfOwner);
+                    p.minionGetDamageOrHeal(((turnEndOfOwner) ? p.playerFirst.ownHero : p.playerSecond.ownHero), -heal, true);
                 }
             }
         }

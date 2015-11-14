@@ -8,10 +8,11 @@ namespace HRSim
 	{
 
 //    kopiert 2 karten aus dem deck eures gegners und fügt sie eurer hand hinzu.
+        //TODO: steal instead of draw
 		public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
 		{
-            p.drawACard(CardDB.cardName.unknown, ownplay, true);
-            p.drawACard(CardDB.cardName.unknown, ownplay, true);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay, true);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay, true);
 		}
 
 	}

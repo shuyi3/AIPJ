@@ -8,10 +8,11 @@ namespace HRSim
     {
 
         //    Draw a card. If it's a Beast, it costs (4) less.
+        //    TODO: draw a beast
 
         public override void onCardPlay(Playfield p, bool ownplay, Minion target, int choice)
         {
-            p.drawACard(CardDB.cardName.unknown, ownplay);
+            p.drawACard(p.getArandomCardFromDeck(ownplay), ownplay);
         }
     }
 }
