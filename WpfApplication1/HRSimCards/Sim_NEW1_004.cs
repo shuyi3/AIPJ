@@ -19,7 +19,7 @@ namespace HRSim
             p.playerFirst.anzGrimscaleOracle = 0;
             p.playerFirst.anzOwnAuchenaiSoulpriest = 0;
             p.playerFirst.anzOwnsorcerersapprentice = 0;
-            p.playerFirst.anzOwnsorcerersapprenticeStarted = 0;
+            //p.playerFirst.anzOwnsorcerersapprenticeStarted = 0;
             p.playerFirst.anzOwnSouthseacaptain = 0;
             p.playerFirst.doublepriest = 0;
             p.playerFirst.ownBaronRivendare = 0;
@@ -42,7 +42,7 @@ namespace HRSim
             p.playerSecond.anzGrimscaleOracle = 0;
             p.playerSecond.anzOwnAuchenaiSoulpriest = 0;
             p.playerSecond.anzOwnsorcerersapprentice = 0;
-            p.playerSecond.anzOwnsorcerersapprenticeStarted = 0;
+            //p.playerSecond.anzOwnsorcerersapprenticeStarted = 0;
             p.playerSecond.anzOwnSouthseacaptain = 0;
             p.playerSecond.doublepriest = 0;
             p.playerSecond.ownBaronRivendare = 0;

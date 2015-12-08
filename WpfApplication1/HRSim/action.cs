@@ -22,6 +22,18 @@ namespace HRSim
     }
     //todo make to struct
 
+    //public class ActionResult
+    //{
+    //    Minion target;
+    //    bool isSilence;
+    //    bool isDied;
+    //    bool isBuffed;
+    //    bool idDebuffed;
+    //    int healthDamage;
+
+    
+    //}
+    
     public class Action
     {
 
@@ -251,7 +263,7 @@ namespace HRSim
             }
             if (this.actionType == actionEnum.attackWithMinion)
             {
-                help.logg("attacker: " + this.own.entitiyID + " enemy: " + this.target.entitiyID + "(" + this.target.name + ")");
+                help.logg("attacker: " + this.own.entitiyID + "(" + this.own.name + ")" + " enemy: " + this.target.entitiyID + "(" + this.target.name + ")");
             }
             if (this.actionType == actionEnum.attackWithHero)
             {

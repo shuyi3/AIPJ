@@ -16,6 +16,8 @@ namespace HRSim
                 if (secToDraw != CardDB.cardIDEnum.None)
                 {
                     p.playerFirst.ownSecretsIDList.Add(secToDraw);
+                    GraveYardItem gyi = new GraveYardItem(secToDraw, p.getNextEntity(), m.own);
+                    p.graveYard.Add(gyi);
                 }
             }
             else
@@ -24,6 +26,8 @@ namespace HRSim
                 if (secToDraw != CardDB.cardIDEnum.None)
                 {
                     p.playerSecond.ownSecretsIDList.Add(secToDraw);
+                    GraveYardItem gyi = new GraveYardItem(secToDraw, p.getNextEntity(), m.own);
+                    p.graveYard.Add(gyi);
                 }
             }
         }

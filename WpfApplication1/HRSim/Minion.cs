@@ -293,6 +293,16 @@ namespace HRSim
             return this.Angr;
         }
 
+        public float getMinionDefenseValue() 
+        {
+            return (this.Angr != 0) ? (float)Math.Sqrt(this.Angr) * this.Hp : 0.5f * this.Hp;
+        }
+
+        public float getMinionAttackValue()
+        {
+            return (this.Angr != 0) ? this.Angr * (float)Math.Sqrt(this.Hp) : 0.5f * (float)Math.Sqrt(this.Hp);
+        }
+
         public void getDamageOrHeal(int dmg, Playfield p, bool isMinionAttack, bool dontCalcLostDmg)
         {
             if (this.Hp <= 0) return;

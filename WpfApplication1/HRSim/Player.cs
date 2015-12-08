@@ -18,12 +18,12 @@ namespace HRSim
         public int anzGrimscaleOracle = 0;
         public int anzOwnAuchenaiSoulpriest = 0;
         public int anzOwnsorcerersapprentice = 0;
-        public int anzOwnsorcerersapprenticeStarted = 0;
+        //public int anzOwnsorcerersapprenticeStarted = 0;
         public int anzOwnSouthseacaptain = 0;
         public int anzOwnMalGanis = 0;
         public int anzOwnChromaggus = 0;
         public int anzOwnDragonConsort = 0;
-        public int anzOwnDragonConsortStarted = 0;
+        //public int anzOwnDragonConsortStarted = 0;
 
         //implementation of loatheb
         public int enemyLoatheb = 0;
@@ -31,13 +31,13 @@ namespace HRSim
         //end of implementation of loatheb
 
         public int anzOwnMechwarper = 0;
-        public int anzOwnMechwarperStarted = 0;
+        //public int anzOwnMechwarperStarted = 0;
 
         //public int anzEnemyTaunt = 0;
         public int ownMinionsDiedTurn = 0;
 
-        public bool feugenDead = false;
-        public bool stalaggDead = false;
+        //public bool feugenDead = false;
+        //public bool stalaggDead = false;
 
         public bool weHaveSteamwheedleSniper = false;
 
@@ -89,19 +89,19 @@ namespace HRSim
         public bool playedmagierinderkirintor = false;
         public bool playedPreparation = false;
 
-        public bool loatheb = false;
+        //public bool loatheb = false;
         public int winzigebeschwoererin = 0;
-        public int startedWithWinzigebeschwoererin = 0;
+        //public int startedWithWinzigebeschwoererin = 0;
         public int managespenst = 0;
-        public int startedWithManagespenst = 0;
+        //public int startedWithManagespenst = 0;
         public int soeldnerDerVenture = 0;
-        public int startedWithsoeldnerDerVenture = 0;
+        //public int startedWithsoeldnerDerVenture = 0;
         public int beschwoerungsportal = 0;
-        public int startedWithbeschwoerungsportal = 0;
+        //public int startedWithbeschwoerungsportal = 0;
         public int nerubarweblord = 0;
-        public int startedWithnerubarweblord = 0;
+        //public int startedWithnerubarweblord = 0;
 
-        public bool startedWithDamagedMinions = false; // needed for manacalculation of the spell "Crush"
+        //public bool startedWithDamagedMinions = false; // needed for manacalculation of the spell "Crush"
 
         public int ownWeaponAttackStarted = 0;
         public int ownMobsCountStarted = 0;
@@ -206,9 +206,9 @@ namespace HRSim
             this.anzGrimscaleOracle = 0;
             this.anzOwnAuchenaiSoulpriest = 0;
             this.anzOwnsorcerersapprentice = 0;
-            this.anzOwnsorcerersapprenticeStarted = 0;
+            //this.anzOwnsorcerersapprenticeStarted = 0;
             this.anzOwnSouthseacaptain = 0;
-            this.anzOwnDragonConsortStarted = 0;
+            //this.anzOwnDragonConsortStarted = 0;
 
             this.ownMinionsDiedTurn = 0;
 
@@ -229,7 +229,7 @@ namespace HRSim
             this.ownHeroAblility = new Handmanager.Handcard(CardDB.Instance.getCardData(CardDB.Instance.cardNamestringToEnum("fireblast")));
 
             this.mobsplayedThisTurn = 0;
-            this.startedWithMobsPlayedThisTurn = 0;// only change mobsplayedthisturm
+            //this.startedWithMobsPlayedThisTurn = 0;// only change mobsplayedthisturm
             this.cardsPlayedThisTurn = 0;
             //todo:
             this.optionsPlayedThisTurn = 0;
@@ -240,9 +240,9 @@ namespace HRSim
             this.ownDeckSize = 30;
 
             //need the following for manacost-calculation
-            this.ownHeroHpStarted = this.ownHero.Hp;
-            this.ownWeaponAttackStarted = this.ownWeaponAttack;
-            this.ownCardsCountStarted = this.owncards.Count;
+            //this.ownHeroHpStarted = this.ownHero.Hp;
+            //this.ownWeaponAttackStarted = this.ownWeaponAttack;
+            //this.ownCardsCountStarted = this.owncards.Count;
             //this.ownMobsCountStarted = this.ownMinions.Count + this.enemyMinions.Count;
 
             this.playedmagierinderkirintor = false;
@@ -254,23 +254,23 @@ namespace HRSim
             this.beschwoerungsportal = 0;
             this.nerubarweblord = 0;
 
-            this.startedWithnerubarweblord = 0;
-            this.startedWithbeschwoerungsportal = 0;
-            this.startedWithManagespenst = 0;
-            this.startedWithWinzigebeschwoererin = 0;
-            this.startedWithsoeldnerDerVenture = 0;
+            //this.startedWithnerubarweblord = 0;
+            //this.startedWithbeschwoerungsportal = 0;
+            //this.startedWithManagespenst = 0;
+            //this.startedWithWinzigebeschwoererin = 0;
+            //this.startedWithsoeldnerDerVenture = 0;
 
             this.ownBaronRivendare = 0;
 
-            this.loatheb = false;
+            //this.loatheb = false;
             this.spellpower = 0;
 
-            this.startedWithDamagedMinions = false;
+            //this.startedWithDamagedMinions = false;
 
             foreach (Minion m in this.ownMinions)
             {
-                if (m.Hp < m.maxHp && m.Hp >= 1) this.startedWithDamagedMinions = true;
-                if (m.playedThisTurn && m.name == CardDB.cardName.loatheb) this.loatheb = true;
+                //if (m.Hp < m.maxHp && m.Hp >= 1) this.startedWithDamagedMinions = true;
+                //if (m.playedThisTurn && m.name == CardDB.cardName.loatheb) this.loatheb = true;
 
                 spellpower = spellpower + m.spellpower;
                 if (m.silenced) continue;
@@ -281,28 +281,28 @@ namespace HRSim
                 if (m.name == CardDB.cardName.pintsizedsummoner)
                 {
                     this.winzigebeschwoererin++;
-                    this.startedWithWinzigebeschwoererin++;
+                    //this.startedWithWinzigebeschwoererin++;
                 }
 
                 if (m.name == CardDB.cardName.manawraith)
                 {
                     this.managespenst++;
-                    this.startedWithManagespenst++;
+                    //this.startedWithManagespenst++;
                 }
                 if (m.name == CardDB.cardName.nerubarweblord)
                 {
                     this.nerubarweblord++;
-                    this.startedWithnerubarweblord++;
+                    //this.startedWithnerubarweblord++;
                 }
                 if (m.name == CardDB.cardName.venturecomercenary)
                 {
                     this.soeldnerDerVenture++;
-                    this.startedWithsoeldnerDerVenture++;
+                    //this.startedWithsoeldnerDerVenture++;
                 }
                 if (m.name == CardDB.cardName.summoningportal)
                 {
                     this.beschwoerungsportal++;
-                    this.startedWithbeschwoerungsportal++;
+                    //this.startedWithbeschwoerungsportal++;
                 }
 
                 if (m.handcard.card.name == CardDB.cardName.baronrivendare)
@@ -325,15 +325,15 @@ namespace HRSim
                 if (m.name == CardDB.cardName.sorcerersapprentice)
                 {
                     this.anzOwnsorcerersapprentice++;
-                    this.anzOwnsorcerersapprenticeStarted++;
+                    //this.anzOwnsorcerersapprenticeStarted++;
                 }
                 if (m.name == CardDB.cardName.southseacaptain) this.anzOwnSouthseacaptain++;
                 if (m.name == CardDB.cardName.chromaggus) this.anzOwnChromaggus++;
-                if (m.name == CardDB.cardName.dragonconsort && anzOwnDragonConsort > 0) this.anzOwnDragonConsortStarted++;
+                //if (m.name == CardDB.cardName.dragonconsort && anzOwnDragonConsort > 0) this.anzOwnDragonConsortStarted++;
                 if (m.name == CardDB.cardName.mechwarper)
                 {
                     this.anzOwnMechwarper++;
-                    this.anzOwnMechwarperStarted++;
+                    //this.anzOwnMechwarperStarted++;
                 }
                 if (m.name == CardDB.cardName.steamwheedlesniper && this.ownHeroName == HeroEnum.hunter)
                 {
@@ -407,22 +407,22 @@ namespace HRSim
             this.ownCardsCountStarted = p.ownCardsCountStarted;
             this.ownMobsCountStarted = p.ownMobsCountStarted;
 
-            this.startedWithWinzigebeschwoererin = p.startedWithWinzigebeschwoererin;
+            //this.startedWithWinzigebeschwoererin = p.startedWithWinzigebeschwoererin;
             this.playedmagierinderkirintor = p.playedmagierinderkirintor;
 
-            this.startedWithWinzigebeschwoererin = p.startedWithWinzigebeschwoererin;
-            this.startedWithManagespenst = p.startedWithManagespenst;
-            this.startedWithsoeldnerDerVenture = p.startedWithsoeldnerDerVenture;
-            this.startedWithbeschwoerungsportal = p.startedWithbeschwoerungsportal;
-            this.startedWithnerubarweblord = p.startedWithnerubarweblord;
+            //this.startedWithWinzigebeschwoererin = p.startedWithWinzigebeschwoererin;
+            //this.startedWithManagespenst = p.startedWithManagespenst;
+            //this.startedWithsoeldnerDerVenture = p.startedWithsoeldnerDerVenture;
+            //this.startedWithbeschwoerungsportal = p.startedWithbeschwoerungsportal;
+            //this.startedWithnerubarweblord = p.startedWithnerubarweblord;
 
-            this.startedWithDamagedMinions = p.startedWithDamagedMinions;
+            //this.startedWithDamagedMinions = p.startedWithDamagedMinions;
 
             this.nerubarweblord = p.nerubarweblord;
             this.winzigebeschwoererin = p.winzigebeschwoererin;
             this.managespenst = p.managespenst;
             this.soeldnerDerVenture = p.soeldnerDerVenture;
-            this.loatheb = p.loatheb;
+            //this.loatheb = p.loatheb;
 
             this.spellpower = p.spellpower;
 
@@ -439,13 +439,13 @@ namespace HRSim
             this.anzGrimscaleOracle = p.anzGrimscaleOracle;
             this.anzOwnAuchenaiSoulpriest = p.anzOwnAuchenaiSoulpriest;
             this.anzOwnsorcerersapprentice = p.anzOwnsorcerersapprentice;
-            this.anzOwnsorcerersapprenticeStarted = p.anzOwnsorcerersapprenticeStarted;
+            //this.anzOwnsorcerersapprenticeStarted = p.anzOwnsorcerersapprenticeStarted;
             this.anzOwnSouthseacaptain = p.anzOwnSouthseacaptain;
             this.anzOwnMechwarper = p.anzOwnMechwarper;
-            this.anzOwnMechwarperStarted = p.anzOwnMechwarperStarted;
+            //this.anzOwnMechwarperStarted = p.anzOwnMechwarperStarted;
             this.anzOwnChromaggus = p.anzOwnChromaggus;
             this.anzOwnDragonConsort = p.anzOwnDragonConsort;
-            this.anzOwnDragonConsortStarted = p.anzOwnDragonConsortStarted;
+            //this.anzOwnDragonConsortStarted = p.anzOwnDragonConsortStarted;
 
             //implementation of loatheb
             this.enemyLoatheb = p.enemyLoatheb;
@@ -454,8 +454,8 @@ namespace HRSim
 
             this.ownMinionsDiedTurn = p.ownMinionsDiedTurn;
 
-            this.feugenDead = p.feugenDead;
-            this.stalaggDead = p.stalaggDead;
+            //this.feugenDead = p.feugenDead;
+            //this.stalaggDead = p.stalaggDead;
 
             this.doublepriest = p.doublepriest;
 

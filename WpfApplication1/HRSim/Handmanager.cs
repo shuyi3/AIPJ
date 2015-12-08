@@ -29,6 +29,7 @@
                 this.addattack = hc.addattack;
                 this.addHp = hc.addHp;
             }
+
             public Handcard(HREngine.Bots.Handmanager.Handcard hc)
             {
                 this.position = hc.position;
@@ -48,7 +49,8 @@
             }
             public int getManaCost(Playfield p, bool own)
             {
-                return this.card.getManaCost(p, this.manacost, own);
+                //return this.card.getManaCost(p, this.manacost, own);
+                return this.card.calculateManaCost(p, this.manacost, own);
             }
 
             public bool canplayCard(Playfield p, bool own)

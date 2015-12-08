@@ -2625,7 +2625,7 @@
                 List<Minion> retval = new List<Minion>();
                 if (this.type == CardDB.cardtype.MOB && mPlayer.ownMinions.Count >= 7) return retval; // cant play mob, if we have allready 7 mininos
                 if (this.Secret && (mPlayer.ownSecretsIDList.Contains(this.cardIDenum) || mPlayer.ownSecretsIDList.Count >= 5)) return retval;
-                if (mPlayer.mana < this.getManaCost(p, 1, own)) return retval;
+                if (mPlayer.mana < this.calculateManaCost(p, 1, own)) return retval;
                 List<Minion> targets = new List<Minion>();
 
                 bool targetAll = false;
@@ -3166,7 +3166,7 @@
 
             }
 
-            public int calculateManaCost(Playfield p, bool own)//calculates the mana from orginal mana, needed for back-to hand effects
+            public int calculateManaCost(Playfield p, int manacost, bool own)//calculates the mana from orginal handcard mana, needed for back-to hand effects
             {
                 Player mPlayer, ePlayer;
                 if (own)
@@ -3180,7 +3180,8 @@
                     ePlayer = p.playerFirst;
                 }
 
-                int retval = this.cost;
+                //int retval = this.cost;
+                int retval = manacost;
                 int offset = 0;
 
                 if (this.type == cardtype.MOB)
@@ -3189,7 +3190,12 @@
 
                     offset += mPlayer.managespenst;
 
-                    int temp = -(mPlayer.startedWithbeschwoerungsportal) * 2;
+                    if (mPlayer.anzOwnDragonConsort != 0 && (TAG_RACE)this.race == TAG_RACE.DRAGON)
+                    {
+                        offset -= mPlayer.anzOwnDragonConsort * 2;
+                    }
+
+                    int temp = -(mPlayer.beschwoerungsportal) * 2;
                     if (retval + temp <= 0) temp = -retval + 1;
                     offset = offset + temp;
 
@@ -3267,166 +3273,166 @@
                 return retval;
             }
 
-            public int getManaCost(Playfield p, int currentcost, bool own)//calculates mana from current mana
-            {
-                int retval = currentcost;
+            //public int getManaCost(Playfield p, int currentcost, bool own)//calculates mana from current mana
+            //{
+            //    int retval = currentcost;
 
-                Player mPlayer, ePlayer;
-                if (own)
-                {
-                    mPlayer = p.playerFirst;
-                    ePlayer = p.playerSecond;
-                }
-                else
-                {
-                    mPlayer = p.playerSecond;
-                    ePlayer = p.playerFirst;
-                }
+            //    Player mPlayer, ePlayer;
+            //    if (own)
+            //    {
+            //        mPlayer = p.playerFirst;
+            //        ePlayer = p.playerSecond;
+            //    }
+            //    else
+            //    {
+            //        mPlayer = p.playerSecond;
+            //        ePlayer = p.playerFirst;
+            //    }
 
-                int offset = 0; // if offset < 0 costs become lower, if >0 costs are higher at the end
+            //    int offset = 0; // if offset < 0 costs become lower, if >0 costs are higher at the end
 
-                //unstable portal
-                //if (this.creator == cardIDEnum.GVG_003)
-                //{
-                //    offset -= 3;
-                //}
+            //    //unstable portal
+            //    //if (this.creator == cardIDEnum.GVG_003)
+            //    //{
+            //    //    offset -= 3;
+            //    //}
 
-                // CARDS that increase the manacosts of others ##############################
-                //Manacosts changes with soeldner der venture co.
-                if (mPlayer.soeldnerDerVenture != mPlayer.startedWithsoeldnerDerVenture && this.type == cardtype.MOB)
-                {
-                    offset += (mPlayer.soeldnerDerVenture - mPlayer.startedWithsoeldnerDerVenture) * 3;
-                }
+            //    // CARDS that increase the manacosts of others ##############################
+            //    //Manacosts changes with soeldner der venture co.
+            //    if (mPlayer.soeldnerDerVenture != mPlayer.startedWithsoeldnerDerVenture && this.type == cardtype.MOB)
+            //    {
+            //        offset += (mPlayer.soeldnerDerVenture - mPlayer.startedWithsoeldnerDerVenture) * 3;
+            //    }
 
-                //Manacosts changes with mana-ghost
-                if (mPlayer.managespenst != mPlayer.startedWithManagespenst && this.type == cardtype.MOB)
-                {
-                    offset += (mPlayer.managespenst - mPlayer.startedWithManagespenst);
-                }
+            //    //Manacosts changes with mana-ghost
+            //    if (mPlayer.managespenst != mPlayer.startedWithManagespenst && this.type == cardtype.MOB)
+            //    {
+            //        offset += (mPlayer.managespenst - mPlayer.startedWithManagespenst);
+            //    }
 
-                if (this.battlecry && mPlayer.nerubarweblord != mPlayer.startedWithnerubarweblord && this.type == cardtype.MOB)
-                {
-                    offset += (mPlayer.nerubarweblord - mPlayer.startedWithnerubarweblord) * 2;
-                }
+            //    if (this.battlecry && mPlayer.nerubarweblord != mPlayer.startedWithnerubarweblord && this.type == cardtype.MOB)
+            //    {
+            //        offset += (mPlayer.nerubarweblord - mPlayer.startedWithnerubarweblord) * 2;
+            //    }
 
-                //Manacosts changes with the Dragon Consort
-                if (mPlayer.anzOwnDragonConsort != mPlayer.anzOwnDragonConsortStarted && (TAG_RACE)this.race == TAG_RACE.DRAGON)
-                {
-                    offset += (mPlayer.anzOwnDragonConsortStarted - mPlayer.anzOwnDragonConsort) * 2;
-                }
+            //    //Manacosts changes with the Dragon Consort
+            //    if (mPlayer.anzOwnDragonConsort != mPlayer.anzOwnDragonConsortStarted && (TAG_RACE)this.race == TAG_RACE.DRAGON)
+            //    {
+            //        offset += (mPlayer.anzOwnDragonConsortStarted - mPlayer.anzOwnDragonConsort) * 2;
+            //    }
 
-                //implementation of loatheb and millhoust
-                if (mPlayer.enemyLoatheb > 0 && this.type == cardtype.SPELL)
-                //{
-                //    offset += mPlayer.enemyLoatheb * 5;
-                //}
+            //    //implementation of loatheb and millhoust
+            //    if (mPlayer.enemyLoatheb > 0 && this.type == cardtype.SPELL)
+            //    //{
+            //    //    offset += mPlayer.enemyLoatheb * 5;
+            //    //}
 
-                //if (mPlayer.enemyMillhouse > 0 && this.type == cardtype.SPELL)
-                //{
-                //    retval = 0;
-                //}
-                // CARDS that decrease the manacosts of others ##############################
+            //    //if (mPlayer.enemyMillhouse > 0 && this.type == cardtype.SPELL)
+            //    //{
+            //    //    retval = 0;
+            //    //}
+            //    // CARDS that decrease the manacosts of others ##############################
 
-                //Manacosts changes with the summoning-portal >_>
-                if (mPlayer.startedWithbeschwoerungsportal != mPlayer.beschwoerungsportal && this.type == cardtype.MOB)
-                { //cant lower the mana to 0
-                    int temp = (mPlayer.startedWithbeschwoerungsportal - mPlayer.beschwoerungsportal) * 2;
-                    if (retval + temp <= 0) temp = -retval + 1;
-                    offset = offset + temp;
-                }
+            //    //Manacosts changes with the summoning-portal >_>
+            //    if (mPlayer.startedWithbeschwoerungsportal != mPlayer.beschwoerungsportal && this.type == cardtype.MOB)
+            //    { //cant lower the mana to 0
+            //        int temp = (mPlayer.startedWithbeschwoerungsportal - mPlayer.beschwoerungsportal) * 2;
+            //        if (retval + temp <= 0) temp = -retval + 1;
+            //        offset = offset + temp;
+            //    }
 
-                //Manacosts changes with the pint-sized summoner
-                if (mPlayer.winzigebeschwoererin >= 1 && mPlayer.mobsplayedThisTurn >= 1 && mPlayer.startedWithMobsPlayedThisTurn == 0 && this.type == cardtype.MOB)
-                { // if we start oure calculations with 0 mobs played, then the cardcost are 1 mana to low in the further calculations (with the little summoner on field)
-                    offset += mPlayer.winzigebeschwoererin;
-                }
-                if (mPlayer.mobsplayedThisTurn == 0 && mPlayer.winzigebeschwoererin <= mPlayer.startedWithWinzigebeschwoererin && this.type == cardtype.MOB)
-                { // one pint-sized summoner got killed, before we played the first mob -> the manacost are higher of all mobs
-                    offset += (mPlayer.startedWithWinzigebeschwoererin - mPlayer.winzigebeschwoererin);
-                }
+            //    //Manacosts changes with the pint-sized summoner
+            //    if (mPlayer.winzigebeschwoererin >= 1 && mPlayer.mobsplayedThisTurn >= 1 && mPlayer.startedWithMobsPlayedThisTurn == 0 && this.type == cardtype.MOB)
+            //    { // if we start oure calculations with 0 mobs played, then the cardcost are 1 mana to low in the further calculations (with the little summoner on field)
+            //        offset += mPlayer.winzigebeschwoererin;
+            //    }
+            //    if (mPlayer.mobsplayedThisTurn == 0 && mPlayer.winzigebeschwoererin <= mPlayer.startedWithWinzigebeschwoererin && this.type == cardtype.MOB)
+            //    { // one pint-sized summoner got killed, before we played the first mob -> the manacost are higher of all mobs
+            //        offset += (mPlayer.startedWithWinzigebeschwoererin - mPlayer.winzigebeschwoererin);
+            //    }
 
-                //Manacosts changes with the zauberlehrling summoner
-                if (mPlayer.anzOwnsorcerersapprentice != mPlayer.anzOwnsorcerersapprenticeStarted && this.type == cardtype.SPELL)
-                { //if the number of zauberlehrlings change
-                    offset += (mPlayer.anzOwnsorcerersapprenticeStarted - mPlayer.anzOwnsorcerersapprentice);
-                }
+            //    //Manacosts changes with the zauberlehrling summoner
+            //    if (mPlayer.anzOwnsorcerersapprentice != mPlayer.anzOwnsorcerersapprenticeStarted && this.type == cardtype.SPELL)
+            //    { //if the number of zauberlehrlings change
+            //        offset += (mPlayer.anzOwnsorcerersapprenticeStarted - mPlayer.anzOwnsorcerersapprentice);
+            //    }
 
-                //manacosts changes with Mechwarper
-                if (mPlayer.anzOwnMechwarper != mPlayer.anzOwnMechwarperStarted && this.type == cardtype.MOB && (TAG_RACE)this.race == TAG_RACE.MECHANICAL)
-                { //if the number of zauberlehrlings change
-                    offset += (mPlayer.anzOwnMechwarperStarted - mPlayer.anzOwnMechwarper);
-                }
-
-
-                //manacosts are lowered, after we played preparation
-                if (mPlayer.playedPreparation && this.type == cardtype.SPELL)
-                { //if the number of zauberlehrlings change
-                    offset -= 3;
-                }
+            //    //manacosts changes with Mechwarper
+            //    if (mPlayer.anzOwnMechwarper != mPlayer.anzOwnMechwarperStarted && this.type == cardtype.MOB && (TAG_RACE)this.race == TAG_RACE.MECHANICAL)
+            //    { //if the number of zauberlehrlings change
+            //        offset += (mPlayer.anzOwnMechwarperStarted - mPlayer.anzOwnMechwarper);
+            //    }
 
 
-                switch (this.name)
-                {
-                    case CardDB.cardName.volcaniclumberer:
-                        retval = retval + offset - mPlayer.ownMinionsDiedTurn - ePlayer.ownMinionsDiedTurn;
-                        break;
-                    case CardDB.cardName.solemnvigil:
-                        retval = retval + offset - mPlayer.ownMinionsDiedTurn - ePlayer.ownMinionsDiedTurn;
-                        break;
-                    case CardDB.cardName.volcanicdrake:
-                        retval = retval + offset - mPlayer.ownMinionsDiedTurn - ePlayer.ownMinionsDiedTurn;
-                        break;
-                    case CardDB.cardName.dragonsbreath:
-                        retval = retval + offset - mPlayer.ownMinionsDiedTurn - ePlayer.ownMinionsDiedTurn;
-                        break;
-                    case CardDB.cardName.dreadcorsair:
-                        retval = retval + offset - mPlayer.ownWeaponAttack + mPlayer.ownWeaponAttackStarted; // if weapon attack change we change manacost
-                        break;
-                    case CardDB.cardName.seagiant:
-                        retval = retval + offset - mPlayer.ownMinions.Count - ePlayer.ownMinions.Count + mPlayer.ownMobsCountStarted;
-                        break;
-                    case CardDB.cardName.mountaingiant:
-                        retval = retval + offset - mPlayer.owncards.Count + mPlayer.ownCardsCountStarted;
-                        break;
-                    case CardDB.cardName.clockworkgiant:
-                        retval = retval + offset - ePlayer.owncards.Count + ePlayer.ownCardsCountStarted;
-                        break;
-                    case CardDB.cardName.moltengiant:
-                        retval = retval + offset - Math.Min(mPlayer.ownHero.Hp, mPlayer.ownHeroHpStarted) + mPlayer.ownHeroHpStarted;
-                        break;
-                    case CardDB.cardName.crush:
-                        // cost 4 less if we have a dmged minion
-                        bool dmgedminions = false;
-                        foreach (Minion m in mPlayer.ownMinions)
-                        {
-                            if (m.wounded) dmgedminions = true;
-                        }
-                        if (dmgedminions != mPlayer.startedWithDamagedMinions)
-                        {
-                            if (dmgedminions)
-                            {
-                                retval = retval + offset - 4;
-                            }
-                            else
-                            {
-                                retval = retval + offset + 4;
-                            }
-                        }
-                        break;
-                    default:
-                        retval = retval + offset;
-                        break;
-                }
+            //    //manacosts are lowered, after we played preparation
+            //    if (mPlayer.playedPreparation && this.type == cardtype.SPELL)
+            //    { //if the number of zauberlehrlings change
+            //        offset -= 3;
+            //    }
 
-                if (this.Secret && mPlayer.playedmagierinderkirintor)
-                {
-                    retval = 0;
-                }
+
+            //    switch (this.name)
+            //    {
+            //        case CardDB.cardName.volcaniclumberer:
+            //            retval = retval + offset - mPlayer.ownMinionsDiedTurn - ePlayer.ownMinionsDiedTurn;
+            //            break;
+            //        case CardDB.cardName.solemnvigil:
+            //            retval = retval + offset - mPlayer.ownMinionsDiedTurn - ePlayer.ownMinionsDiedTurn;
+            //            break;
+            //        case CardDB.cardName.volcanicdrake:
+            //            retval = retval + offset - mPlayer.ownMinionsDiedTurn - ePlayer.ownMinionsDiedTurn;
+            //            break;
+            //        case CardDB.cardName.dragonsbreath:
+            //            retval = retval + offset - mPlayer.ownMinionsDiedTurn - ePlayer.ownMinionsDiedTurn;
+            //            break;
+            //        case CardDB.cardName.dreadcorsair:
+            //            retval = retval + offset - mPlayer.ownWeaponAttack + mPlayer.ownWeaponAttackStarted; // if weapon attack change we change manacost
+            //            break;
+            //        case CardDB.cardName.seagiant:
+            //            retval = retval + offset - mPlayer.ownMinions.Count - ePlayer.ownMinions.Count + mPlayer.ownMobsCountStarted;
+            //            break;
+            //        case CardDB.cardName.mountaingiant:
+            //            retval = retval + offset - mPlayer.owncards.Count + mPlayer.ownCardsCountStarted;
+            //            break;
+            //        case CardDB.cardName.clockworkgiant:
+            //            retval = retval + offset - ePlayer.owncards.Count + ePlayer.ownCardsCountStarted;
+            //            break;
+            //        case CardDB.cardName.moltengiant:
+            //            retval = retval + offset - Math.Min(mPlayer.ownHero.Hp, mPlayer.ownHeroHpStarted) + mPlayer.ownHeroHpStarted;
+            //            break;
+            //        case CardDB.cardName.crush:
+            //            // cost 4 less if we have a dmged minion
+            //            bool dmgedminions = false;
+            //            foreach (Minion m in mPlayer.ownMinions)
+            //            {
+            //                if (m.wounded) dmgedminions = true;
+            //            }
+            //            if (dmgedminions != mPlayer.startedWithDamagedMinions)
+            //            {
+            //                if (dmgedminions)
+            //                {
+            //                    retval = retval + offset - 4;
+            //                }
+            //                else
+            //                {
+            //                    retval = retval + offset + 4;
+            //                }
+            //            }
+            //            break;
+            //        default:
+            //            retval = retval + offset;
+            //            break;
+            //    }
+
+            //    if (this.Secret && mPlayer.playedmagierinderkirintor)
+            //    {
+            //        retval = 0;
+            //    }
               
-                retval = Math.Max(0, retval);
+            //    retval = Math.Max(0, retval);
 
-                return retval;
-            }
+            //    return retval;
+            //}
 
             public bool canplayCard(Playfield p, int manacost, bool own)
             {
@@ -3447,7 +3453,8 @@
                 bool retval = true;
                 // cant play if i have to few mana
 
-                if (mPlayer.mana < this.getManaCost(p, manacost, own)) return false;
+                //if (mPlayer.mana < this.getManaCost(p, manacost, own)) return false;
+                if (mPlayer.mana < this.calculateManaCost(p, manacost, own)) return false;
 
                 // cant play mob, if i have allready 7 mininos
                 if (this.type == CardDB.cardtype.MOB && mPlayer.ownMinions.Count >= 7) return false;

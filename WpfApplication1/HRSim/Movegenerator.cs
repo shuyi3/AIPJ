@@ -1,11 +1,12 @@
 ﻿namespace HRSim
 {
     using System.Collections.Generic;
+    using System;
 
     public class Movegenerator
     {
         //Silverfish sf;
-        //PenalityManager pen;
+        PenalityManager pen = PenalityManager.Instance;
 
         private static Movegenerator instance;
 
@@ -72,7 +73,7 @@
                 {
                     if (isChoice == 1) c = getChooseCard(hc.card, i); // do all choice
 
-                    if (mPlayer.mana >= c.getManaCost(p, hc.manacost, own)) // if enough manna
+                    if (mPlayer.mana >= hc.getManaCost(p, own)) // if enough manna
                     {
                         int cardplayPenality = 0;
                         int bestplace = p.getBestPlace(c, isLethalCheck, own);
@@ -80,17 +81,42 @@
                         //    int toBreak = 1;
                         //}
                         trgts = c.getTargetsForCard(p, isLethalCheck, own);
-                        foreach (Minion trgt in trgts)
+                        float bestReward = Single.MinValue;
+
+                        List<Tuple<Action, float>> tempRet = new List<Tuple<Action, float>>();
+                        foreach (Minion trgt in trgts)                        
                         {
-                            //if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, trgt, p, i, isLethalCheck);
-                            //if (cardplayPenality <= 499)
-                            //{
+                            if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, trgt, p, i, isLethalCheck);
+                            if (cardplayPenality <= 499)
+                            {
                                 Action a = new Action(actionEnum.playcard, hc, null, bestplace, trgt, cardplayPenality, i); //i is the choice
-                                ret.Add(a);
-                            //}
+
+                                if (trgt != null)
+                                {
+                                    if (trgt.isHero && trgt.Hp <= 12)
+                                    {
+                                        ret.Add(a);
+                                        continue;
+                                    }
+                                    float reward = pen.getOffenseReward(a, p);
+                                    tempRet.Add(new Tuple<Action, float>(a, reward));
+                                }
+                                else 
+                                {
+                                    ret.Add(a);
+                                }
+                            }
                         }
+
+                        tempRet.Sort((x, y) => y.Item2.CompareTo(x.Item2));
+                        if (tempRet.Count > 0)
+                            ret.Add(tempRet[0].Item1);
+                        if (tempRet.Count > 1)
+                            ret.Add(tempRet[1].Item1); 
                     }
                 }
+
+
             }
 
           //get targets for Hero weapon and Minions  ###################################################################################
@@ -111,12 +137,12 @@
                 int attackPenality = 0;
                 foreach (Minion trgt in trgts)
                 {
-                    //if (usePenalityManager) attackPenality = pen.getAttackWithMininonPenality(m, p, trgt, isLethalCheck);
-                    //if (attackPenality <= 499)
-                    //{
+                    if (usePenalityManager) attackPenality = pen.getAttackWithMininonPenality(m, p, trgt, isLethalCheck);
+                    if (attackPenality <= 499)
+                    {
                         Action a = new Action(actionEnum.attackWithMinion, null, m, 0, trgt, attackPenality, 0);
                         ret.Add(a);
-                    //}
+                    }
                 }
             }
 
@@ -126,35 +152,35 @@
                 int heroAttackPen = 0;
                 foreach (Minion trgt in trgts)
                 {
-                    //if (usePenalityManager) heroAttackPen = pen.getAttackWithHeroPenality(trgt, p, isLethalCheck);
-                    //if (heroAttackPen <= 499)
-                    //{
+                    if (usePenalityManager) heroAttackPen = pen.getAttackWithHeroPenality(trgt, p, isLethalCheck);
+                    if (heroAttackPen <= 499)
+                    {
                         Action a = new Action(actionEnum.attackWithHero, null, mPlayer.ownHero, 0, trgt, heroAttackPen, 0);
                         ret.Add(a);
-                    //}
+                    }
                 }
             }
 
            //#############################################################################################################
 
            // use ability
-            if (mPlayer.ownAbilityReady && mPlayer.mana >= mPlayer.ownHeroAblility.card.getManaCost(p, 2, own)) // if ready and enough manna
+            if (mPlayer.ownAbilityReady && mPlayer.mana >= 2) // if ready and enough manna TODO: TGT mana cost change
             {
                 int cardplayPenality = 0;
                 int bestplace = mPlayer.ownMinions.Count + 1; //we can not manage it
                 trgts = mPlayer.ownHeroAblility.card.getTargetsForCard(p, isLethalCheck, own);
                 foreach (Minion trgt in trgts)
                 {
-                    //if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, trgt, p, 0, isLethalCheck);
-                    //if (cardplayPenality <= 499)
-                    //{
+                    if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, trgt, p, 0, isLethalCheck);
+                    if (cardplayPenality <= 499)
+                    {
                         Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0);
                         //if (trgt.own == true)
                         //{
                         //    sf.helpfunctions.logg("ping on own minion");
                         //} 
                         ret.Add(a);
-                    //}
+                    }
                 }
             }
 

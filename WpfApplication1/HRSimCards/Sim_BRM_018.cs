@@ -10,7 +10,14 @@ namespace HRSim
 
 		public override void getBattlecryEffect(Playfield p, Minion m, Minion target, int choice)
 		{
-            if (m.own) p.playerFirst.anzOwnDragonConsort++;
+            if (m.own)
+            {
+                p.playerFirst.anzOwnDragonConsort++;
+            }
+            else
+            {
+                p.playerSecond.anzOwnDragonConsort++;
+            }
 		}
 	}
 }
