@@ -322,7 +322,7 @@ namespace HRSim
 
             for (int i = 0; i < 10000; i++)
             {
-                //Helpfunctions.Instance.logg("try: " + i);
+                Helpfunctions.Instance.logg("try: " + i);
                 //counter++;
                 //if (counter == 10) {
                 //    Helpfunctions.Instance.logg("try: " + i);
@@ -458,18 +458,43 @@ namespace HRSim
         public int sample(Node p)
         {
             Playfield startState = new Playfield(p.state);
+            Action move = null;
 
             int score = startState.getGameResult();
             while (score == -1)
             {
-                List<Action> moves = Movegenerator.Instance.getMoveList(startState, false, false, true);
-                if (moves.Count == 0)
+                //List<Action> moves = Movegenerator.Instance.getMoveList(startState, false, false, true);
+                //if (move != null)
+                //{
+                GameManager.Instance.moveCount++;
+                if (GameManager.Instance.moveCount == 562)
+                {
+                    int debug = 1;
+                }
+
+                    Movegenerator.Instance.getMoveListForPlayfield(startState, move, true);
+                    List<Action> bruteForceMoves = Movegenerator.Instance.getMoveList(startState, false, true, true);
+
+                    if (bruteForceMoves.Count != startState.moveList.Count) {
+                        startState.printBoard();
+                        int debug = 1;
+                        Helpfunctions.Instance.logg("BF Move List:------------------------------------");
+                        foreach (Action action in bruteForceMoves)
+                        {
+                            action.print();
+                        }
+                        startState.printMoveList();
+                    }
+                //}
+                Helpfunctions.Instance.logg("Count: " + startState.moveList.Count);
+                if (startState.moveList.Count == 0)
                 {
                     startState.endTurn(false, false);
+                    move = null;
                 }
                 else
                 {
-                    Action move = moves[GameManager.getRNG().Next(moves.Count)];
+                    move = startState.moveList[GameManager.getRNG().Next(startState.moveList.Count)];
                     startState.doAction(move);
                 }
                 score = startState.getGameResult();
@@ -517,18 +542,30 @@ namespace HRSim
 
             tt = new TranspositionTable();
             List<Playfield> moves = new List<Playfield>();
+            Movegenerator.Instance.getMoveListForPlayfield(afterState, null, false);
             getAllpossibleStates(afterState, ref moves);
 
+            foreach (Playfield pf in moves)
+            {
+                if (pf.moveList.Count != 0)
+                {
+                    int debug = 1;
+                }
+            }
+
             while (moves.Count == 1)
-            { // no moves available
+            { // no moves available, change side
                 tt.clearTable();
                 afterState.endTurn(false, false);
                 getAllpossibleStates(afterState, ref moves);
                 state = 1;
             }
 
-            Node originalNode = new Node(new Playfield(afterState), null, p.depth + 1);
-            p.children.Add(originalNode);
+            //afterState.endTurn(false, false);
+            //Node originalNode = new Node(new Playfield(afterState), null, p.depth + 1);
+
+            //p.children.Add(originalNode);
+
 
             foreach (Playfield move in moves)
             {
@@ -543,31 +580,54 @@ namespace HRSim
 
         public void getAllpossibleStates(Playfield state, ref List<Playfield> statesList)
         {
-            List<Action> moves = Movegenerator.Instance.getMoveList(state, false, true, true);
-            if (moves.Count == 0)
+            if (state.moveList.Count == 0)
             {
+                Player mPlayer;
+                String turn;
+                //if (state.isOwnTurn)
+                //{
+                //    mPlayer = state.playerSecond;
+                //    turn = "second";
+                //}
+                //else
+                //{
+                //    mPlayer = state.playerFirst;
+                //    turn = "first";
+                //}
+
+                //Helpfunctions.Instance.logg(turn + ": pre mana = " + mPlayer.ownMaxMana);
+                state.endTurn(false, false);
                 if (tt.addToMap(state) == false)
                 {
+                    //GameManager.Instance.moveCount++;
+                    //Helpfunctions.Instance.logg("move = " + GameManager.Instance.moveCount +
+                    //    ",mana = " + mPlayer.ownMaxMana);
                     statesList.Add(state);
                 }
                 return;
             }
-            foreach (Action action in moves)
+            foreach (Action action in state.moveList)
             {
                 Playfield afterState = new Playfield(state);
                 afterState.doAction(action);
+                Movegenerator.Instance.getMoveListForPlayfield(afterState, action, false);
 
-                if (action.actionType == actionEnum.playcard && action.card.card.name == CardDB.cardName.arcaneintellect)
-                {
-                    if (tt.addToMap(state) == false)
-                    {
-                        statesList.Add(state);
-                    }
-                    continue;
-                }
+                Helpfunctions.Instance.logg("from " + state.moveList.Count + " to " + afterState.moveList.Count);
+                
+                //if (action.actionType == actionEnum.playcard && action.card.card.name == CardDB.cardName.arcaneintellect)
+                //{
+                //    if (tt.addToMap(state) == false)
+                //    {
+                //        state.endTurn(false, false);
+                //        statesList.Add(state);
+                //    }
+                //    continue;
+                //}
                 //if (tt.addToMap(afterState) == false)
                 //{
                 //    statesList.Add(afterState);
+
+                //Helpfunctions.Instance.logg("Turn: " + afterState.isOwnTurn);
                 getAllpossibleStates(afterState, ref statesList);
                 //}
             }

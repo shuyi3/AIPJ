@@ -376,15 +376,15 @@ namespace HRSim
             //setplayer 2
             GameManager.Instance.setPlayer(1, new Silverfish());
             //GameManager.Instance.setPlayer(1, new Silverfish());
-            //GameManager.Instance.setPlayer(0, new MCTSPlayer(0, GameManager.Instance.mPlayfield));
-            if (GameManager.Instance.playerFirst == null)
-            {
-                GameManager.Instance.setPlayer(0, new QLearningAgent(true, GameManager.Instance.mPlayfield));
-            }
-            else
-            {
-                GameManager.Instance.playerFirst.updateState(GameManager.Instance.mPlayfield);
-            }
+            GameManager.Instance.setPlayer(0, new MCTSPlayer(0, GameManager.Instance.mPlayfield));
+            //if (GameManager.Instance.playerFirst == null)
+            //{
+            //    GameManager.Instance.setPlayer(0, new QLearningAgent(true, GameManager.Instance.mPlayfield));
+            //}
+            //else
+            //{
+            //    GameManager.Instance.playerFirst.updateState(GameManager.Instance.mPlayfield);
+            //}
 
             //testField = new Playfield();
 
@@ -504,7 +504,7 @@ namespace HRSim
                 isInit = false;
                 Helpfunctions.Instance.logg("PLAYER 1 WON " + firstWon + " GAMES");
                 Helpfunctions.Instance.logg("PLAYER 2 WON " + secondWon + " GAMES");
-                ((QLearningAgent)GameManager.Instance.playerFirst).printWeights();
+                //((QLearningAgent)GameManager.Instance.playerFirst).printWeights();
                 GC.Collect();
             }
             Helpfunctions.Instance.logg("PLAYER 1 WON " + firstWon + " GAMES");

@@ -163,7 +163,7 @@ namespace HRSim
 
             //implementation
             this.ownHero.isHero = true;
-            this.ownHero.own = true;
+            this.ownHero.own = (player == 0) ? true : false;
             this.ownHero.maxHp = 30;
             this.ownHero.entitiyID = player;
 

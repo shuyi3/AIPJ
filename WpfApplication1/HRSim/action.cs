@@ -46,7 +46,9 @@ namespace HRSim
         public int druidchoice; // 1 left card, 2 right card
         public int penalty;
 
-        public Action(actionEnum type, Handmanager.Handcard hc, Minion ownCardEntity, int place, Minion target, int pen, int choice)
+        public int manaCost;
+
+        public Action(actionEnum type, Handmanager.Handcard hc, Minion ownCardEntity, int place, Minion target, int pen, int choice, int manaCost)
         {
             this.actionType = type;
             this.card = hc;
@@ -55,10 +57,10 @@ namespace HRSim
             this.target = target;
             this.penalty = pen;
             this.druidchoice = choice;
-
+            this.manaCost = manaCost;
         }
 
-        public Action(string s, Playfield p)
+        public Action(string s, Playfield p) //TODO: mana cost implementation
         {
             if (s.StartsWith("play "))
             {
@@ -168,10 +170,11 @@ namespace HRSim
             this.target = a.target;
             this.druidchoice = a.druidchoice;
             this.penalty = a.penalty;
+            this.manaCost = a.manaCost;
         }
 
 
-        public Action(HREngine.Bots.Action a)
+        public Action(HREngine.Bots.Action a)//TODO: manaCost
         {
             this.actionType = (actionEnum)Enum.Parse(typeof(actionEnum), a.actionType.ToString());
             this.card = a.card == null? null : new Handmanager.Handcard(a.card);
@@ -194,6 +197,7 @@ namespace HRSim
              
             this.druidchoice = a.druidchoice;
             this.penalty = a.penalty;
+            this.manaCost = 0;
         }
 
         public void print(bool tobuffer = false)

@@ -525,6 +525,18 @@ namespace HRSim
                 p.diedMinions.Add(gyi);
                 p.graveYard.Add(gyi);
             }
+
+            //move trigger
+            if (p.isOwnTurn != this.own)
+            {
+                if (this.taunt) p.moveTrigger.tauntChanged = true;
+            }
+            if (this.handcard.card.name == CardDB.cardName.mechwarper && p.isOwnTurn == this.own)
+            {
+                p.moveTrigger.manaChanged = true; 
+            }
+            p.moveTrigger.minionDied = true;
+            p.moveTrigger.minionDiedList.Add(this.entitiyID);
         }
 
         public void updateReadyness()

@@ -35,6 +35,95 @@
             }
             return c;
         }
+
+        public void getMoveListForPlayfield(Playfield p, Action playedAction, bool log)
+        {
+            bool own = p.isOwnTurn;
+            Player mPlayer;
+            int playerNumber = 1;
+            if (own)
+            {
+                mPlayer = p.playerFirst;
+                playerNumber = 1;
+            }
+            else
+            {
+                mPlayer = p.playerSecond;
+                playerNumber = 2;
+            }
+
+            if (log)
+            {
+                if (playedAction != null)
+                {
+                    Helpfunctions.Instance.logg("Action:------------------------------------");
+                    playedAction.print();
+                    p.printMoveList();
+                }
+                else
+                {
+                    Helpfunctions.Instance.logg("######################start turn for player " + playerNumber);
+                }
+            }
+
+            if (p.moveList.Count == 0 && playedAction == null) //if starting, generate move
+            {
+                //GameManager.Instance.moveCount++;
+                p.moveList = new List<Action>(getMoveList(p, false, true, true));
+            }
+            else //non starting, generate move from existing moves
+            {
+                if (p.moveTrigger.handcardAdded || p.moveTrigger.tauntChanged || p.moveTrigger.manaChanged ||
+                    p.moveTrigger.ownNewTarget || p.moveTrigger.enemyNewTarget)
+                {
+                    p.moveList = getMoveList(p, false, true, true);
+                }
+                else 
+                {
+                    if (p.moveTrigger.minionDied)
+                    {
+                        foreach (int entityID in p.moveTrigger.minionDiedList)
+                        {
+                            p.moveList.RemoveAll(x => ((x.target != null && x.target.entitiyID == entityID) || ((x.actionType == actionEnum.attackWithMinion) && x.own.entitiyID == entityID)));
+                        }
+                    }
+                    //Helpfunctions.Instance.logg("movecount == " + GameManager.Instance.moveCount);
+                    if (playedAction.actionType == actionEnum.playcard) //play a card
+                    {
+                        p.moveList.RemoveAll(x => (x.card != null && x.card.entity == playedAction.card.entity));
+                    }
+                    if (playedAction.actionType == actionEnum.attackWithMinion)//
+                    {
+                        if ((playedAction.own.windfury && playedAction.own.numAttacksThisTurn == 2) || !playedAction.own.windfury)
+                        {
+                            p.moveList.RemoveAll(x => (x.actionType == actionEnum.attackWithMinion && x.own.entitiyID == playedAction.own.entitiyID));
+                        }
+                    }
+                    if (playedAction.actionType == actionEnum.useHeroPower)
+                    {
+                        p.moveList.RemoveAll(x => x.actionType == actionEnum.useHeroPower);
+                    }
+
+                    //mana
+                    p.moveList.RemoveAll(x => x.manaCost > mPlayer.mana);
+                }
+            }
+
+            p.moveTrigger.Clear();
+
+            if (log)
+            {
+                if (p.isOwnTurn)
+                {
+                    Helpfunctions.Instance.logg("player 1 Mana: " + p.playerFirst.mana + "/" + p.playerFirst.ownMaxMana);
+                }
+                else
+                {
+                    Helpfunctions.Instance.logg("player 2 Mana: " + p.playerSecond.mana + "/" + p.playerSecond.ownMaxMana);
+                }
+                p.printMoveList();
+            }
+        }
         
         public List<Action> getMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
         {
@@ -65,15 +154,22 @@
             foreach (Handmanager.Handcard hc in mPlayer.owncards)
             {
                 CardDB.Card c = hc.card;
+                //implementation
+                if (c.name == CardDB.cardName.armorplating)
+                {
+                    p.moveTrigger.hasOwnTargetMove = true;
+                }   
+                //end of implementation
                 if (playedcards.Contains(c.name) || !hc.canplayCard(p, own)) continue; // dont play the same card in one loop
-                playedcards.Add(c.name);
+                //playedcards.Add(c.name);
 
                 int isChoice = (c.choice) ? 1 : 0;
                 for (int i = 0 + 1 * isChoice; i < 1 + 2 * isChoice; i++)
                 {
                     if (isChoice == 1) c = getChooseCard(hc.card, i); // do all choice
 
-                    if (mPlayer.mana >= hc.getManaCost(p, own)) // if enough manna
+                    int manaCost = hc.getManaCost(p, own);
+                    if (mPlayer.mana >= manaCost) // if enough manna
                     {
                         int cardplayPenality = 0;
                         int bestplace = p.getBestPlace(c, isLethalCheck, own);
@@ -89,30 +185,47 @@
                             if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, trgt, p, i, isLethalCheck);
                             if (cardplayPenality <= 499)
                             {
-                                Action a = new Action(actionEnum.playcard, hc, null, bestplace, trgt, cardplayPenality, i); //i is the choice
+                                Action a = new Action(actionEnum.playcard, hc, null, bestplace, trgt, cardplayPenality, i, manaCost); //i is the choice
 
-                                if (trgt != null)
+                                ret.Add(a);
+                                if (trgt != null && trgt.own == p.isOwnTurn) 
                                 {
-                                    if (trgt.isHero && trgt.Hp <= 12)
-                                    {
-                                        ret.Add(a);
-                                        continue;
-                                    }
-                                    float reward = pen.getOffenseReward(a, p);
-                                    tempRet.Add(new Tuple<Action, float>(a, reward));
+                                    p.moveTrigger.hasOwnTargetMove = true;
                                 }
-                                else 
-                                {
-                                    ret.Add(a);
-                                }
+                                //if (trgt != null)
+                                //{
+                                //    if (trgt.isHero && trgt.Hp <= 12)
+                                //    {
+                                //        ret.Add(a);
+                                //        continue;
+                                //    }
+                                //    float reward = pen.getOffenseReward(a, p);
+                                //    tempRet.Add(new Tuple<Action, float>(a, reward));
+                                //}
+                                //else 
+                                //{
+                                //    ret.Add(a);
+                                //}
                             }
                         }
 
-                        tempRet.Sort((x, y) => y.Item2.CompareTo(x.Item2));
-                        if (tempRet.Count > 0)
-                            ret.Add(tempRet[0].Item1);
-                        if (tempRet.Count > 1)
-                            ret.Add(tempRet[1].Item1); 
+                        //tempRet.Sort((x, y) => y.Item2.CompareTo(x.Item2));
+                        //if (tempRet.Count > 0)
+                        //{
+                        //    ret.Add(tempRet[0].Item1);
+                        //    if (tempRet[0].Item1.target.own == p.isOwnTurn) 
+                        //    {
+                        //        p.moveTrigger.hasOwnTargetMove = true;
+                        //    }
+                        //}
+                        //if (tempRet.Count > 1)
+                        //{
+                        //    ret.Add(tempRet[1].Item1);
+                        //    if (tempRet[1].Item1.target.own == p.isOwnTurn)
+                        //    {
+                        //        p.moveTrigger.hasOwnTargetMove = true;
+                        //    }
+                        //}
                     }
                 }
 
@@ -122,7 +235,7 @@
           //get targets for Hero weapon and Minions  ###################################################################################
 
             trgts = p.getAttackTargets(own, isLethalCheck);
-            if (!isLethalCheck) trgts = this.cutAttackList(trgts);
+            //if (!isLethalCheck) trgts = this.cutAttackList(trgts);
 
           // attack with minions
             List<Minion> attackingMinions = new List<Minion>(8);
@@ -130,7 +243,7 @@
             {
                 if (m.Ready && m.Angr >= 1 && !m.frozen) attackingMinions.Add(m); //* add non-attacing minions
             }
-            attackingMinions = this.cutAttackList(attackingMinions);
+            //attackingMinions = this.cutAttackList(attackingMinions);
 
             foreach (Minion m in attackingMinions)
             {
@@ -140,7 +253,7 @@
                     if (usePenalityManager) attackPenality = pen.getAttackWithMininonPenality(m, p, trgt, isLethalCheck);
                     if (attackPenality <= 499)
                     {
-                        Action a = new Action(actionEnum.attackWithMinion, null, m, 0, trgt, attackPenality, 0);
+                        Action a = new Action(actionEnum.attackWithMinion, null, m, 0, trgt, attackPenality, 0, 0);
                         ret.Add(a);
                     }
                 }
@@ -155,7 +268,7 @@
                     if (usePenalityManager) heroAttackPen = pen.getAttackWithHeroPenality(trgt, p, isLethalCheck);
                     if (heroAttackPen <= 499)
                     {
-                        Action a = new Action(actionEnum.attackWithHero, null, mPlayer.ownHero, 0, trgt, heroAttackPen, 0);
+                        Action a = new Action(actionEnum.attackWithHero, null, mPlayer.ownHero, 0, trgt, heroAttackPen, 0, 0);
                         ret.Add(a);
                     }
                 }
@@ -174,11 +287,15 @@
                     if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, trgt, p, 0, isLethalCheck);
                     if (cardplayPenality <= 499)
                     {
-                        Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0);
-                        //if (trgt.own == true)
-                        //{
-                        //    sf.helpfunctions.logg("ping on own minion");
-                        //} 
+                        Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0, 2);
+                        if (trgt.own == p.isOwnTurn)
+                        {
+                            Helpfunctions.Instance.logg("ping on own minion");
+                        }
+                        if ((trgt.entitiyID == 0 && p.isOwnTurn) || (trgt.entitiyID == 1 && !p.isOwnTurn))
+                        {
+                            Helpfunctions.Instance.logg("ping on own hero");
+                        }
                         ret.Add(a);
                     }
                 }

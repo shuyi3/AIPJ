@@ -71,12 +71,14 @@
 
         public int getAttackWithMininonPenality(Minion m, Playfield p, Minion target, bool lethal)
         {
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             int pen = 0;
             pen = getAttackSecretPenality(m, p, target);
             if (!lethal && m.name == CardDB.cardName.bloodimp) pen = 50;
             if (m.name == CardDB.cardName.leeroyjenkins)
             {
-                if (target.own != p.isOwnTurn)
+                if (!isTargetOwn)
                 {
                     if (target.name == CardDB.cardName.whelp) return 500;
                 }
@@ -88,6 +90,7 @@
         public int getAttackWithHeroPenality(Minion target, Playfield p, bool leathal)
         {
             int retval = 0;
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
 
             Player mPlayer, ePlayer;
 
@@ -98,8 +101,8 @@
             }
             else 
             {
-                mPlayer = p.playerFirst;
-                ePlayer = p.playerSecond;
+                mPlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
             }
 
             if (!leathal && mPlayer.ownWeaponName == CardDB.cardName.swordofjustice)
@@ -122,7 +125,7 @@
             }
 
             //no penality, but a bonus, if he has weapon on hand!
-            if (target.isHero && target.own != p.isOwnTurn && mPlayer.ownWeaponName == CardDB.cardName.gorehowl && mPlayer.ownWeaponAttack >= 3)
+            if (target.isHero && !isTargetOwn && mPlayer.ownWeaponName == CardDB.cardName.gorehowl && mPlayer.ownWeaponAttack >= 3)
             {
                 return 10;
             }
@@ -184,6 +187,9 @@
 
         private int getAttackBuffPenality(CardDB.Card card, Minion target, Playfield p, int choice, bool lethal)
         {
+
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             Player mPlayer, ePlayer;
 
             if (p.isOwnTurn)
@@ -193,8 +199,8 @@
             }
             else
             {
-                mPlayer = p.playerFirst;
-                ePlayer = p.playerSecond;
+                mPlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
             }
 
             CardDB.cardName name = card.name;
@@ -219,7 +225,7 @@
 
             if (!CardDB.Instance.attackBuffDatabase.ContainsKey(name)) return 0;
             if (target == null) return 60;
-            if (!target.isHero && target.own != p.isOwnTurn)
+            if (!target.isHero && !isTargetOwn)
             {
                 if (card.type == CardDB.cardtype.MOB && mPlayer.ownMinions.Count == 0) return 0;
                 //allow it if you have biggamehunter
@@ -251,7 +257,7 @@
                     pen = 500;
                 }
             }
-            if (!target.isHero && target.own == p.isOwnTurn)
+            if (!target.isHero && isTargetOwn)
             {
                 Minion m = target;
                 if (!m.Ready)
@@ -270,7 +276,7 @@
 
         private int getHPBuffPenality(CardDB.Card card, Minion target, Playfield p, int choice)
         {
-
+            bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
 
             CardDB.cardName name = card.name;
             if (name == CardDB.cardName.darkwispers && choice != 2) return 0;
@@ -284,7 +290,7 @@
             if (!CardDB.Instance.healthBuffDatabase.ContainsKey(name)) return 0;
 
             // Drew: We add a null check here to avoid interfering with other logic with the previous conditional statement.
-            if (target != null && target.own != p.isOwnTurn && !CardDB.Instance.tauntBuffDatabase.ContainsKey(name))
+            if (target != null && !isTargetOwn && !CardDB.Instance.tauntBuffDatabase.ContainsKey(name))
             {
                 pen = 500;
             }
@@ -295,6 +301,8 @@
 
         private int getTauntBuffPenality(CardDB.cardName name, Minion target, Playfield p, int choice)
         {
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             Player mPlayer, ePlayer;
 
             if (p.isOwnTurn)
@@ -317,7 +325,7 @@
             // Drew: We need a target for this card!
             if (name == CardDB.cardName.darkwispers && target == null) return 500;
 
-            if (!target.isHero && target.own != p.isOwnTurn)
+            if (!target.isHero && !isTargetOwn)
             {
                 //allow it if you have black knight
                 foreach (Handmanager.Handcard hc in mPlayer.owncards)
@@ -348,6 +356,8 @@
 
         private int getSilencePenality(CardDB.cardName name, Minion target, Playfield p, int choice, bool lethal)
         {
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             Player mPlayer, ePlayer;
 
             if (p.isOwnTurn)
@@ -373,7 +383,7 @@
                 return 0;
             }
 
-            if (target.own == p.isOwnTurn)
+            if (isTargetOwn)
             {
                 if (CardDB.Instance.silenceDatabase.ContainsKey(name))
                 {
@@ -390,7 +400,7 @@
                     pen += 500;
                 }
             }
-            else if (target.own != p.isOwnTurn)
+            else if (!isTargetOwn)
             {
                 if (CardDB.Instance.silenceDatabase.ContainsKey(name))
                 {
@@ -437,6 +447,8 @@
 
         private int getDamagePenality(CardDB.Card card, Minion target, Playfield p, int choice, bool lethal)
         {
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             Player mPlayer, ePlayer;
 
             if (p.isOwnTurn)
@@ -446,8 +458,8 @@
             }
             else
             {
-                mPlayer = p.playerFirst;
-                ePlayer = p.playerSecond;
+                mPlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
             }
 
             CardDB.cardName name = card.name;
@@ -551,7 +563,7 @@
 
             if (target == null) return 0;
 
-            if (target.own && target.isHero)
+            if (isTargetOwn && target.isHero)
             {
                 if (CardDB.Instance.DamageTargetDatabase.ContainsKey(name) || CardDB.Instance.DamageTargetSpecialDatabase.ContainsKey(name) || (mPlayer.anzOwnAuchenaiSoulpriest >= 1 && CardDB.Instance.HealTargetDatabase.ContainsKey(name)))
                 {
@@ -559,7 +571,7 @@
                 }
             }
 
-            if (!lethal && target.own != p.isOwnTurn && target.isHero)
+            if (!lethal && !isTargetOwn && target.isHero)
             {
                 if (name == CardDB.cardName.baneofdoom)
                 {
@@ -567,7 +579,7 @@
                 }
             }
 
-            if (target.own && !target.isHero)
+            if (isTargetOwn && !target.isHero)
             {
                 if (CardDB.Instance.DamageTargetDatabase.ContainsKey(name) || (mPlayer.anzOwnAuchenaiSoulpriest >= 1 && CardDB.Instance.HealTargetDatabase.ContainsKey(name)))
                 {
@@ -640,7 +652,7 @@
                     pen = 500;
                 }
             }
-            if (target.own != p.isOwnTurn && !target.isHero)
+            if (!isTargetOwn && !target.isHero)
             {
                 int realDamage = 0;
                 if (CardDB.Instance.DamageTargetSpecialDatabase.ContainsKey(name)) realDamage = (card.type == CardDB.cardtype.SPELL) ?  p.getSpellDamageDamage(CardDB.Instance.DamageTargetSpecialDatabase[name], p.isOwnTurn) : CardDB.Instance.DamageTargetSpecialDatabase[name];
@@ -660,6 +672,8 @@
 
         private int getHealPenality(CardDB.cardName name, Minion target, Playfield p, int choice, bool lethal)
         {
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             Player mPlayer, ePlayer;
 
             if (p.isOwnTurn)
@@ -722,13 +736,13 @@
                 if (target == null) return 10;
                 //Helpfunctions.Instance.ErrorLog("pencheck for " + name + " " + target.entitiyID + " " + target.isHero  + " " + target.own);
                 heal = CardDB.Instance.HealTargetDatabase[name];
-                if (target.isHero && target.own != p.isOwnTurn) return 510; // dont heal enemy
+                if (target.isHero && !isTargetOwn) return 510; // dont heal enemy
                 //Helpfunctions.Instance.ErrorLog("pencheck for " + name + " " + target.entitiyID + " " + target.isHero + " " + target.own);
-                if ((target.isHero && target.own) && mPlayer.ownHero.Hp == 30) return 150;
-                if ((target.isHero && target.own) && mPlayer.ownHero.Hp + heal - 1 > 30) pen = mPlayer.ownHero.Hp + heal - 30;
+                if ((target.isHero && isTargetOwn) && mPlayer.ownHero.Hp == 30) return 150;
+                if ((target.isHero && isTargetOwn) && mPlayer.ownHero.Hp + heal - 1 > 30) pen = mPlayer.ownHero.Hp + heal - 30;
                 Minion m = new Minion();
 
-                if (!target.isHero && target.own)
+                if (!target.isHero && isTargetOwn)
                 {
                     m = target;
                     int wasted = 0;
@@ -741,7 +755,7 @@
                     if (m.Hp + heal <= m.maxHp) pen = -1;
                 }
 
-                if (!target.isHero && target.own != p.isOwnTurn)
+                if (!target.isHero && !isTargetOwn)
                 {
                     m = target;
                     if (m.Hp == m.maxHp) return 500;
@@ -1155,6 +1169,8 @@
 
         private int getDestroyOwnPenality(CardDB.cardName name, Minion target, Playfield p, bool lethal)
         {
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             Player mPlayer, ePlayer;
 
             if (p.isOwnTurn)
@@ -1194,7 +1210,7 @@
                 }
             }
             if (target == null) return 0;
-            if (target.own && !target.isHero)
+            if (isTargetOwn && !target.isHero)
             {
                 // dont destroy owns ;_; (except mins with deathrattle effects)
 
@@ -1221,6 +1237,8 @@
 
         private int getDestroyPenality(CardDB.cardName name, Minion target, Playfield p, bool lethal)
         {
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             Player mPlayer, ePlayer;
 
             if (p.isOwnTurn)
@@ -1237,7 +1255,7 @@
             if (!CardDB.Instance.destroyDatabase.ContainsKey(name) || lethal) return 0;
             int pen = 0;
             if (target == null) return 0;
-            if (target.own && !target.isHero)
+            if (isTargetOwn && !target.isHero)
             {
                 Minion m = target;
                 if (!m.handcard.card.deathrattle)
@@ -1245,7 +1263,7 @@
                     pen = 500;
                 }
             }
-            if (target.own != p.isOwnTurn && !target.isHero)
+            if (!isTargetOwn && !target.isHero)
             {
                 // dont destroy owns ;_; (except mins with deathrattle effects)
 
@@ -1289,6 +1307,8 @@
 
         private int getSpecialCardComboPenalitys(CardDB.Card card, Minion target, Playfield p, bool lethal, int choice)
         {
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             Player mPlayer, ePlayer;
 
             if (p.isOwnTurn)
@@ -1343,7 +1363,7 @@
                 }
                 else
                 {
-                    if ((name == CardDB.cardName.rendblackhand && target != null) && target.own != p.isOwnTurn)
+                    if ((name == CardDB.cardName.rendblackhand && target != null) && !isTargetOwn)
                     {
                         if ((target.taunt && target.handcard.card.rarity == 5) || target.handcard.card.name == CardDB.cardName.malganis)
                         {
@@ -1433,7 +1453,7 @@
                 if (target == null) return 50;
             }
 
-            if ((card.name == CardDB.cardName.biggamehunter) && (target == null || target.own))
+            if ((card.name == CardDB.cardName.biggamehunter) && (target == null || isTargetOwn))
             {
                 return 40;
             }
@@ -1442,7 +1462,7 @@
                 pen = 30;
             }
 
-            if (name == CardDB.cardName.emergencycoolant && target != null && target.own)//dont freeze own minions
+            if (name == CardDB.cardName.emergencycoolant && target != null && isTargetOwn)//dont freeze own minions
             {
                 pen = 500;
             }
@@ -1453,7 +1473,7 @@
                 if (target == null) { pen = 20; }
                 else
                 {
-                    if (target.own != p.isOwnTurn) { return 500; }
+                    if (!isTargetOwn) { return 500; }
                     if (!target.Ready && !target.handcard.card.isSpecialMinion) { pen = 10; }
                     if (!target.Ready && !target.handcard.card.isSpecialMinion && target.Angr <= 2 && target.Hp <= 2) { pen = 15; }
                 }
@@ -1479,7 +1499,7 @@
                 {
                     return 50;
                 }
-                if (target.own)
+                if (isTargetOwn)
                 {
                     return 100;
                 }
@@ -1591,12 +1611,12 @@
 
             if (name == CardDB.cardName.ancestralspirit)
             {
-                if (target.own != p.isOwnTurn && !target.isHero)
+                if (!isTargetOwn && !target.isHero)
                 {
                     if (m.name == CardDB.cardName.deathlord || m.name == CardDB.cardName.zombiechow || m.name == CardDB.cardName.dancingswords) return 0;
                     return 500;
                 }
-                if (target.own && !target.isHero)
+                if (isTargetOwn && !target.isHero)
                 {
                     if (CardDB.Instance.specialMinions.ContainsKey(m.name)) return -5;
                     return 0;
@@ -1620,7 +1640,7 @@
                 }
             }
 
-            if (name == CardDB.cardName.betrayal && target.own != p.isOwnTurn && !target.isHero)
+            if (name == CardDB.cardName.betrayal && !isTargetOwn && !target.isHero)
             {
                 if (m.Angr == 0) return 30;
                 if (ePlayer.ownMinions.Count == 1) return 30;
@@ -1659,7 +1679,7 @@
 
             if (name == CardDB.cardName.frostbolt)
             {
-                if (target.own != p.isOwnTurn && !target.isHero)
+                if (!isTargetOwn && !target.isHero)
                 {
                     if (m.handcard.card.cost <= 2)
                         return 15;
@@ -1675,7 +1695,7 @@
 
             if (name == CardDB.cardName.poweroverwhelming)
             {
-                if (target.own && !target.isHero && !m.Ready)
+                if (isTargetOwn && !target.isHero && !m.Ready)
                 {
                     return 500;
                 }
@@ -1708,7 +1728,7 @@
             {
                 if (lethal)
                 {
-                    if (target.own != p.isOwnTurn && !target.isHero)
+                    if (!isTargetOwn && !target.isHero)
                     {
                         if (!m.taunt)
                         {
@@ -1727,7 +1747,7 @@
                 }
                 else
                 {
-                    if (target.own != p.isOwnTurn && !target.isHero)
+                    if (!isTargetOwn && !target.isHero)
                     {
 
                         // combo for killing with innerfire and biggamehunter
@@ -1740,7 +1760,7 @@
 
                 }
 
-                if (target.own && !target.isHero)
+                if (isTargetOwn && !target.isHero)
                 {
 
                     if (m.Hp >= 4)
@@ -1805,12 +1825,12 @@
 
             if ((name == CardDB.cardName.polymorph || name == CardDB.cardName.hex))
             {
-                if (target.own && !target.isHero)
+                if (isTargetOwn && !target.isHero)
                 {
                     return 500;
                 }
 
-                if (target.own != p.isOwnTurn && !target.isHero)
+                if (!isTargetOwn && !target.isHero)
                 {
                     if (target.allreadyAttacked) return 30;
                     Minion frog = target;
@@ -1869,8 +1889,8 @@
 
             if (name == CardDB.cardName.huntersmark)
             {
-                if (target.own && !target.isHero) pen = 500; // dont use on own minions
-                if (target.own != p.isOwnTurn && !target.isHero && (target.Hp <= 4) && target.Angr <= 4) // only use on strong minions
+                if (isTargetOwn && !target.isHero) pen = 500; // dont use on own minions
+                if (!isTargetOwn && !target.isHero && (target.Hp <= 4) && target.Angr <= 4) // only use on strong minions
                 {
                     pen = 20;
                 }
@@ -1881,8 +1901,8 @@
             {
                 if (target != null)
                 {
-                    if (target.own) pen = 500; // dont use on own minions
-                    if (target.own != p.isOwnTurn && target.Angr <= 3) // only use on strong minions
+                    if (isTargetOwn) pen = 500; // dont use on own minions
+                    if (!isTargetOwn && target.Angr <= 3) // only use on strong minions
                     {
                         pen = 30;
                     }
@@ -1959,7 +1979,7 @@
                     if (haveready) pen += 10;
                 }
 
-                if (target.own && !target.isHero)
+                if (isTargetOwn && !target.isHero)
                 {
                     Minion mnn = target;
                     if (mnn.Ready) pen += 10;
@@ -2131,6 +2151,8 @@
         {
             Player mPlayer, ePlayer;
 
+                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+
             if (p.isOwnTurn)
             {
                 mPlayer = p.playerFirst;
@@ -2162,7 +2184,7 @@
                 if (attackedbefore == 0 && islow) pen -= 20;
                 if (attackedbefore == 0 && !islow) pen += 10;
 
-                if (target.isHero && target.own != p.isOwnTurn && ePlayer.ownMinions.Count >= 1)
+                if (target.isHero && !isTargetOwn && ePlayer.ownMinions.Count >= 1)
                 {
                     //penality if we doestn attacked before
                     if (hasMinionsWithLowHeal(p)) pen += 10; //penality if we doestn attacked minions before
@@ -2175,11 +2197,11 @@
 
                 bool islow = isOwnLowest(m, p);
 
-                if (target.isHero && target.own != p.isOwnTurn && !islow)
+                if (target.isHero && !isTargetOwn && !islow)
                 {
                     pen += 10;
                 }
-                if (target.isHero && target.own != p.isOwnTurn && islow && mPlayer.mobsplayedThisTurn >= 1)
+                if (target.isHero && !isTargetOwn && islow && mPlayer.mobsplayedThisTurn >= 1)
                 {
                     pen -= 20;
                 }
@@ -2191,17 +2213,17 @@
 
                 bool islow = isOwnLowest(m, p);
 
-                if (target.own != p.isOwnTurn && !target.isHero && attackedbefore == 0)
+                if (!isTargetOwn && !target.isHero && attackedbefore == 0)
                 {
                     if (!isEnemyLowest(target, p) || m.Hp <= 2) pen += 5;
                 }
 
-                if (target.isHero && target.own != p.isOwnTurn && !islow)
+                if (target.isHero && !isTargetOwn && !islow)
                 {
                     pen += 5;
                 }
 
-                if (target.isHero && target.own != p.isOwnTurn && ePlayer.ownMinions.Count >= 1 && attackedbefore == 0)
+                if (target.isHero && !isTargetOwn && ePlayer.ownMinions.Count >= 1 && attackedbefore == 0)
                 {
                     pen += 5;
                 }

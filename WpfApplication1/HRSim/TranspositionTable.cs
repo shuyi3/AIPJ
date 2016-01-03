@@ -11,6 +11,8 @@
             TTable = new Dictionary<float, List<Playfield>>();
         }
 
+        //Return true is already exist
+        // false if non-exist
         public bool addToMap(Playfield state)
         {
             float key = getHashkey(state);
@@ -19,6 +21,10 @@
             //{
             //    int debug = 1;
             //    state.debugMinions();
+            //}
+            //if (state.playerFirst.ownMaxMana == 3)
+            //{
+            //    int debug = 1;
             //}
             if (TTable.ContainsKey(key))
             {

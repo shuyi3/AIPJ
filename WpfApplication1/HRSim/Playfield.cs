@@ -5,6 +5,33 @@
     using System.Linq;
     using System.Text.RegularExpressions;
 
+    public class moveChangeTrigger
+    {
+        public bool minionDied;
+        public List<int> minionDiedList = new List<int>();
+        public List<int> cardPlayedList = new List<int>();
+        public bool handcardAdded;
+        public bool manaChanged;
+        public bool tauntChanged;
+        public bool ownNewTarget;
+        public bool enemyNewTarget;
+        public bool hasOwnTargetMove;
+
+        //TODO: cardplaylist其实没用
+        public void Clear()
+        {
+            minionDied = false;
+            minionDiedList.Clear();
+            cardPlayedList.Clear();
+            handcardAdded = false;
+            manaChanged = false;
+            tauntChanged = false;
+            ownNewTarget = false;
+            enemyNewTarget = false;
+            hasOwnTargetMove = false;
+        }
+    }
+
     public struct triggerCounter
     {
         public int minionsGotHealed;
@@ -30,13 +57,14 @@
         public bool enemyMininsChanged;
     }
 
-
     public class Playfield
     {
         //Todo: delete all new list<minion>
         //TODO: graveyard change (list <card,owner>)
         //Todo: vanish clear all auras/buffs (NEW1_004)
         public int rngIndex;
+        public List<Action> moveList;
+        public Dictionary<Tuple<int, int>, int> moveMap;
 
         public bool logging = false;
         public bool complete = false;
@@ -44,6 +72,8 @@
         public int nextEntity = 70;
 
         public triggerCounter tempTrigger = new triggerCounter();
+
+        public moveChangeTrigger moveTrigger = new moveChangeTrigger();
 
         //aura minions##########################
         //todo reduce buffing vars
@@ -429,6 +459,8 @@
             setPlayer();
 
             this.rngIndex = 0;
+            this.moveList = new List<Action>();
+            moveMap = new Dictionary<Tuple<int, int>, int>();
             //this.ownController = 1;
 
             //this.mana = 10;
@@ -748,6 +780,8 @@
 
             //implementation      
             this.rngIndex = p.rngIndex;
+            this.moveList = new List<Action>(p.moveList);
+            moveMap = new Dictionary<Tuple<int, int>, int>();
 
             this.isOwnTurn = p.isOwnTurn;
             this.homeDeck = new List<CardDB.Card>(p.homeDeck);
@@ -2293,7 +2327,7 @@
                 }
             }
             // create and execute the action------------------------------------------------------------------------
-            Action a = new Action(aa.actionType, ha, o, aa.place, trgt, aa.penalty, aa.druidchoice);
+            Action a = new Action(aa.actionType, ha, o, aa.place, trgt, aa.penalty, aa.druidchoice, aa.manaCost);
 
 
 
@@ -2393,6 +2427,8 @@
             //        int debug = 1;
             //    }
             //}
+            //this.moveTrigger.Clear();
+
         }
 
         //minion attacks a minion
@@ -2632,6 +2668,93 @@
 
         }
 
+        public void deleteTargetFromList(Minion m)
+        { 
+            
+        }
+
+        public void deleteMinionFromMoveList(Minion m, int targetId)
+        {
+            Player mPlayer;
+
+            if (this.isOwnTurn)
+            {
+                mPlayer = this.playerFirst;
+            }
+            else
+            {
+                mPlayer = this.playerSecond;
+            }
+
+            //if ()
+        
+        }
+
+        public void deleteHcFromMoveList(Handmanager.Handcard hc, int targetId)
+        { 
+            //Need implementation for shadowmadness
+            Player mPlayer;
+
+            if (this.isOwnTurn)
+            {
+                mPlayer = this.playerFirst;
+            }
+            else
+            {
+                mPlayer = this.playerSecond;
+            }
+            if (targetId != -1)
+            {
+                List<Minion> trgts = hc.card.getTargetsForCard(this, false, this.isOwnTurn);
+                foreach (Minion m in trgts)
+                {
+                    Tuple<int, int> key = new Tuple<int, int>(hc.entity, m.entitiyID);
+                    moveList.RemoveAt(moveMap[key]);
+                    moveMap.Remove(key);
+                }
+            }
+            else
+            {
+                Tuple<int, int> key = new Tuple<int, int>(hc.entity, -1);
+                moveList.RemoveAt(moveMap[key]);
+                moveMap.Remove(key);
+            }
+        }
+
+        public void printMoveList()
+        {
+            Helpfunctions.Instance.logg("Current Move List:------------------------------------");
+            foreach (Action move in this.moveList)
+            {
+                move.print();
+            }
+        
+        }
+
+        public void updateMoveList(Action action)
+        {
+            Helpfunctions.Instance.logg("Action:------------------------------------");
+            action.print();
+            printMoveList();
+            if (this.moveTrigger.tauntChanged || this.moveTrigger.manaChanged)
+            {
+                this.moveList = Movegenerator.Instance.getMoveList(this, false, true, true);
+            }
+            else
+            {
+                Movegenerator.Instance.getMoveListForPlayfield(this, action, false);
+            }
+            if (this.isOwnTurn)
+            {
+                Helpfunctions.Instance.logg("player 1 Mana: " + this.playerFirst.mana + "/" + this.playerFirst.ownMaxMana);
+            }
+            else
+            {
+                Helpfunctions.Instance.logg("player 2 Mana: " + this.playerSecond.mana + "/" + this.playerSecond.ownMaxMana);
+            }
+            printMoveList();
+        }
+
         //play a minion trigger stuff:
         // 1 whenever you play a card whatever triggers
         // 2 Auras
@@ -2654,6 +2777,12 @@
                 debugMinions();
             }
             this.playerFirst.mana = this.playerFirst.mana - manaCost;
+
+            if (this.playerFirst.mana < 0)
+            {
+                int debug = 1;
+            }
+
             removeCard(hc, true);// remove card from hand
 
             this.triggerCardsChanged(true);
@@ -2708,7 +2837,7 @@
                 if (c.type == CardDB.cardtype.MOB)
                 {
                     this.placeAmobSomewhere(hc, true, target, choice, position);
-                    this.playerFirst.mobsplayedThisTurn++;
+                    this.playerFirst.mobsplayedThisTurn++;                             
                 }
                 else
                 {
@@ -2778,7 +2907,7 @@
                 {
                     //todo mob playing
                     this.placeAmobSomewhere(hc, false, target, choice, position);
-                    this.playerSecond.mobsplayedThisTurn++;
+                    this.playerSecond.mobsplayedThisTurn++;                  
                 }
                 else
                 {
@@ -3325,21 +3454,38 @@
 
         public void triggerAMinionWasSummoned(Minion mnn)
         {
+            //implementation of cogmaster
+            bool hasMech = false;
+
             if (mnn.own)
             {
                 foreach (Minion m in this.playerFirst.ownMinions)
                 {
+                    if (mnn.name == CardDB.cardName.cogmaster) 
+                    {
+                        if ((TAG_RACE)m.handcard.card.race == TAG_RACE.MECHANICAL)
+                        {
+                            hasMech = true;
+                        }
+                    }
                     if (m.silenced) continue;
                     if (m.name == CardDB.cardName.knifejuggler)
                     {
                         m.handcard.card.sim_card.onMinionWasSummoned(this, m, mnn);
                     }
-                }
+                }            
             }
             else
             {
                 foreach (Minion m in this.playerSecond.ownMinions)
                 {
+                    if (mnn.name == CardDB.cardName.cogmaster)
+                    {
+                        if ((TAG_RACE)m.handcard.card.race == TAG_RACE.MECHANICAL)
+                        {
+                            hasMech = true;
+                        }
+                    }
                     if (m.silenced) continue;
                     if (m.name == CardDB.cardName.knifejuggler)
                     {
@@ -3347,7 +3493,10 @@
                     }
                 }
             }
-
+            if (hasMech)
+            {
+                minionGetBuffed(mnn, 2, 0);
+            }
         }
 
         public void triggerEndTurn(bool ownturn)
@@ -3468,6 +3617,9 @@
             this.doDmgTriggers();
 
             //action debug
+            this.moveList.Clear();
+            this.moveTrigger.Clear();
+
             this.playerFirst.playactions.Clear();
             this.playerSecond.playactions.Clear();
             this.rngIndex = 0;
@@ -4212,6 +4364,22 @@
             triggerAMinionWasSummoned(m);
             doDmgTriggers();
 
+            //implementation
+            if (m.Hp > 0)
+            {
+                if (m.own == this.isOwnTurn)
+                {
+                    if (m.handcard.card.deathrattle || moveTrigger.hasOwnTargetMove)
+                    {
+                        moveTrigger.ownNewTarget = true;
+                    }
+                }
+                else
+                {
+                    this.moveTrigger.enemyNewTarget = true;
+                }
+            }
+
         }
 
         public void equipWeapon(CardDB.Card c, bool own)
@@ -4413,6 +4581,12 @@
                 }
 
                 getHandCard(mPlayer, s, own);
+            }
+
+            //move trigger
+            if (own == isOwnTurn)
+            {
+                this.moveTrigger.handcardAdded = true;
             }
 
             return 0;
@@ -5076,23 +5250,36 @@
 
         public void printBoard()//TODO: for both sides (secrets)
         {
-            Helpfunctions.Instance.logg("board/hash: " + playerFirst.value + "  /  " + this.playerFirst.hashcode + " ++++++++++++++++++++++");
-            Helpfunctions.Instance.logg("pen " + this.playerFirst.evaluatePenality);
-            Helpfunctions.Instance.logg("mana " + this.playerFirst.mana + "/" + this.playerFirst.ownMaxMana);
-            Helpfunctions.Instance.logg("cardsplayed: " + this.playerFirst.cardsPlayedThisTurn + " handsize: " + this.playerFirst.owncards.Count + " eh " + this.playerSecond.owncards.Count);
+            Helpfunctions.Instance.logg("Turn:" + this.isOwnTurn);
 
+            Helpfunctions.Instance.logg("board/hash: " + playerFirst.value + "  /  " + this.playerFirst.hashcode + " ++++++++++++++++++++++");
+            //Helpfunctions.Instance.logg("pen " + this.playerFirst.evaluatePenality);
+            Helpfunctions.Instance.logg("ownmana " + this.playerFirst.mana + "/" + this.playerFirst.ownMaxMana);
+            Helpfunctions.Instance.logg("owncardsplayed: " + this.playerFirst.cardsPlayedThisTurn + " handsize: " + this.playerFirst.owncards.Count + " eh " + this.playerSecond.owncards.Count);
             Helpfunctions.Instance.logg("ownhero: ");
             Helpfunctions.Instance.logg("ownherohp: " + this.playerFirst.ownHero.Hp + " + " + this.playerFirst.ownHero.armor);
             Helpfunctions.Instance.logg("ownheroattac: " + this.playerFirst.ownHero.Angr);
             Helpfunctions.Instance.logg("ownheroweapon: " + this.playerFirst.ownWeaponAttack + " " + this.playerFirst.ownWeaponDurability + " " + this.playerFirst.ownWeaponName);
             Helpfunctions.Instance.logg("ownherostatus: frozen" + this.playerFirst.ownHero.frozen + " ");
-            Helpfunctions.Instance.logg("enemyherohp: " + this.playerSecond.ownHero.Hp + " + " + this.playerSecond.ownHero.armor + ((this.playerSecond.ownHero.immune) ? " immune" : ""));
+
+            Helpfunctions.Instance.logg("enemymana " + this.playerSecond.mana + "/" + this.playerSecond.ownMaxMana);
+            Helpfunctions.Instance.logg("enemycardsplayed: " + this.playerSecond.cardsPlayedThisTurn + " handsize: " + this.playerSecond.owncards.Count + " eh " + this.playerSecond.owncards.Count);
+            Helpfunctions.Instance.logg("enemyhero: ");
+            Helpfunctions.Instance.logg("enemyherohp: " + this.playerSecond.ownHero.Hp + " + " + this.playerSecond.ownHero.armor);
+            Helpfunctions.Instance.logg("enemyheroattac: " + this.playerSecond.ownHero.Angr);
+            Helpfunctions.Instance.logg("enemyheroweapon: " + this.playerSecond.ownWeaponAttack + " " + this.playerSecond.ownWeaponDurability + " " + this.playerSecond.ownWeaponName);
+            Helpfunctions.Instance.logg("enemyherostatus: frozen" + this.playerSecond.ownHero.frozen + " ");
 
             //if (this.playerSecond.ownSecretsIDList.Count >= 1) Helpfunctions.Instance.logg("playerSecond.ownSecrets: " + Probabilitymaker.Instance.getplayerSecond.ownSecretData(this.playerSecond.ownSecretList));
             foreach (Action a in this.playerFirst.playactions)
             {
                 a.print();
             }
+            foreach (Action a in this.playerSecond.playactions)
+            {
+                a.print();
+            }
+
             Helpfunctions.Instance.logg("OWN MINIONS################");
 
             foreach (Minion m in this.playerFirst.ownMinions)

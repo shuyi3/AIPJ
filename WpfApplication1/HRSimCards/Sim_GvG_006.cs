@@ -14,11 +14,18 @@ namespace HRSim
             if (own.own)
             {
                 p.playerFirst.anzOwnMechwarper++;
+                if (p.isOwnTurn) 
+                {
+                    p.moveTrigger.manaChanged = true;
+                }
             }
             else
             {
                 p.playerSecond.anzOwnMechwarper++;
-
+                if (!p.isOwnTurn)
+                {
+                    p.moveTrigger.manaChanged = true;
+                }
             }
 
         }
@@ -28,10 +35,18 @@ namespace HRSim
             if (own.own)
             {
                 p.playerFirst.anzOwnMechwarper--;
+                if (p.isOwnTurn)
+                {
+                    p.moveTrigger.manaChanged = true;
+                }
             }
             else
             {
                 p.playerSecond.anzOwnMechwarper--;
+                if (!p.isOwnTurn)
+                {
+                    p.moveTrigger.manaChanged = true;
+                }
             }
         }
 
