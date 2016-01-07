@@ -17,6 +17,23 @@
         public bool enemyNewTarget;
         public bool hasOwnTargetMove;
 
+        public moveChangeTrigger()
+        {        
+        }
+
+        public moveChangeTrigger(moveChangeTrigger m)
+        {
+            minionDied = m.minionDied;
+            minionDiedList = new List<int>(m.minionDiedList);
+            cardPlayedList = new List<int>(m.cardPlayedList);
+            handcardAdded = m.handcardAdded;
+            manaChanged = m.manaChanged;
+            tauntChanged = m.tauntChanged;
+            ownNewTarget = m.ownNewTarget;
+            enemyNewTarget = m.enemyNewTarget;
+            hasOwnTargetMove = m.hasOwnTargetMove;
+        }
+
         //TODO: cardplaylist其实没用
         public void Clear()
         {
@@ -782,6 +799,7 @@
             this.rngIndex = p.rngIndex;
             this.moveList = new List<Action>(p.moveList);
             moveMap = new Dictionary<Tuple<int, int>, int>();
+            moveTrigger = new moveChangeTrigger(p.moveTrigger);
 
             this.isOwnTurn = p.isOwnTurn;
             this.homeDeck = new List<CardDB.Card>(p.homeDeck);
@@ -801,9 +819,25 @@
             //####buffs#############################
         }
 
-        public void copyValuesFrom(Playfield p)
+        public bool isHandEqual(Playfield p, bool logg)
         {
+            List<Handmanager.Handcard> cardList = new List<Handmanager.Handcard>(this.playerFirst.owncards);
+            List<Handmanager.Handcard> cardListToCompare = new List<Handmanager.Handcard>(p.playerFirst.owncards);
 
+            cardList.Sort((x, y) => string.Compare(x.card.name.ToString(), y.card.name.ToString()));
+            cardListToCompare.Sort((x, y) => string.Compare(x.card.name.ToString(), y.card.name.ToString()));
+
+            for (int i = 0; i < cardList.Count; i++)
+            {
+                Handmanager.Handcard dishc = cardList[i]; Handmanager.Handcard pishc = cardListToCompare[i];
+                if (dishc.card.name != pishc.card.name || dishc.getManaCost(this, true) != pishc.getManaCost(p, true))
+                {
+                    if (logg) Helpfunctions.Instance.logg("handcard changed: " + dishc.card.name);
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public bool isEqual(Playfield p, bool logg)
@@ -830,7 +864,7 @@
 
             if (this.playerFirst.mana != p.playerFirst.mana || this.playerSecond.ownMaxMana != p.playerSecond.ownMaxMana || this.playerFirst.ownMaxMana != p.playerFirst.ownMaxMana)
             {
-                if (logg) Helpfunctions.Instance.logg("mana changed " + this.playerFirst.mana + " " + p.playerFirst.mana + " " + this.playerSecond.ownMaxMana + " " + p.playerSecond.ownMaxMana + " " + this.playerFirst.ownMaxMana + " " + p.playerFirst.ownMaxMana);
+                if (logg) Helpfunctions.Instance.logg("mana changed " + this.playerFirst.mana + " " + p.playerFirst.mana + " " + this.playerSecond.ownMaxMana + " " + p.playerSecond.ownMaxMana + " " + this.playerFirst.ownMaxMana + " " + p.playerFirst.ownMaxMana + " " + this.isOwnTurn + " " + p.isOwnTurn);
                 return false;
             }
 
@@ -842,8 +876,8 @@
             if (this.playerFirst.cardsPlayedThisTurn != p.playerFirst.cardsPlayedThisTurn || this.playerFirst.mobsplayedThisTurn != p.playerFirst.mobsplayedThisTurn || this.ueberladung != p.ueberladung || this.playerFirst.ownAbilityReady != p.playerFirst.ownAbilityReady)
             {
                 if (logg) Helpfunctions.Instance.logg("stuff changed " + this.playerFirst.cardsPlayedThisTurn + " " + p.playerFirst.cardsPlayedThisTurn + " " + this.playerFirst.mobsplayedThisTurn + " " + p.playerFirst.mobsplayedThisTurn + " " + this.ueberladung + " " + p.ueberladung + " " + this.playerFirst.ownAbilityReady + " " + p.playerFirst.ownAbilityReady);
-                this.printBoard();
-                p.printBoard();
+                //this.printBoard();
+                //p.printBoard();
                 return false;
             }
 
@@ -909,21 +943,63 @@
                 Minion dis = minionList[i]; Minion pis = minionListToCompare[i];
                 //if (dis.entitiyID == 0) dis.entitiyID = pis.entitiyID;
                 //if (pis.entitiyID == 0) pis.entitiyID = dis.entitiyID;
-                if (dis.name != pis.name) minionbool = false;
-                if (dis.Angr != pis.Angr || dis.Hp != pis.Hp || dis.maxHp != pis.maxHp || dis.numAttacksThisTurn != pis.numAttacksThisTurn) minionbool = false;
-                if (dis.Ready != pis.Ready) minionbool = false; // includes frozen, exhaunted
+                if (dis.name != pis.name)
+                {
+                    if (logg) Helpfunctions.Instance.logg("ownminions name changed");
+                    minionbool = false;
+                    break;
+                }
+                if (dis.Angr != pis.Angr || dis.Hp != pis.Hp || dis.maxHp != pis.maxHp || dis.numAttacksThisTurn != pis.numAttacksThisTurn)
+                {
+                    if (logg) Helpfunctions.Instance.logg("ownminions number changed");
+                    minionbool = false;
+                    break;
+                }
+                if (dis.Ready != pis.Ready)
+                {
+                    if (logg) Helpfunctions.Instance.logg("ownminions ready changed");
+                    minionbool = false; // includes frozen, exhaunted
+                    break;
+                }
                 //if (dis.playedThisTurn != pis.playedThisTurn) minionbool = false;
                 //if (dis.silenced != pis.silenced || dis.stealth != pis.stealth || dis.taunt != pis.taunt || dis.windfury != pis.windfury || dis.zonepos != pis.zonepos) minionbool = false;
-                if (dis.silenced != pis.silenced || dis.stealth != pis.stealth || dis.taunt != pis.taunt || dis.windfury != pis.windfury) minionbool = false;
-                if (dis.divineshild != pis.divineshild || dis.cantLowerHPbelowONE != pis.cantLowerHPbelowONE || dis.immune != pis.immune) minionbool = false;
-                if (dis.ownBlessingOfWisdom != pis.ownBlessingOfWisdom || dis.enemyBlessingOfWisdom != pis.enemyBlessingOfWisdom) minionbool = false;
-                if (dis.destroyOnEnemyTurnStart != pis.destroyOnEnemyTurnStart || dis.destroyOnEnemyTurnEnd != pis.destroyOnEnemyTurnEnd || dis.destroyOnOwnTurnEnd != pis.destroyOnOwnTurnEnd || dis.destroyOnOwnTurnStart != pis.destroyOnOwnTurnStart) minionbool = false;
-                if (dis.ancestralspirit != pis.ancestralspirit || dis.souloftheforest != pis.souloftheforest) minionbool = false;
+                if (dis.silenced != pis.silenced || dis.stealth != pis.stealth || dis.taunt != pis.taunt || dis.windfury != pis.windfury)
+                {
+                    if (logg) Helpfunctions.Instance.logg("ownminions taunt changed");
+                    minionbool = false;
+                    break;
+                }
+                if (dis.divineshild != pis.divineshild || dis.cantLowerHPbelowONE != pis.cantLowerHPbelowONE || dis.immune != pis.immune)
+                {
+                    if (logg) Helpfunctions.Instance.logg("ownminions devine changed");
+                    minionbool = false;
+                    break;
+                }
+                if (dis.ownBlessingOfWisdom != pis.ownBlessingOfWisdom || dis.enemyBlessingOfWisdom != pis.enemyBlessingOfWisdom)
+                {
+                    if (logg) Helpfunctions.Instance.logg("ownminions bless changed");
+                    minionbool = false;
+                    break;
+                }
+                if (dis.destroyOnEnemyTurnStart != pis.destroyOnEnemyTurnStart || dis.destroyOnEnemyTurnEnd != pis.destroyOnEnemyTurnEnd || dis.destroyOnOwnTurnEnd != pis.destroyOnOwnTurnEnd || dis.destroyOnOwnTurnStart != pis.destroyOnOwnTurnStart)
+                {
+                    if (logg) Helpfunctions.Instance.logg("ownminions destroy changed");
+                    minionbool = false;
+                    break;
+                }
+                if (dis.ancestralspirit != pis.ancestralspirit || dis.souloftheforest != pis.souloftheforest)
+                {
+                    if (logg) Helpfunctions.Instance.logg("ownminions buff deathrattle changed");
+                    minionbool = false;
+                    break;
+                }
 
             }
             if (minionbool == false)
             {
                 if (logg) Helpfunctions.Instance.logg("ownminions changed");
+                //p.printBoard();
+                //this.printBoard();
                 return false;
             }
 
@@ -2332,13 +2408,14 @@
 
 
             //save the action if its our first turn
-            if (this.turnCounter == 0) this.playerFirst.playactions.Add(a);
+            mPlayer.playactions.Add(a);
             //if (this.isOwnTurn) this.playactions.Add(a);
 
             // its a minion attack--------------------------------
             if (a.actionType == actionEnum.attackWithMinion)
             {
-                this.playerFirst.evaluatePenality += a.penalty;
+                //this.playerFirst.evaluatePenality += a.penalty;
+
                 Minion target = a.target;
                 //secret stuff
                 int newTarget = this.secretTrigger_CharIsAttacked(a.own, target);
@@ -2731,29 +2808,29 @@
         
         }
 
-        public void updateMoveList(Action action)
-        {
-            Helpfunctions.Instance.logg("Action:------------------------------------");
-            action.print();
-            printMoveList();
-            if (this.moveTrigger.tauntChanged || this.moveTrigger.manaChanged)
-            {
-                this.moveList = Movegenerator.Instance.getMoveList(this, false, true, true);
-            }
-            else
-            {
-                Movegenerator.Instance.getMoveListForPlayfield(this, action, false);
-            }
-            if (this.isOwnTurn)
-            {
-                Helpfunctions.Instance.logg("player 1 Mana: " + this.playerFirst.mana + "/" + this.playerFirst.ownMaxMana);
-            }
-            else
-            {
-                Helpfunctions.Instance.logg("player 2 Mana: " + this.playerSecond.mana + "/" + this.playerSecond.ownMaxMana);
-            }
-            printMoveList();
-        }
+        //public void updateMoveList(Action action)
+        //{
+        //    Helpfunctions.Instance.logg("Action:------------------------------------");
+        //    action.print();
+        //    printMoveList();
+        //    if (this.moveTrigger.tauntChanged || this.moveTrigger.manaChanged)
+        //    {
+        //        this.moveList = Movegenerator.Instance.getMoveList(this, false, true, true);
+        //    }
+        //    else
+        //    {
+        //        Movegenerator.Instance.getMoveListForPlayfield(this, false);
+        //    }
+        //    if (this.isOwnTurn)
+        //    {
+        //        Helpfunctions.Instance.logg("player 1 Mana: " + this.playerFirst.mana + "/" + this.playerFirst.ownMaxMana);
+        //    }
+        //    else
+        //    {
+        //        Helpfunctions.Instance.logg("player 2 Mana: " + this.playerSecond.mana + "/" + this.playerSecond.ownMaxMana);
+        //    }
+        //    printMoveList();
+        //}
 
         //play a minion trigger stuff:
         // 1 whenever you play a card whatever triggers
@@ -3615,6 +3692,14 @@
 
             this.drawACard(getArandomCardFromDeck(ownturn), ownturn);
             this.doDmgTriggers();
+
+            foreach (int m in moveTrigger.minionDiedList)
+            {
+                if (m == 1008)
+                {
+                    int debug = 1;
+                }
+            }
 
             //action debug
             this.moveList.Clear();
@@ -5234,6 +5319,7 @@
 
         public void debugMinions()
         {
+            Helpfunctions.Instance.logg("Turn:" + this.isOwnTurn);
             Helpfunctions.Instance.logg("OWN MINIONS################");
 
             foreach (Minion m in this.playerFirst.ownMinions)
@@ -5245,6 +5331,23 @@
             foreach (Minion m in this.playerSecond.ownMinions)
             {
                 Helpfunctions.Instance.logg("name,ang, hp: " + m.name + ", " + m.Angr + ", " + m.Hp);
+            }
+        }
+
+        public void debugHand()
+        {
+            Helpfunctions.Instance.logg("Turn:" + this.isOwnTurn);
+            Helpfunctions.Instance.logg("OWN CARDS################");
+
+            foreach (Handmanager.Handcard c in this.playerFirst.owncards)
+            {
+                Helpfunctions.Instance.logg("pos " + c.position + " " + c.card.name + " " + c.manacost + " entity " + c.entity + " " + c.card.cardIDenum + " " + c.addattack);
+            }
+
+            Helpfunctions.Instance.logg("ENEMY CARDS############");
+            foreach (Handmanager.Handcard c in this.playerSecond.owncards)
+            {
+                Helpfunctions.Instance.logg("pos " + c.position + " " + c.card.name + " " + c.manacost + " entity " + c.entity + " " + c.card.cardIDenum + " " + c.addattack);
             }
         }
 
@@ -5337,10 +5440,19 @@
 
         public void printActions(bool toBuffer = false)
         {
-            foreach (Action a in this.playerFirst.playactions)
+            if (isOwnTurn)
             {
-                a.print();
-                Helpfunctions.Instance.logg("");
+                foreach (Action a in this.playerFirst.playactions)
+                {
+                    a.print();
+                }
+            }
+            else
+            {
+                foreach (Action a in this.playerSecond.playactions)
+                {
+                    a.print();
+                }
             }
         }
 
@@ -5452,6 +5564,128 @@
                 Helpfunctions.Instance.logg(CardDB.Instance.getCardDataFromID(gItem.cardid).name + ", " + gItem.entity +
                     (gItem.own ? ", P1" : ", P2"));
             }
+        }
+
+        public float getHandValue()
+        {
+            Player mPlayer, ePlayer;
+            if (isOwnTurn) //after turn end;
+            {
+                mPlayer = this.playerSecond;
+                ePlayer = this.playerFirst;
+            }
+            else
+            {
+                mPlayer = this.playerFirst;
+                ePlayer = this.playerSecond;
+            }            //Minions
+
+            float ownHandValue = 0f;
+
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                int manacost = hc.getManaCost(this, !isOwnTurn);
+                if (manacost > mPlayer.mana + 1) continue;
+                //if (hc.card.type == CardDB.cardtype.MOB)
+                //{
+                //    ownHandValue += (hc.card.Attack != 0) ? (float)Math.Sqrt(hc.card.Attack) * hc.card.Health : 0.5f * hc.card.Health;
+                //}
+                //if (hc.card.type == CardDB.cardtype.SPELL)
+                //{
+                    ownHandValue += manacost;
+                //}
+            }
+
+            float enemyHandValue = 0f;
+
+            foreach (Handmanager.Handcard hc in ePlayer.owncards)
+            {
+                int manacost = hc.getManaCost(this, isOwnTurn);
+                if (manacost > ePlayer.mana) continue;
+                //if (hc.card.type == CardDB.cardtype.MOB)
+                //{
+                //    enemyHandValue += (hc.card.Attack != 0) ? hc.card.Attack * (float)Math.Sqrt(hc.card.Health) : 0.25f * (float)Math.Sqrt(hc.card.Health);
+                //}
+                //if (hc.card.type == CardDB.cardtype.SPELL)
+                //{
+                    enemyHandValue += manacost;
+                //}
+            }
+
+            return ownHandValue - enemyHandValue;
+
+        }
+
+        public float getBoardValue()
+        {
+            Player mPlayer, ePlayer;
+            if (isOwnTurn) //after turn end;
+            {
+                mPlayer = this.playerSecond;
+                ePlayer = this.playerFirst;
+            }
+            else
+            {
+                mPlayer = this.playerFirst;
+                ePlayer = this.playerSecond;
+            }            //Minions
+
+            //features.Add((mPlayer.ownHero.Hp + mPlayer.ownHero.armor) / 30);
+            //features.Add((mPlayer.ownHero.frozen) ? 0 : mPlayer.ownWeaponAttack);
+        
+            float ownMinionValue = 0f;
+            foreach (Minion m in mPlayer.ownMinions)
+            {
+                float minionValue = (m.Angr != 0) ? (float)Math.Sqrt(m.Angr) * m.Hp : 0.5f * m.Hp;
+
+                if (m.handcard.card.deathrattle)
+                    minionValue++;
+
+                switch (m.name)
+                {
+                    case CardDB.cardName.archmageantonidas:
+                        minionValue *= 1.2f;
+                        break;
+                }
+
+                if (m.divineshild || m.stealth || m.taunt || m.handcard.card.deathrattle)
+                {
+                    minionValue += 1;
+                }
+                ownMinionValue += minionValue;
+            }
+
+            //features.Add(ePlayer.ownHero.Hp + ePlayer.ownHero.armor);
+            //features.Add((ePlayer.ownHero.frozen) ? 0 : ePlayer.ownWeaponAttack);
+
+            float enemyMinionValue = 0f;
+
+            foreach (Minion m in ePlayer.ownMinions)
+            {
+                float minionValue = (m.Angr != 0) ? m.Angr * (float)Math.Sqrt(m.Hp) : 0.25f * (float)Math.Sqrt(m.Hp);
+                if (m.silenced) continue;
+           
+                switch (m.name)
+                {              
+                    case CardDB.cardName.archmageantonidas:
+                        minionValue *= 1.5f;
+                        break;                 
+                }
+
+                if (m.handcard.card.deathrattle)
+                    minionValue++;
+
+                if (m.divineshild || m.stealth || m.taunt)
+                {
+                    minionValue++;
+                }
+
+                enemyMinionValue += minionValue;
+
+            }
+
+            return ownMinionValue - enemyMinionValue;
+
         }
     }
 

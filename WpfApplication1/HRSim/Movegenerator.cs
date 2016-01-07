@@ -36,7 +36,7 @@
             return c;
         }
 
-        public void getMoveListForPlayfield(Playfield p, Action playedAction, bool log)
+        public void getMoveListForPlayfield(Playfield p, bool log)
         {
             bool own = p.isOwnTurn;
             Player mPlayer;
@@ -52,27 +52,28 @@
                 playerNumber = 2;
             }
 
-            if (log)
+            Action playedAction;          
+
+            if (p.moveList.Count == 0) //if starting, generate move
             {
-                if (playedAction != null)
+                //GameManager.Instance.moveCount++;
+                p.moveList = new List<Action>(getMoveList(p, false, true, true));
+                if (log)
+                {
+                    Helpfunctions.Instance.logg("######################start turn for player " + playerNumber);
+                }
+            }
+            else //non starting, generate move from existing moves
+            {
+                playedAction = mPlayer.playactions[mPlayer.playactions.Count - 1];
+
+                if (log)
                 {
                     Helpfunctions.Instance.logg("Action:------------------------------------");
                     playedAction.print();
                     p.printMoveList();
                 }
-                else
-                {
-                    Helpfunctions.Instance.logg("######################start turn for player " + playerNumber);
-                }
-            }
 
-            if (p.moveList.Count == 0 && playedAction == null) //if starting, generate move
-            {
-                //GameManager.Instance.moveCount++;
-                p.moveList = new List<Action>(getMoveList(p, false, true, true));
-            }
-            else //non starting, generate move from existing moves
-            {
                 if (p.moveTrigger.handcardAdded || p.moveTrigger.tauntChanged || p.moveTrigger.manaChanged ||
                     p.moveTrigger.ownNewTarget || p.moveTrigger.enemyNewTarget)
                 {
@@ -94,6 +95,10 @@
                     }
                     if (playedAction.actionType == actionEnum.attackWithMinion)//
                     {
+                        if (playedAction.own.entitiyID == 1008 && playedAction.target.entitiyID == 1003)
+                        {
+                            int debug = 1;
+                        }
                         if ((playedAction.own.windfury && playedAction.own.numAttacksThisTurn == 2) || !playedAction.own.windfury)
                         {
                             p.moveList.RemoveAll(x => (x.actionType == actionEnum.attackWithMinion && x.own.entitiyID == playedAction.own.entitiyID));
@@ -109,6 +114,13 @@
                 }
             }
 
+            foreach (int m in p.moveTrigger.minionDiedList)
+            {
+                if (m == 1008)
+                {
+                    int debug = 1;
+                }
+            }
             p.moveTrigger.Clear();
 
             if (log)
@@ -290,7 +302,7 @@
                         Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0, 2);
                         if (trgt.own == p.isOwnTurn)
                         {
-                            Helpfunctions.Instance.logg("ping on own minion");
+                            //Helpfunctions.Instance.logg("ping on own minion");
                         }
                         if ((trgt.entitiyID == 0 && p.isOwnTurn) || (trgt.entitiyID == 1 && !p.isOwnTurn))
                         {

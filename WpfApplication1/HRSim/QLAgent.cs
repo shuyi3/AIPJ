@@ -486,7 +486,7 @@ namespace HRSim
             ePlayer = p.playerSecond;
         }else{
             mPlayer = p.playerSecond;
-            ePlayer = p.playerSecond;
+            ePlayer = p.playerFirst;
         }
         List<float> features = new List<float>();
         //Minions

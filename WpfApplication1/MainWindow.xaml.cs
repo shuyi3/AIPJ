@@ -475,8 +475,8 @@ namespace HRSim
             int numGame = 1;
             int firstWon = 0;
             int secondWon = 0;
-            //for (int i = 0; i < numGame; i++)
-            for (; ; )
+            for (int i = 0; i < numGame; i++)
+            //for (; ; )
             {
                 if (!isInit) Init();
                 moveNum++;
@@ -562,6 +562,8 @@ namespace HRSim
         public Behavior playerOneBH, playerTwoBH;
 
         public int moveCount = 0;
+        public double myTimer = 0;
+        public double sfTimer = 0;
 
         public Playfield mPlayfield
         {
@@ -637,17 +639,18 @@ namespace HRSim
             {
               
                 Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
+                Helpfunctions.Instance.logg("calculating... " + DateTime.Now.ToString("HH:mm:ss.ffff"));
                 if (playerFirst is QLearningAgent)
                 {
                     GameManager.Instance.mPlayfield = ((QLearningAgent)playerFirst).QStep();
                     playField.endTurn(false, false);
                 }
-                else if (playerFirst is MCTSPlayer)
-                {
-                    playerFirst.updateState(playField);
-                    GameManager.Instance.mPlayfield = ((MCTSPlayer)playerFirst).getBestPlayfield();
-                    playField.endTurn(false, false);
-                }
+                //else if (playerFirst is MCTSPlayer)
+                //{
+                //    playerFirst.updateState(playField);
+                    //GameManager.Instance.mPlayfield = ((MCTSPlayer)playerFirst).getBestPlayfield();
+                    //playField.endTurn(false, false);
+                //}
                 else
                 {
                     playerFirst.updateState(playField);
@@ -662,6 +665,7 @@ namespace HRSim
                         playField.endTurn(false, false);
                     }
                 }
+                Helpfunctions.Instance.logg("calculating end... " + DateTime.Now.ToString("HH:mm:ss.ffff"));
             }
             else
             {
