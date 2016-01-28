@@ -472,7 +472,7 @@ namespace HRSim
         private void AutoPlay(object sender, RoutedEventArgs e)
         {
             int moveNum = 0;
-            int numGame = 1;
+            int numGame = 50;
             int firstWon = 0;
             int secondWon = 0;
             for (int i = 0; i < numGame; i++)
@@ -564,6 +564,7 @@ namespace HRSim
         public int moveCount = 0;
         public double myTimer = 0;
         public double sfTimer = 0;
+        public int nodeCount = 0;
 
         public Playfield mPlayfield
         {
@@ -645,14 +646,23 @@ namespace HRSim
                     GameManager.Instance.mPlayfield = ((QLearningAgent)playerFirst).QStep();
                     playField.endTurn(false, false);
                 }
-                //else if (playerFirst is MCTSPlayer)
-                //{
-                //    playerFirst.updateState(playField);
-                    //GameManager.Instance.mPlayfield = ((MCTSPlayer)playerFirst).getBestPlayfield();
+                else if (playerFirst is MCTSPlayer)
+                {
+                    playerFirst.updateState(playField);
+                    GameManager.Instance.mPlayfield = ((MCTSPlayer)playerFirst).getBestPlayfield();
                     //playField.endTurn(false, false);
-                //}
+                }
                 else
                 {
+                    //if (GameManager.Instance.moveCount == 0)
+                    //{
+                    //    Playfield p = new Playfield(playField);
+                    //    ParetoMCTSPlayer m_player = new ParetoMCTSPlayer(new ParetoTreePolicy(0.7), GameManager.getRNG(), p);
+                    //    m_player.run(p, 30000, false);
+                    //    m_player.m_root.printStats();
+                    //}
+                    //GameManager.Instance.moveCount++;                  
+
                     playerFirst.updateState(playField);
                     moveTodo = playerFirst.getMove();
                     if (moveTodo != null)
@@ -662,6 +672,7 @@ namespace HRSim
                     }
                     else
                     {
+                        GameManager.Instance.moveCount = 0;
                         playField.endTurn(false, false);
                     }
                 }
@@ -697,7 +708,7 @@ namespace HRSim
             {
                 //int seed = Environment.TickCount;
                 //int seed = 1237360984;
-                int seed = 193749906;
+                int seed = 290765484;
                 rng = new Random(seed);
                 Helpfunctions.Instance.logg("seed = " + seed);
             }

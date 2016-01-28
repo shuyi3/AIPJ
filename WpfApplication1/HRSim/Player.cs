@@ -83,6 +83,7 @@ namespace HRSim
         public int owncarddraw = 0;
 
         public List<Action> playactions = new List<Action>();
+        public List<Action> lastTurnActions = new List<Action>();
 
         public int spellpower = 0;
 
@@ -375,6 +376,7 @@ namespace HRSim
             this.ownHeroName = p.ownHeroName;
 
             this.playactions.AddRange(p.playactions);
+            this.lastTurnActions.AddRange(p.lastTurnActions);
 
             this.attackFaceHP = p.attackFaceHP;
 

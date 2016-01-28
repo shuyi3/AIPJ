@@ -3705,7 +3705,12 @@
             this.moveList.Clear();
             this.moveTrigger.Clear();
 
+            this.playerFirst.lastTurnActions.Clear();
+            this.playerFirst.lastTurnActions.AddRange(this.playerFirst.playactions);
             this.playerFirst.playactions.Clear();
+
+            this.playerSecond.lastTurnActions.Clear();
+            this.playerSecond.lastTurnActions.AddRange(this.playerSecond.playactions);
             this.playerSecond.playactions.Clear();
             this.rngIndex = 0;
             GameManager.Instance.randomList.Clear();
@@ -5456,6 +5461,24 @@
             }
         }
 
+        public void printLastTurnActions(bool toBuffer = false)
+        {
+            if (isOwnTurn)
+            {
+                foreach (Action a in this.playerSecond.lastTurnActions)
+                {
+                    a.print();
+                }
+            }
+            else
+            {
+                foreach (Action a in this.playerFirst.lastTurnActions)
+                {
+                    a.print();
+                }
+            }
+        }
+
         public void printActionforDummies(Action a)
         {
             if (a.actionType == actionEnum.playcard)
@@ -5566,7 +5589,7 @@
             }
         }
 
-        public float getHandValue()
+        public float getHandNonMinonValue()
         {
             Player mPlayer, ePlayer;
             if (isOwnTurn) //after turn end;
@@ -5586,14 +5609,10 @@
             {
                 int manacost = hc.getManaCost(this, !isOwnTurn);
                 if (manacost > mPlayer.mana + 1) continue;
-                //if (hc.card.type == CardDB.cardtype.MOB)
-                //{
-                //    ownHandValue += (hc.card.Attack != 0) ? (float)Math.Sqrt(hc.card.Attack) * hc.card.Health : 0.5f * hc.card.Health;
-                //}
-                //if (hc.card.type == CardDB.cardtype.SPELL)
-                //{
+                if (hc.card.type == CardDB.cardtype.SPELL)
+                {
                     ownHandValue += manacost;
-                //}
+                }
             }
 
             float enemyHandValue = 0f;
@@ -5602,21 +5621,15 @@
             {
                 int manacost = hc.getManaCost(this, isOwnTurn);
                 if (manacost > ePlayer.mana) continue;
-                //if (hc.card.type == CardDB.cardtype.MOB)
-                //{
-                //    enemyHandValue += (hc.card.Attack != 0) ? hc.card.Attack * (float)Math.Sqrt(hc.card.Health) : 0.25f * (float)Math.Sqrt(hc.card.Health);
-                //}
-                //if (hc.card.type == CardDB.cardtype.SPELL)
-                //{
+                if (hc.card.type == CardDB.cardtype.SPELL)
+                {
                     enemyHandValue += manacost;
-                //}
+                }
             }
-
-            return ownHandValue - enemyHandValue;
-
+            return ownHandValue - enemyHandValue;           
         }
 
-        public float getBoardValue()
+        public float getHandMinionValue()
         {
             Player mPlayer, ePlayer;
             if (isOwnTurn) //after turn end;
@@ -5630,62 +5643,172 @@
                 ePlayer = this.playerSecond;
             }            //Minions
 
-            //features.Add((mPlayer.ownHero.Hp + mPlayer.ownHero.armor) / 30);
-            //features.Add((mPlayer.ownHero.frozen) ? 0 : mPlayer.ownWeaponAttack);
-        
-            float ownMinionValue = 0f;
-            foreach (Minion m in mPlayer.ownMinions)
+            float ownHandValue = 0f;
+
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
             {
-                float minionValue = (m.Angr != 0) ? (float)Math.Sqrt(m.Angr) * m.Hp : 0.5f * m.Hp;
-
-                if (m.handcard.card.deathrattle)
-                    minionValue++;
-
-                switch (m.name)
+                int manacost = hc.getManaCost(this, !isOwnTurn);
+                if (manacost > mPlayer.ownMaxMana + 1) continue;
+                float minionValue = 0f;
+                if (hc.card.type == CardDB.cardtype.MOB)
                 {
-                    case CardDB.cardName.archmageantonidas:
-                        minionValue *= 1.2f;
-                        break;
-                }
+                    minionValue = (hc.card.Attack != 0) ? (float)Math.Sqrt(hc.card.Attack) * hc.card.Health : 0.5f * hc.card.Health;
 
-                if (m.divineshild || m.stealth || m.taunt || m.handcard.card.deathrattle)
-                {
-                    minionValue += 1;
+                    switch (hc.card.name)
+                    {
+                        case CardDB.cardName.archmageantonidas:
+                            minionValue *= 1.2f;
+                            break;
+                    }
+
+                    if (hc.card.deathrattle)
+                        minionValue++;
+
+                    if (hc.card.Shield || hc.card.Stealth || hc.card.tank || hc.card.deathrattle || hc.card.isSpecialMinion)
+                    {
+                        minionValue += 1;
+                    }
                 }
-                ownMinionValue += minionValue;
+                ownHandValue += minionValue;
             }
 
-            //features.Add(ePlayer.ownHero.Hp + ePlayer.ownHero.armor);
-            //features.Add((ePlayer.ownHero.frozen) ? 0 : ePlayer.ownWeaponAttack);
+            float enemyHandValue = 0f;
+
+            foreach (Handmanager.Handcard hc in ePlayer.owncards)
+            {
+                int manacost = hc.getManaCost(this, isOwnTurn);
+                if (manacost > ePlayer.ownMaxMana) continue;
+                float minionValue = 0f;
+                if (hc.card.type == CardDB.cardtype.MOB)
+                {
+                    enemyHandValue += (hc.card.Attack != 0) ? hc.card.Attack * (float)Math.Sqrt(hc.card.Health) : 0.25f * (float)Math.Sqrt(hc.card.Health);
+
+                    switch (hc.card.name)
+                    {
+                        case CardDB.cardName.archmageantonidas:
+                            minionValue *= 1.5f;
+                            break;
+                    }
+
+                    if (hc.card.deathrattle)
+                        minionValue++;
+
+                    if (hc.card.Shield || hc.card.Stealth || hc.card.tank || hc.card.deathrattle || hc.card.isSpecialMinion)
+                    {
+                        minionValue += 1;
+                    }
+                    enemyHandValue += minionValue;
+                }
+            }
+            float bound = (float)Math.Sqrt(8) * 8 * 10 * 2;
+            return (ownHandValue - enemyHandValue + bound/2)/bound;
+        }
+
+        public float getEnemyBoardValue()
+        {
+            Player ePlayer;
+            if (isOwnTurn) //after turn end;
+            {
+                ePlayer = this.playerFirst;
+            }
+            else
+            {
+                ePlayer = this.playerSecond;
+            }         
 
             float enemyMinionValue = 0f;
 
             foreach (Minion m in ePlayer.ownMinions)
             {
-                float minionValue = (m.Angr != 0) ? m.Angr * (float)Math.Sqrt(m.Hp) : 0.25f * (float)Math.Sqrt(m.Hp);
-                if (m.silenced) continue;
-           
-                switch (m.name)
-                {              
-                    case CardDB.cardName.archmageantonidas:
-                        minionValue *= 1.5f;
-                        break;                 
-                }
-
-                if (m.handcard.card.deathrattle)
-                    minionValue++;
-
-                if (m.divineshild || m.stealth || m.taunt)
-                {
-                    minionValue++;
-                }
-
+                float minionValue = m.getDefMinionValue();
                 enemyMinionValue += minionValue;
-
             }
 
-            return ownMinionValue - enemyMinionValue;
+            float bound = (float)Math.Sqrt(8) * 8 * 8 * 2;
+            return (enemyMinionValue - bound)/bound;
+        }
 
+        public float getOwnBaordValue()
+        {
+            Player mPlayer;
+            if (isOwnTurn) //after turn end;
+            {
+                mPlayer = this.playerSecond;
+            }
+            else
+            {
+                mPlayer = this.playerFirst;
+            }            //Minions
+
+            //features.Add((mPlayer.ownHero.Hp + mPlayer.ownHero.armor) / 30);
+            //features.Add((mPlayer.ownHero.frozen) ? 0 : mPlayer.ownWeaponAttack);
+
+            float ownMinionValue = 0f;
+            foreach (Minion m in mPlayer.ownMinions)
+            {
+                float minionValue = m.getOffMinionValue();
+                ownMinionValue += minionValue;
+            }
+            return ownMinionValue;
+        }
+
+        public float getBoardValue()
+        {
+            //Player mPlayer, ePlayer;
+            //if (isOwnTurn) //after turn end;
+            //{
+            //    mPlayer = this.playerSecond;
+            //    ePlayer = this.playerFirst;
+            //}
+            //else
+            //{
+            //    mPlayer = this.playerFirst;
+            //    ePlayer = this.playerSecond;
+            //}            //Minions
+
+            ////features.Add((mPlayer.ownHero.Hp + mPlayer.ownHero.armor) / 30);
+            ////features.Add((mPlayer.ownHero.frozen) ? 0 : mPlayer.ownWeaponAttack);
+        
+            //float ownMinionValue = 0f;
+            //foreach (Minion m in mPlayer.ownMinions)
+            //{
+            //    float minionValue = m.getOffMinionValue();              
+            //    ownMinionValue += minionValue;
+            //}
+
+            ////features.Add(ePlayer.ownHero.Hp + ePlayer.ownHero.armor);
+            ////features.Add((ePlayer.ownHero.frozen) ? 0 : ePlayer.ownWeaponAttack);
+
+            //float enemyMinionValue = 0f;
+
+            //foreach (Minion m in ePlayer.ownMinions)
+            //{
+            //    float minionValue = m.getDefMinionValue();              
+            //    enemyMinionValue += minionValue;
+            //}
+            float bound = (float)Math.Sqrt(8) * 8 * 8 * 2;
+            return (getOwnBaordValue() - getEnemyBoardValue() + bound/2)/bound;
+
+        }
+
+        public double getLethalScore()
+        {
+            Player ePlayer;
+            if (isOwnTurn) //after turn end;
+            {
+                ePlayer = this.playerFirst;
+            }
+            else
+            {
+                ePlayer = this.playerSecond;
+            }
+
+            if (ePlayer.ownHero.Hp <= 0) return 1.0;
+            int totalHp = ePlayer.ownHero.Hp + ePlayer.ownHero.armor;
+            if (totalHp > 30) 
+                return 0;
+            else 
+                return 1.0 - (double)totalHp / 30.0;
         }
     }
 

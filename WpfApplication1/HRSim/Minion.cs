@@ -634,6 +634,51 @@ namespace HRSim
             }
         }
 
+        public float getOffMinionValue()
+        {
+            float minionValue = (this.Angr != 0) ? (float)Math.Sqrt(this.Angr) * this.Hp : 0.5f * this.Hp;
+            if (this.silenced) return minionValue;
+
+            if (this.handcard.card.deathrattle)
+                minionValue++;
+
+            switch (this.name)
+            {
+                case CardDB.cardName.archmageantonidas:
+                    minionValue *= 1.2f;
+                    break;
+            }
+
+            if (this.divineshild || this.stealth || this.taunt || this.handcard.card.deathrattle || this.handcard.card.isSpecialMinion)
+            {
+                minionValue += 1;
+            }
+            return minionValue;
+        }
+
+        public float getDefMinionValue()
+        {
+            float minionValue = (this.Angr != 0) ? this.Angr * (float)Math.Sqrt(this.Hp) : 0.25f * (float)Math.Sqrt(this.Hp);
+            if (this.silenced) return minionValue;
+
+            switch (this.name)
+            {
+                case CardDB.cardName.archmageantonidas:
+                    minionValue *= 1.5f;
+                    break;
+            }
+
+            if (this.handcard.card.deathrattle)
+                minionValue++;
+
+            if (this.divineshild || this.stealth || this.taunt || this.handcard.card.deathrattle || this.handcard.card.isSpecialMinion)
+            {
+                minionValue++;
+            }
+
+            return minionValue;
+        }
+
         public void loadEnchantments(List<miniEnch> enchants, int ownPlayerControler)
         {
             foreach (miniEnch me in enchants)

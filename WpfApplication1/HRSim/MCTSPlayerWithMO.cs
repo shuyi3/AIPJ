@@ -324,9 +324,9 @@ namespace HRSim
             bestBoard = new Playfield(board);
             currentState = new Node(board, null, 0);
 
-            if (expand(currentState) == 1) return null; // no moves
+            if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
             bool isEndReachedBefore = isEndReached;
-            for (int i = 0; i < 500; i++)
+            for (int i = 0; i < 3000; i++)
             {
                 //Helpfunctions.Instance.logg("try: " + i);
                 //counter++;
@@ -354,7 +354,7 @@ namespace HRSim
             {
                 currentState = new Node(board, null, 0);
 
-                if (expand(currentState) == 1) return null; // no moves
+                if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
                 for (int i = 0; i < 10000; i++)
                 {
                     UCTRun(currentState, 0.7f);
@@ -387,26 +387,48 @@ namespace HRSim
 
         public Playfield getBestPlayfield()
         {
-
+            bestValue = float.MinValue;
+            bestBoard = new Playfield(board);
             currentState = new Node(board, null, 0);
 
-            if (expand(currentState) == 1) return new Playfield(board); // no moves
-
-            int counter = 0;
-
-            for (int i = 0; i < 10000; i++)
+            if (expand(currentState, HeuristicType.Boardvalue) == 1) return currentState.children[0].state; // no moves
+          
+            //do lethal check first
+            Node tempState = new Node(board, null, 0);
+            expand(tempState, HeuristicType.LethalCheck);
+            double lethalScore = tempState.children[0].state.getLethalScore();
+            Helpfunctions.Instance.logg("size = " + tempState.children.Count + ", lethal score == " + lethalScore);
+            //tempState.children[0].state.printBoard();
+            if (lethalScore == 1.0)
             {
-                Helpfunctions.Instance.logg("try: " + i);
-                //counter++;
-                //if (counter == 10) {
-                //    Helpfunctions.Instance.logg("try: " + i);
-                //    counter = 0;
-                //}
-                //if (i == 752) {
-                //    int debug = 1;
-                //}
+                return tempState.children[0].state;
+            }
+
+
+            bool isEndReachedBefore = isEndReached;
+            for (int i = 0; i < 3000; i++)
+            {
+                if (isEndReachedBefore != isEndReached)
+                {
+                    break;
+                }
+                else
+                {
+                    //Helpfunctions.Instance.logg("try: " + i + " not reach");
+                }
                 UCTRun(currentState, 0.7f);
-                currentState.state = new Playfield(board);
+            }
+
+            if (isEndReachedBefore != isEndReached)
+            {
+                currentState = new Node(board, null, 0);
+
+                if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
+                for (int i = 0; i < 3000; i++)
+                {
+                    UCTRun(currentState, 0.7f);
+                    currentState.state = new Playfield(board);
+                }
             }
 
             int maxVisit = 0;
@@ -414,6 +436,9 @@ namespace HRSim
             Node selectedChild = null;
             foreach (Node child in currentState.children)
             {
+                //child.move.print();
+                //child.state.debugMinions();
+                //Helpfunctions.Instance.logg("count = " + child.numVisited);
                 if (child.numVisited > maxVisit)
                 {
                     maxVisit = child.numVisited;
@@ -424,10 +449,11 @@ namespace HRSim
 
             //Helpfunctions.Instance.logg("Turn of child:" + selectedChild.state.isOwnTurn);
             //currentState.printChildren();
+            Helpfunctions.Instance.logg("best value:" + bestValue);
+            bestBoard.printBoard();
 
             return selectedMove;
         }
-
         //public void getAllpossibleStates(Playfield state, ref List<Playfield> statesList)
         //{
         //    List<Action> moves = Movegenerator.Instance.getMoveList(state, false, true, true);
@@ -486,7 +512,7 @@ namespace HRSim
             }
             else
             {
-                int count = expand(p);
+                int count = expand(p, HeuristicType.Boardvalue);
                 score = sample(p);
             }
             //Helpfunctions.Instance.logg("score = " + score);
@@ -520,7 +546,7 @@ namespace HRSim
                 //    int debug = 1;
                 //}
                     //var milliseconds = (DateTime.Now - DateTime.MinValue).TotalMilliseconds;
-                    Movegenerator.Instance.getMoveListForPlayfield(startState, false);
+                    Movegenerator.Instance.getMoveListForPlayfield(startState, false ,false);
                     //double time = (DateTime.Now - DateTime.MinValue).TotalMilliseconds - milliseconds;
                     //GameManager.Instance.myTimer += time;
                     //Helpfunctions.Instance.logg("my:" + time + " total:" + GameManager.Instance.myTimer);
@@ -587,39 +613,27 @@ namespace HRSim
             return 0;
         }
 
-        public int expand(Node p)
+        public int expand(Node p, HeuristicType ht)
         {
             
             int state = 0;
             Playfield afterState = new Playfield(p.state);
-            //List<Action> moves = Movegenerator.Instance.getMoveList(afterState, false, true, true);
-            //GameManager.Instance.moveCount++;
-            //if (GameManager.Instance.moveCount == 16)
-            //{
-            //    int debug = 1;
-            //}
-            Movegenerator.Instance.getMoveListForPlayfield(afterState, false);
 
-            if (afterState.moveList.Count == 0)
+            ParetoMCTSPlayer m_player = new ParetoMCTSPlayer(new ParetoTreePolicy(0.7), GameManager.getRNG(), afterState, ht);
+            m_player.run(afterState, 30000, false);
+            //m_player.m_root.printStats();
+            //Helpfunctions.Instance.logg("turn: " + p.state.isOwnTurn);
+            int memberSize = m_player.m_root.pa.m_members.size(); // will it always > 0?
+
+            if (memberSize == 1)
             { // no moves available
-                afterState.endTurn(false, false);
-                Node originalNode = new Node(new Playfield(afterState), null, p.depth + 1);
-                p.children.Add(originalNode);
                 state = 1;
             }
 
-            foreach (Action move in afterState.moveList)
+            for(int i = 0; i < memberSize; i++) // this is other's turn
             {
-                Node afterNode = new Node(new Playfield(afterState), move, p.depth);
-                afterNode.state.doAction(move);
-                //if (move.actionType == actionEnum.attackWithMinion && move.own.entitiyID == 1008 && move.target.entitiyID == 1003)
-                //{
-                //    GameManager.Instance.moveCount++;
-                //    if (GameManager.Instance.moveCount == 3)
-                //    {
-                //        int debug = 1;
-                //    }
-                //}
+                Playfield pf = m_player.m_root.pa.m_members.get(i).m_state;
+                Node afterNode = new Node(pf, null, p.depth + 1);
                 p.children.Add(afterNode);
             }
 
@@ -738,7 +752,7 @@ namespace HRSim
             {
                 Playfield afterState = new Playfield(state);
                 afterState.doAction(action);
-                Movegenerator.Instance.getMoveListForPlayfield(afterState, false);
+                Movegenerator.Instance.getMoveListForPlayfield(afterState, false, false);
                 
                 //if (action.actionType == actionEnum.playcard && action.card.card.name == CardDB.cardName.arcaneintellect)
                 //{
@@ -772,7 +786,7 @@ namespace HRSim
         public Node select(Node p, float c)
         {
 
-            float bestValue = 0;
+            float bestValue = float.MinValue;
             Node selected = null;
             bool ownTurn = (playerSide == 0) ? true : false;
 
@@ -789,8 +803,8 @@ namespace HRSim
 
                     float UCTValue = (float)(child.mean + c * Math.Sqrt(Math.Log(p.numVisited) / child.numVisited));
 
-                    //if (child.move != null) 
-                    //    child.move.print();
+                    if (child.move != null && p.depth == 0) 
+                        child.state.debugMinions();
                     //Helpfunctions.Instance.logg("UCTVale = " + UCTValue);
 
                     if (UCTValue > bestValue)
@@ -804,7 +818,7 @@ namespace HRSim
             else
             {
 
-                bestValue = 99999;
+                bestValue = float.MaxValue;
 
                 foreach (Node child in p.children)
                 {

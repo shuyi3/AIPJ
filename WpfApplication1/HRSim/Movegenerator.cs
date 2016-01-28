@@ -36,7 +36,7 @@
             return c;
         }
 
-        public void getMoveListForPlayfield(Playfield p, bool log)
+        public void getMoveListForPlayfield(Playfield p, bool log, bool lethalCheck)
         {
             bool own = p.isOwnTurn;
             Player mPlayer;
@@ -57,7 +57,7 @@
             if (p.moveList.Count == 0) //if starting, generate move
             {
                 //GameManager.Instance.moveCount++;
-                p.moveList = new List<Action>(getMoveList(p, false, true, true));
+                p.moveList = new List<Action>(getMoveList(p, lethalCheck, true, true));
                 if (log)
                 {
                     Helpfunctions.Instance.logg("######################start turn for player " + playerNumber);
@@ -77,7 +77,7 @@
                 if (p.moveTrigger.handcardAdded || p.moveTrigger.tauntChanged || p.moveTrigger.manaChanged ||
                     p.moveTrigger.ownNewTarget || p.moveTrigger.enemyNewTarget)
                 {
-                    p.moveList = getMoveList(p, false, true, true);
+                    p.moveList = getMoveList(p, lethalCheck, true, true);
                 }
                 else 
                 {
