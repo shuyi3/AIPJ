@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using ZeroMQ;
+using Newtonsoft.Json;
+using System.Linq;
 
 /// <summary>
 /// Summary description for Class1
@@ -9,16 +13,30 @@ namespace HRSim
 {
     public class Node
     {
+        public Node parent;
         public List<Node> children = new List<Node>();
-        public int numVisited;
-        public float mean;
+        public float SFVal;
+        public volatile int numVisited;
+        public volatile float mean;
         public Playfield state;
         public Action move;
         public bool isExpanded;
         public int depth;
 
-        public Node(Playfield state, Action move, int depth)
+        public Node(Node n) //no children copied, should we recursively copy the children or just copy the refs?
         {
+            this.parent = n.parent;
+            this.numVisited = n.numVisited;
+            this.mean = n.mean;
+            this.state = new Playfield(n.state);
+            this.depth = n.depth;
+            this.move = n.move;
+            this.SFVal = 0.0f;
+        }
+
+        public Node(Node parent, Playfield state, Action move, int depth)
+        {
+            this.parent = parent;
             numVisited = 0;
             mean = 0;
             this.state = state;
@@ -45,9 +63,223 @@ namespace HRSim
         }
     }
 
+    //public class ChanceNode : Node
+    //{
+    //    public Dictionary<ActionResult, int> moveNodeMap;
+    //    public bool firstExpanded = false;
+    //    public int number = GameManager.Instance.moveCount;
+
+    //    public ChanceNode(Node parent, Playfield state, Action move, int depth)
+    //        : base(parent, state, move, depth)
+    //    {
+    //        moveNodeMap = new Dictionary<ActionResult, int>();
+    //    }
+
+    //}
+
+    public class ChanceNode : Node
+    {
+        public List<double> probability;
+        public bool firstExpanded = false;
+        public int chanceNodeNum;
+
+        public ChanceNode(Node parent, Playfield state, Action move, int depth, int numCards)
+            : base(parent, state, move, depth)
+        {
+            if (GameManager.Instance.moveCount == 105924)
+            {
+                int debug = 1;
+            }
+
+            chanceNodeNum = GameManager.Instance.moveCount;
+            //GameManager.Instance.moveCount++;
+
+            probability = new List<double>(5);
+            Player mPlayer;
+            List<CardDB.Card> deck;
+
+            if (state.isOwnTurn)
+            {
+                mPlayer = state.playerFirst;
+                deck = state.homeDeck;
+            }
+            else
+            {
+                mPlayer = state.playerSecond;
+                deck = state.awayDeck;
+            }
+
+            List<List<CardDB.Card>> bucket = new List<List<CardDB.Card>>();
+       
+            if (move == null) //begin of turn draw
+            {
+
+                for (int i = 0; i < 5; i++)
+                {
+                    bucket.Add(new List<CardDB.Card>());
+                }
+
+                foreach (CardDB.Card card in deck)
+                {
+                    int index = 0;
+                    for (index = 0; index < GameManager.bucketMana.Length; index++)
+                    {
+                        if (card.cost <= GameManager.bucketMana[index])
+                            break;
+                    }
+
+                    bucket[index].Add(card);
+                }
+
+                double sum = 0;
+                for (int i = 0; i < 5; i++)
+                {
+                    List<CardDB.Card> cardList = bucket[i];
+                    if (bucket[i].Count == 0)
+                        continue;
+                    Playfield nextState = new Playfield(state);
+
+                    int cardIndex = GameManager.getRNG().Next(cardList.Count);
+                    CardDB.Card cardToDraw = cardList[cardIndex];
+                    nextState.drawTurnStartCard(cardToDraw);
+
+                    children.Add(new Node(this, nextState, null, depth));
+                    double prob = (double)cardList.Count / deck.Count;
+                    probability.Add(prob);
+                    sum += prob;
+                }
+
+                if (sum < 0.99)
+                {
+                    int debug = 1;
+                }
+            }
+            else //draw cards in turn
+            {
+                if (numCards == 1)
+                {
+                    for (int i = 0; i < 5; i++)
+                    {
+                        bucket.Add(new List<CardDB.Card>());
+                    }
+
+                    foreach (CardDB.Card card in deck)
+                    {
+                        int index = 0;
+                        for (index = 0; index < GameManager.bucketMana.Length; index++)
+                        {
+                            if (card.cost <= GameManager.bucketMana[index])
+                                break;
+                        }
+
+                        bucket[index].Add(card);
+                    }
+
+                    double sum = 0;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        List<CardDB.Card> cardList = bucket[i];
+                        if (bucket[i].Count == 0)
+                            continue;
+                        Playfield nextState = new Playfield(state);
+
+                        int cardIndex = GameManager.getRNG().Next(cardList.Count);
+                        CardDB.Card cardToDraw = cardList[cardIndex];
+                        nextState.addCardToDrawList(cardToDraw);
+                        nextState.doAction(move);
+
+                        children.Add(new Node(this, nextState, null, depth));
+                        double prob = (double)cardList.Count / deck.Count;
+                        probability.Add(prob);
+                        sum += prob;
+                    }
+
+                    if (sum < 0.99)
+                    {
+                        int debug = 1;
+                    }
+                }
+                if (numCards == 2) //3 buckets, 6 possible nodes
+                {
+
+                    bucket = new List<List<CardDB.Card>>(3);
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        bucket.Add(new List<CardDB.Card>());
+                    }
+
+                    foreach (CardDB.Card card in deck)
+                    {
+                        int index = 0;
+                        for (index = 0; index < GameManager.bucketManaFor3.Length; index++)
+                        {
+                            if (card.cost <= GameManager.bucketManaFor3[index])
+                                break;
+                        }
+
+                        bucket[index].Add(card);
+                    }
+
+                    double sum = 0;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        List<CardDB.Card> cardList = bucket[i];
+                        if (bucket[i].Count == 0)
+                            continue;
+
+                        int cardIndex = GameManager.getRNG().Next(cardList.Count);
+                        CardDB.Card cardToDraw = cardList[cardIndex];
+                        double prob = (double)cardList.Count / deck.Count;
+                        cardList.RemoveAt(cardIndex);
+
+                        for (int j = 0; j < 3; j++)
+                        {
+                            List<CardDB.Card> secondCardList = bucket[j];
+                            if (bucket[j].Count == 0)
+                                continue;
+                            Playfield nextState = new Playfield(state);
+
+                            int secondCardIndex = GameManager.getRNG().Next(secondCardList.Count);
+                            CardDB.Card secondcardToDraw = secondCardList[secondCardIndex];
+
+                            //List<CardDB.Card> cardListToDraw = nextState.isOwnTurn ? nextState.ownCardsToDraw : nextState.enemyCardsToDraw;
+                            //cardListToDraw.Add(cardToDraw);
+                            //cardListToDraw.Add(secondcardToDraw);
+
+                            //remove from deck first
+                            nextState.addCardToDrawList(cardToDraw);
+                            nextState.addCardToDrawList(secondcardToDraw);
+                            nextState.doAction(move);
+
+                            children.Add(new Node(this, nextState, null, depth));
+                            double finalProb = prob * (double)secondCardList.Count / (deck.Count - 1);
+                            probability.Add(finalProb);
+                            sum += finalProb;
+                        }
+
+                        cardList.Insert(cardIndex, cardToDraw);
+                    }
+
+                    if (sum < 0.99)
+                    {
+                        int debug = 1;
+                    }
+                }        
+            }
+        }
+    }
+
     public class MCTSPlayer : PlayerAgent
     {
-        int playerSide;
+        public ZSocket requester;
+        private int numThread = 2;
+        private float c = 0.7f;
+        private Node[] resultNodeList = new Node[2];
+        private List<Action> moveList = new List<Action>();
+        public Behavior bh;
+
+        bool playerSide;
         Playfield board;
         Node currentState;
         TranspositionTable tt;
@@ -55,262 +287,22 @@ namespace HRSim
         bool isEndReached;
         float bestValue = float.MinValue;
         Playfield bestBoard;
-        int currentDepth;
         int rolloutDepth = 5;
-        //public float getPlayfieldValue(Playfield p, bool own)
-        //{
-        //    Player mPlayer, ePlayer;
-        //    if (own)
-        //    {
-        //        mPlayer = p.playerFirst;
-        //        ePlayer = p.playerSecond;
-        //    }
-        //    else {
-        //        mPlayer = p.playerSecond;
-        //        ePlayer = p.playerFirst;
-        //    }
-
-        //    //if (p.value >= -2000000) return p.value;
-        //    int retval = 0;
-        //    int hpboarder = 10;
-        //    if (mPlayer.ownHeroName == HeroEnum.warlock && p.enemyHeroName != HeroEnum.mage) hpboarder = 6;
-        //    int aggroboarder = 11;
-
-        //    retval -= p.evaluatePenality;
-        //    retval += p.owncards.Count * 5;
-
-        //    retval += p.ownMaxMana;
-        //    retval -= p.enemyMaxMana;
-
-        //    retval += p.ownMaxMana * 20 - p.enemyMaxMana * 20;
-
-        //    if (p.enemyHeroName == HeroEnum.mage || p.enemyHeroName == HeroEnum.druid) retval -= 2 * p.enemyspellpower;
-
-        //    if (p.ownHero.Hp + p.ownHero.armor > hpboarder)
-        //    {
-        //        retval += p.ownHero.Hp + p.ownHero.armor;
-        //    }
-        //    else
-        //    {
-        //        retval -= 2 * (hpboarder + 1 - p.ownHero.Hp - p.ownHero.armor) * (hpboarder + 1 - p.ownHero.Hp - p.ownHero.armor);
-        //    }
-
-
-        //    if (p.enemyHero.Hp + p.enemyHero.armor > aggroboarder)
-        //    {
-        //        retval += -p.enemyHero.Hp - p.enemyHero.armor;
-        //    }
-        //    else
-        //    {
-        //        retval += 3 * (aggroboarder + 1 - p.enemyHero.Hp - p.enemyHero.armor);
-        //    }
-
-        //    if (p.ownWeaponAttack >= 1)
-        //    {
-        //        retval += p.ownWeaponAttack * p.ownWeaponDurability;
-        //    }
-
-        //    if (!p.enemyHero.frozen)
-        //    {
-        //        retval -= p.enemyWeaponDurability * p.enemyWeaponAttack;
-        //    }
-        //    else
-        //    {
-        //        if (p.enemyWeaponDurability >= 1)
-        //        {
-        //            retval += 12;
-        //        }
-        //    }
-
-        //    //RR card draw value depending on the turn and distance to lethal
-        //    //RR if lethal is close, carddraw value is increased
-        //    if (sf.Ai.lethalMissing <= 5) //RR
-        //    {
-        //        retval += p.owncarddraw * 100;
-        //    }
-        //    if (p.ownMaxMana < 4)
-        //    {
-        //        retval += p.owncarddraw * 2;
-        //    }
-        //    else
-        //    {
-        //        retval += p.owncarddraw * 5;
-        //    }
-
-        //    //retval += p.owncarddraw * 5;
-        //    retval -= p.enemycarddraw * 15;
-
-        //    //int owntaunt = 0;
-        //    int readycount = 0;
-        //    int ownMinionsCount = 0;
-        //    foreach (Minion m in p.ownMinions)
-        //    {
-        //        retval += 5;
-        //        retval += m.Hp * 2;
-        //        retval += m.Angr * 2;
-        //        retval += m.handcard.card.rarity;
-        //        if (!m.playedThisTurn && m.windfury) retval += m.Angr;
-        //        if (m.divineshild) retval += 1;
-        //        if (m.stealth) retval += 1;
-        //        if (m.handcard.card.isSpecialMinion)
-        //        {
-        //            retval += 1;
-        //            if (!m.taunt && m.stealth) retval += 20;
-        //        }
-        //        else
-        //        {
-        //            if (m.Angr <= 2 && m.Hp <= 2 && !m.divineshild) retval -= 5;
-        //        }
-        //        //if (!m.taunt && m.stealth && penman.specialMinions.ContainsKey(m.name)) retval += 20;
-        //        //if (m.poisonous) retval += 1;
-        //        if (m.divineshild && m.taunt) retval += 4;
-        //        //if (m.taunt && m.handcard.card.name == CardDB.cardName.frog) owntaunt++;
-        //        //if (m.handcard.card.isToken && m.Angr <= 2 && m.Hp <= 2) retval -= 5;
-        //        //if (!penman.specialMinions.ContainsKey(m.name) && m.Angr <= 2 && m.Hp <= 2) retval -= 5;
-        //        if (m.handcard.card.name == CardDB.cardName.direwolfalpha || m.handcard.card.name == CardDB.cardName.flametonguetotem || m.handcard.card.name == CardDB.cardName.stormwindchampion || m.handcard.card.name == CardDB.cardName.raidleader) retval += 10;
-        //        if (m.handcard.card.name == CardDB.cardName.bloodmagethalnos) retval += 10;
-        //        if (m.handcard.card.name == CardDB.cardName.nerubianegg)
-        //        {
-        //            if (m.Angr >= 1) retval += 2;
-        //            if ((!m.taunt && m.Angr == 0) && (m.divineshild || m.maxHp > 2)) retval -= 10;
-        //        }
-        //        if (m.Ready) readycount++;
-        //        if (m.Hp <= 4 && (m.Angr > 2 || m.Hp > 3)) ownMinionsCount++;
-        //    }
-
-        //    /*if (p.enemyMinions.Count >= 0)
-        //    {
-        //        int anz = p.enemyMinions.Count;
-        //        if (owntaunt == 0) retval -= 10 * anz;
-        //        retval += owntaunt * 10 - 11 * anz;
-        //    }*/
-
-
-        //    bool useAbili = false;
-        //    bool usecoin = false;
-        //    foreach (Action a in p.playactions)
-        //    {
-        //        if (a.actionType == actionEnum.attackWithHero && p.enemyHero.Hp <= p.attackFaceHP) retval++;
-        //        if (a.actionType == actionEnum.useHeroPower) useAbili = true;
-        //        if (p.ownHeroName == HeroEnum.warrior && a.actionType == actionEnum.attackWithHero && useAbili) retval -= 1;
-        //        //if (a.actionType == actionEnum.useHeroPower && a.card.card.name == CardDB.cardName.lesserheal && (!a.target.own)) retval -= 5;
-        //        if (a.actionType != actionEnum.playcard) continue;
-        //        if ((a.card.card.name == CardDB.cardName.thecoin || a.card.card.name == CardDB.cardName.innervate)) usecoin = true;
-        //        //save spell for all classes: (except for rouge if he has no combo)
-        //        if (a.target == null) continue;
-        //        if (p.ownHeroName != HeroEnum.thief && a.card.card.type == CardDB.cardtype.SPELL && (!a.target.own && a.target.isHero) && a.card.card.name != CardDB.cardName.shieldblock) retval -= 11;
-        //        if (p.ownHeroName == HeroEnum.thief && a.card.card.type == CardDB.cardtype.SPELL && (a.target.isHero && !a.target.own)) retval -= 11;
-        //    }
-        //    if (usecoin && useAbili && p.ownMaxMana <= 2) retval -= 40;
-        //    if (usecoin) retval -= 5 * p.manaTurnEnd;
-        //    if (p.manaTurnEnd >= 2 && !useAbili)
-        //    {
-        //        retval -= 10;
-        //        if (p.ownHeroName == HeroEnum.thief && (p.ownWeaponDurability >= 2 || p.ownWeaponAttack >= 2)) retval += 10;
-        //    }
-        //    //if (usecoin && p.mana >= 1) retval -= 20;
-
-        //    int mobsInHand = 0;
-        //    int bigMobsInHand = 0;
-        //    foreach (Handmanager.Handcard hc in p.owncards)
-        //    {
-        //        if (hc.card.type == CardDB.cardtype.MOB)
-        //        {
-        //            mobsInHand++;
-        //            if (hc.card.Attack >= 3) bigMobsInHand++;
-        //        }
-        //    }
-
-        //    if (ownMinionsCount - p.enemyMinions.Count >= 4 && bigMobsInHand >= 1)
-        //    {
-        //        retval += bigMobsInHand * 25;
-        //    }
-
-
-        //    //bool hasTank = false;
-        //    foreach (Minion m in p.enemyMinions)
-        //    {
-        //        retval -= this.getEnemyMinionValue(m, p);
-        //        //hasTank = hasTank || m.taunt;
-        //    }
-
-        //    /*foreach (SecretItem si in p.enemySecretList)
-        //    {
-        //        if (readycount >= 1 && !hasTank && si.canbeTriggeredWithAttackingHero)
-        //        {
-        //            retval -= 100;
-        //        }
-        //        if (readycount >= 1 && p.enemyMinions.Count >= 1 && si.canbeTriggeredWithAttackingMinion)
-        //        {
-        //            retval -= 100;
-        //        }
-        //        if (si.canbeTriggeredWithPlayingMinion && mobsInHand >= 1)
-        //        {
-        //            retval -= 25;
-        //        }
-        //    }*/
-
-        //    retval -= p.enemySecretCount;
-        //    retval -= p.lostDamage;//damage which was to high (like killing a 2/1 with an 3/3 -> => lostdamage =2
-        //    retval -= p.lostWeaponDamage;
-
-        //    //if (p.ownMinions.Count == 0) retval -= 20;
-        //    //if (p.enemyMinions.Count == 0) retval += 20;
-        //    if (p.enemyHero.Hp <= 0) retval = 10000;
-        //    //soulfire etc
-        //    int deletecardsAtLast = 0;
-        //    foreach (Action a in p.playactions)
-        //    {
-        //        if (a.actionType != actionEnum.playcard) continue;
-        //        if (a.card.card.name == CardDB.cardName.soulfire || a.card.card.name == CardDB.cardName.doomguard || a.card.card.name == CardDB.cardName.succubus) deletecardsAtLast = 1;
-        //        if (deletecardsAtLast == 1 && !(a.card.card.name == CardDB.cardName.soulfire || a.card.card.name == CardDB.cardName.doomguard || a.card.card.name == CardDB.cardName.succubus)) retval -= 20;
-        //    }
-        //    if (p.enemyHero.Hp >= 1 && p.guessingHeroHP <= 0)
-        //    {
-        //        if (p.turnCounter < 2) retval += p.owncarddraw * 100;
-        //        retval -= 1000;
-        //    }
-        //    if (p.ownHero.Hp <= 0) retval = -10000;
-
-        //    p.value = retval;
-        //    return retval;
-        //}
-
-        //public int getEnemyMinionValue(Minion m, Playfield p)
-        //{
-        //    int retval = 5;
-        //    retval += m.Hp * 2;
-        //    if (!m.frozen && !((m.name == CardDB.cardName.ancientwatcher || m.name == CardDB.cardName.ragnarosthefirelord) && !m.silenced))
-        //    {
-        //        retval += m.Angr * 2;
-        //        if (m.windfury) retval += m.Angr * 2;
-        //        if (m.Angr >= 4) retval += 10;
-        //        if (m.Angr >= 7) retval += 50;
-        //    }
-
-        //    if (m.Angr == 0) retval -= 7;
-
-        //    retval += m.handcard.card.rarity;
-        //    if (m.taunt) retval += 5;
-        //    if (m.divineshild) retval += m.Angr;
-        //    if (m.divineshild && m.taunt) retval += 5;
-        //    if (m.stealth) retval += 1;
-
-        //    if (m.poisonous) retval += 4;
-
-        //    if (m.handcard.card.targetPriority >= 1 && !m.silenced)
-        //    {
-        //        retval += m.handcard.card.targetPriority;
-        //    }
-        //    if (m.name == CardDB.cardName.nerubianegg && m.Angr <= 3 && !m.taunt) retval = 0;
-        //    return retval;
-        //}
-
-        public MCTSPlayer(int side, Playfield playfield)
+        int firstNumberIter = 3000;
+        int playoutNumberIter = 500;
+        bool log = false;
+        int chanceCount = 0;
+        int expandCount = 0;
+        double expandTime = 0.0;
+        int numExpand = 0;
+        
+        public MCTSPlayer(bool side, Playfield playfield)
         {
             this.playerSide = side;
             this.board = new Playfield(playfield);
             isEndReached = false;
+            moveList = null;
+            bh = new BehaviorControl();
         }
 
         public override void updateState(Playfield playfield)
@@ -320,93 +312,347 @@ namespace HRSim
 
         public override Action getMove()
         {
-            bestValue = float.MinValue;
-            bestBoard = new Playfield(board);
-            currentState = new Node(board, null, 0);
-
-            if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
-            bool isEndReachedBefore = isEndReached;
-            for (int i = 0; i < 3000; i++)
+            if (moveList == null)
             {
-                //Helpfunctions.Instance.logg("try: " + i);
-                //counter++;
-                //if (counter == 10) {
-                //    Helpfunctions.Instance.logg("try: " + i);
-                //    counter = 0;
-                //}
-                //if (i == 752) {
-                //    int debug = 1;
-                //}
-                if (isEndReachedBefore != isEndReached)
-                {
-                    //Helpfunctions.Instance.logg("try: " + i + " reach");
-                    break;
-                }
-                else
-                {
-                    //Helpfunctions.Instance.logg("try: " + i + " not reach");
-                }
-                UCTRun(currentState, 0.7f);
-                //currentState.state = new Playfield(board);
+                moveList = getBestPlayfield();
             }
-
-            if (isEndReachedBefore != isEndReached)
+            if (moveList.Count == 0)
             {
-                currentState = new Node(board, null, 0);
-
-                if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
-                for (int i = 0; i < 10000; i++)
-                {
-                    UCTRun(currentState, 0.7f);
-                    currentState.state = new Playfield(board);
-                }
+                moveList = null;
+                return null;
             }
-
-            int maxVisit = 0;
-            Action selectedMove = null;
-            Node selectedChild = null;
-            foreach (Node child in currentState.children)
-            {
-                //child.move.print();
-                //Helpfunctions.Instance.logg("count = " + child.numVisited);
-                if (child.numVisited > maxVisit)
-                {
-                    maxVisit = child.numVisited;
-                    selectedMove = child.move;
-                    selectedChild = child;
-                }
-            }
-
-            //Helpfunctions.Instance.logg("Turn of child:" + selectedChild.state.isOwnTurn);
-            //currentState.printChildren();
-            Helpfunctions.Instance.logg("best value:" + bestValue);
-            bestBoard.printBoard();
-
-            return selectedMove;
+            Action moveToPlay = moveList[0];
+            moveList.RemoveAt(0);
+            return moveToPlay;
         }
 
-        public Playfield getBestPlayfield()
-        {
-            bestValue = float.MinValue;
-            bestBoard = new Playfield(board);
-            currentState = new Node(board, null, 0);
+        //public override Action getMove()
+        //{
+        //    bestValue = float.MinValue;
+        //    bestBoard = new Playfield(board);
+        //    currentState = new Node(null, board, null, 0);
 
-            if (expand(currentState, HeuristicType.Boardvalue) == 1) return currentState.children[0].state; // no moves
-          
-            //do lethal check first
-            Node tempState = new Node(board, null, 0);
-            expand(tempState, HeuristicType.LethalCheck);
-            double lethalScore = tempState.children[0].state.getLethalScore();
-            Helpfunctions.Instance.logg("size = " + tempState.children.Count + ", lethal score == " + lethalScore);
-            //tempState.children[0].state.printBoard();
-            if (lethalScore == 1.0)
+        //    if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
+        //    bool isEndReachedBefore = isEndReached;
+        //    for (int i = 0; i < 3000; i++)
+        //    {
+        //        //Helpfunctions.Instance.logg("try: " + i);
+        //        //counter++;
+        //        //if (counter == 10) {
+        //        //    Helpfunctions.Instance.logg("try: " + i);
+        //        //    counter = 0;
+        //        //}
+        //        //if (i == 752) {
+        //        //    int debug = 1;
+        //        //}
+        //        if (isEndReachedBefore != isEndReached)
+        //        {
+        //            //Helpfunctions.Instance.logg("try: " + i + " reach");
+        //            break;
+        //        }
+        //        else
+        //        {
+        //            //Helpfunctions.Instance.logg("try: " + i + " not reach");
+        //        }
+        //        UCTRun(currentState, 0.7f);
+        //        //currentState.state = new Playfield(board);
+        //    }
+
+        //    if (isEndReachedBefore != isEndReached)
+        //    {
+        //        currentState = new Node(null, board, null, 0);
+
+        //        if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
+        //        for (int i = 0; i < 10000; i++)
+        //        {
+        //            UCTRun(currentState, 0.7f);
+        //            currentState.state = new Playfield(board);
+        //        }
+        //    }
+
+        //    int maxVisit = 0;
+        //    Action selectedMove = null;
+        //    Node selectedChild = null;
+        //    foreach (Node child in currentState.children)
+        //    {
+        //        //child.move.print();
+        //        //Helpfunctions.Instance.logg("count = " + child.numVisited);
+        //        if (child.numVisited > maxVisit)
+        //        {
+        //            maxVisit = child.numVisited;
+        //            selectedMove = child.move;
+        //            selectedChild = child;
+        //        }
+        //    }
+
+        //    //Helpfunctions.Instance.logg("Turn of child:" + selectedChild.state.isOwnTurn);
+        //    //currentState.printChildren();
+        //    Helpfunctions.Instance.logg("best value:" + bestValue);
+        //    bestBoard.printBoard();
+
+        //    return selectedMove;
+        //}
+
+        public int multiThreadexpandDecision(Node p) //0: lethal 
+        {
+            List<System.Threading.Thread> tasks = new List<System.Threading.Thread>(numThread);
+            for (int k = 0; k < numThread; k++)
             {
-                return tempState.children[0].state;
+                Node curNode = new Node(p);
+                resultNodeList[k] = curNode;
+                int i = k;
+                //System.Threading.Thread thread = new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(this.parallelUCTRun));
+                System.Threading.Thread thread = new System.Threading.Thread(
+                    () => expandDecision(curNode, firstNumberIter));
+                thread.Start();
+                tasks.Add(thread);
             }
 
+            for (int j = 0; j < numThread; j++)
+            {
+                tasks[j].Join();
+                Console.WriteLine("thread " + j + " joined");
+                foreach (Node child in resultNodeList[j].children)
+                {
+                    //child.move.print();
+                    child.state.printLastTurnActions();
+                    Helpfunctions.Instance.logg("count = " + child.numVisited);
+                    Helpfunctions.Instance.logg("============================================================");
+                }
+            }
 
+            //if (expand(p, HeuristicType.LethalCheck) == 1) return 0;
+            //expand(p, HeuristicType.Boardvalue); // no moves
+            return p.children.Count;
+        }
+
+        public int expandDecision(Node p, int numIter) //0: lethal 
+        {
+            Helpfunctions.Instance.startTimer();
+            if (expand(p, HeuristicType.LethalCheck, playoutNumberIter) == 1) return 0;
+            expand(p, HeuristicType.Boardvalue, numIter); // no moves
+
+            int beforeCount = p.children.Count;
+
+            expandCount += beforeCount;
+            //if (beforeCount > 30)
+            //{
+            //    Helpfunctions.Instance.logg("============================================================");
+            //    foreach (Node child in p.children)
+            //    {
+            //        //child.move.print();
+            //        if (child.move == null)
+            //        {
+            //            child.state.printLastTurnActions();
+            //        }
+            //        else
+            //        {
+            //            Helpfunctions.Instance.logg("Chance Node");
+            //            child.state.printActions();
+            //            child.move.print();
+            //        }
+            //        Helpfunctions.Instance.logg("============================================================");
+            //    }
+            //}
+
+            if (p.children.Count > 10) //get top 10
+            {
+                foreach (Node child in p.children)
+                {
+                    child.SFVal = bh.getPlayfieldValue(child.state, this.playerSide);
+                }
+                p.children = p.children.OrderByDescending(x => x.SFVal).Take(10).ToList();
+            }
+
+            expand(p, HeuristicType.DrawCard, numIter);
+            Console.WriteLine("beforeCount: " + beforeCount + ", expand bf:" + p.children.Count);
+            double timeElapsed = Helpfunctions.Instance.logTime();
+            expandTime += timeElapsed;
+            numExpand++;
+            return p.children.Count;
+        }
+
+        public int expandDecision(Node p, int numberIter, int threadNumber) //0: lethal //-2 is expanded by other threads
+        {
+            lock (p)
+            {
+                if (isLeaf(p))
+                {
+                    //Console.WriteLine("Node is expanded by " + threadNumber);
+                    if (expand(p, HeuristicType.LethalCheck, numberIter) == 1) return 0;
+                    expand(p, HeuristicType.Boardvalue, numberIter); // no moves
+                    //expand(p, HeuristicType.DrawCard);
+
+                    return p.children.Count;
+                }
+                //Console.WriteLine("try expand by " + threadNumber + ", but failed");
+                return -2;
+            }          
+        }
+
+        public Node advanceChance(ChanceNode p)
+        {
+            double prob = GameManager.getRNG().NextDouble();
+            int i;
+            double probSum = 0.0;
+            for (i = 0; i < p.probability.Count; i++)
+            {
+                probSum += p.probability[i];
+                if (prob < probSum)
+                    break;
+            }
+            return p.children[i];
+        }
+
+        //public Node advanceChance(ChanceNode p)
+        //{
+
+        //    List<Action> actions = p.state.getActions();
+        //    Playfield tempState;
+
+        //    if (!p.firstExpanded)
+        //    {
+        //        tempState = new Playfield(p.parent.state);
+        //        for (int i = 0; i < actions.Count - 1; ++i)
+        //        {
+        //            tempState.doAction(actions[i]);
+        //        }
+        //        p.state = tempState;
+        //    }
+        //    else
+        //    {
+        //        tempState = new Playfield(p.state); 
+        //    }
+            
+        //    tempState.doAction(actions[actions.Count - 1]);
+        //    ActionResult ar = new ActionResult(p.state.moveTrigger.newHandcardList.ToArray());
+        //    Node nextNode;
+
+        //    if (!p.moveNodeMap.ContainsKey(ar))
+        //    {
+        //        //new node
+        //        nextNode = new Node(p, tempState, actions[actions.Count - 1], p.depth + 1);
+        //        p.children.Add(nextNode);
+        //        p.moveNodeMap.Add(ar, p.children.Count - 1);
+        //    }
+        //    else
+        //    {
+        //        nextNode = p.children[p.moveNodeMap[ar]];
+        //    }
+
+        //    //expand the node here
+        //    return nextNode;         
+        //}
+
+        //private void parallelUCTRun(Node currentState, int threadNumber)
+        //{
+        //    bool isEndReachedBefore = isEndReached;        
+        //    for (int i = 0; i < 500; i++)
+        //    {
+        //        //Console.WriteLine("isEndReached = " + isEndReached);
+        //        if (isEndReachedBefore != isEndReached)
+        //        {
+        //            break;
+        //        }
+        //        else
+        //        {
+        //            //Helpfunctions.Instance.logg("try: " + i + " not reach");
+        //        }
+        //        //UCTRun(currentState, 0.7f);
+        //        UCTRun(currentState, threadNumber);
+        //        if (i % 200 == 0)
+        //            Console.WriteLine("thread " + threadNumber + ":" + i + " th iteration");
+        //    }
+        //}
+
+        //private void multipleThreadUCTRun(Node startNode)
+        //{
+        //    List<System.Threading.Thread> tasks = new List<System.Threading.Thread>(numThread);
+        //    for (int k = 0; k < numThread; k++)
+        //    {
+        //        //Node curNode = new Node(startNode);
+        //        //resultNodeList[k] = curNode;
+        //        int i = k;
+        //        //System.Threading.Thread thread = new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(this.parallelUCTRun));
+        //        System.Threading.Thread thread = new System.Threading.Thread(
+        //            () => parallelUCTRun(startNode, i));
+        //        thread.Start();
+        //        tasks.Add(thread);
+        //    }
+
+        //    //System.Threading.Thread.Sleep(1);
+
+        //    for (int j = 0; j < numThread; j++)
+        //    {
+        //        tasks[j].Join();
+        //        Console.WriteLine("thread " + j + " joined");
+        //        foreach (Node child in startNode.children)
+        //        {
+        //            //child.move.print();
+        //            child.state.printLastTurnActions();
+        //            Helpfunctions.Instance.logg("count = " + child.numVisited);
+        //            Helpfunctions.Instance.logg("============================================================");
+        //        }
+        //    }
+        //}
+
+        public List<Action> getBestPlayfield()
+        {
+            //Helpfunctions.Instance.startTimer();
+            numExpand = 0;
+            expandTime = 0.0;
+            expandCount = 0;
+            chanceCount = 0;
+            Playfield selectedMove = null;
+            bestValue = float.MinValue;
+            //bestBoard = new Playfield(board);
+            currentState = new Node(null, board, null, 0);
+
+            Player mPlayer = board.isOwnTurn ? board.playerFirst : board.playerSecond;
+
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                Console.WriteLine("Keep cards " + hc.card.name + "?"); // Prompt
+                string line = Console.ReadLine();
+                if (line != "1") //keep
+                {
+                    board.keepCardList.Add(hc.entity);
+                    Console.WriteLine("keep " + hc.entity);
+                }
+                else
+                {
+                    Console.WriteLine("Play " + hc.entity);
+                }
+            }
+
+            int count = expandDecision(currentState, firstNumberIter);
+
+            if (count == 0) //lethal
+            {
+                return currentState.children[0].state.getLastTurnAction();
+            }
+            else if (count == 1)
+            {
+                return currentState.children[0].state.getLastTurnAction();
+            }
+
+            //bool isEndReachedBefore = isEndReached;        
+            //multipleThreadUCTRun(currentState);
+
+            //if (isEndReachedBefore != isEndReached)
+            //{
+            //    currentState = new Node(null, board, null, 0);
+
+            //    //if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
+            //    if (expandDecision(currentState) == 1)
+            //    {
+            //        return currentState.children[0].state;
+            //    }                
+            //    multipleThreadUCTRun(currentState);                
+            //}
+            int numIter = 500;
             bool isEndReachedBefore = isEndReached;
-            for (int i = 0; i < 3000; i++)
+            for (int i = 0; i < numIter; i++)
             {
                 if (isEndReachedBefore != isEndReached)
                 {
@@ -417,64 +663,202 @@ namespace HRSim
                     //Helpfunctions.Instance.logg("try: " + i + " not reach");
                 }
                 UCTRun(currentState, 0.7f);
+                //multipleThreadUCTRun(currentState);
+            
+                if (i % 200 == 0)
+                    Console.WriteLine(i + " th iteration");
+
             }
 
             if (isEndReachedBefore != isEndReached)
             {
-                currentState = new Node(board, null, 0);
+                currentState = new Node(null, board, null, 0);
 
-                if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
-                for (int i = 0; i < 3000; i++)
+                //if (expand(currentState, HeuristicType.Boardvalue) == 1) return null; // no moves
+                if (expandDecision(currentState, firstNumberIter) == 1)
+                {
+                    return currentState.children[0].state.getLastTurnAction();
+                }
+                for (int i = 0; i < numIter; i++)
                 {
                     UCTRun(currentState, 0.7f);
-                    currentState.state = new Playfield(board);
+                    //multipleThreadUCTRun(currentState);
+                    if (i % 200 == 0)
+                        Console.WriteLine(i + " th iteration");
+                    //currentState.state = new Playfield(board);
                 }
             }
 
-            int maxVisit = 0;
-            Playfield selectedMove = null;
+            int maxVisit = 0;           
             Node selectedChild = null;
             foreach (Node child in currentState.children)
             {
                 //child.move.print();
-                //child.state.debugMinions();
-                //Helpfunctions.Instance.logg("count = " + child.numVisited);
+                if (child.move == null)
+                {
+                    child.state.printLastTurnActions();
+                }
+                else
+                {
+                    Helpfunctions.Instance.logg("Chance Node");
+                    child.state.printActions();
+                    child.move.print();
+                }
+                Helpfunctions.Instance.logg("count = " + child.numVisited);
+                Helpfunctions.Instance.logg("mean = " + child.mean);
+                float sfVal = bh.getPlayfieldValue(child.state, this.playerSide);
+
+                Helpfunctions.Instance.logg("sfVal:" + sfVal);
                 if (child.numVisited > maxVisit)
                 {
                     maxVisit = child.numVisited;
                     selectedMove = child.state;
                     selectedChild = child;
                 }
+                Helpfunctions.Instance.logg("============================================================");
             }
+
+            Helpfunctions.Instance.logg("avg expandCount = " + expandCount / numExpand);
+            Helpfunctions.Instance.logg("ChanceCount = " + chanceCount);
+            Helpfunctions.Instance.logg("avg expand time = " + expandTime / numExpand);
 
             //Helpfunctions.Instance.logg("Turn of child:" + selectedChild.state.isOwnTurn);
             //currentState.printChildren();
-            Helpfunctions.Instance.logg("best value:" + bestValue);
-            bestBoard.printBoard();
+            selectedMove.printBoard();
 
-            return selectedMove;
+            if (selectedMove.isOwnTurn == this.playerSide)
+            {
+                List<Action> actionList = selectedMove.getActions();
+                actionList.Add(selectedChild.move);
+                return actionList;
+            }
+            else
+            {
+                return selectedMove.getLastTurnAction();
+            }
+
         }
-        //public void getAllpossibleStates(Playfield state, ref List<Playfield> statesList)
+
+        //public Playfield getBestPlayfield()
         //{
-        //    List<Action> moves = Movegenerator.Instance.getMoveList(state, false, true, true);
-        //    if (moves.Count == 0)
+        //    currentState = new Node(null, board, null, 0);
+
+        //    int count = expandDecision(currentState, firstNumberIter);
+
+        //    if (count == 0) //lethal
         //    {
-        //        if (tt.addToMap(state) == false)
+        //        return currentState.children[0].state;
+        //    }
+        //    else if (count == 1)
+        //    {
+        //        return currentState.children[0].state;
+        //    }
+          
+        //    float maxScore = 0;
+        //    Playfield selectedMove = null;
+        //    foreach (Node child in currentState.children)
+        //    {
+        //        //child.move.print();
+        //        child.state.printLastTurnActions();
+        //        float nnEval = getNNEval(child.state);
+        //        Helpfunctions.Instance.logg("NN Score = " + nnEval);
+        //        if (nnEval > maxScore)
         //        {
-        //            statesList.Add(state);
+        //            maxScore = nnEval;
+        //            selectedMove = child.state;
         //        }
-        //        return;
+        //        Helpfunctions.Instance.logg("============================================================");
         //    }
-        //    foreach (Action action in moves)
+
+        //    selectedMove.printBoard();
+
+        //    return selectedMove;
+        //}
+
+        //public void UCTRun(Node p, int threadNumber)
+        //{
+        //    List<Node> visited = new List<Node>();
+        //    visited.Add(p);
+
+        //    int depth = 0;
+        //    Node parent = null;
+
+        //    //List<Action> actions = new List<Action>();
+
+        //    while (!isLeaf(p) && p.depth < rolloutDepth)
         //    {
-        //        Playfield afterState = new Playfield(state);
-        //        afterState.doAction(action);
-        //        //if (tt.addToMap(afterState) == false)
-        //        //{
-        //        //    statesList.Add(afterState);
-        //        getAllpossibleStates(afterState, ref statesList);
-        //        //}
+        //        parent = p;
+        //        p = select(p, 0.7f);
+
+        //        //chanceNode
+        //        ChanceNode chanceNode = p as ChanceNode;
+        //        if (chanceNode != null)
+        //        {
+        //            visited.Add(p);
+        //            p = advanceChance(chanceNode);
+        //        }
+        //        depth++;
+        //        if (p.move != null && depth == 1)
+        //        {
+        //            //Helpfunctions.Instance.logg("=======================MOVE TO SAMPLE===================");
+        //            //Helpfunctions.Instance.logg("Turn: " + p.state.isOwnTurn);
+        //            //p.state.printBoard();
+        //            //p.move.print();
+        //        }
+        //        //actions.Add(p.move);
+        //        depth++;
+        //        visited.Add(p);
         //    }
+
+        //    //Console.WriteLine("OUT OF LOOP:" + threadNumber);
+
+        //    float score;
+        //    if (p.depth == rolloutDepth && !isEndReached)
+        //    {
+        //        score = p.state.getBoardValue();
+        //        //score = getNNEval(p.state);
+        //        //Console.WriteLine("NN value = " + score);
+        //    }
+        //    else
+        //    {
+        //        //int count = expand(p, HeuristicType.Boardvalue);
+        //        //Helpfunctions.Instance.startTimer();
+        //        //p.state.drawTurnStartCard();
+        //        //ChanceNode cn = new ChanceNode(p, p.state, null, p.depth);
+        //        int count = expandDecision(p, threadNumber);
+        //        //Helpfunctions.Instance.logTime("expand");
+        //        if (count == 0)
+        //        {
+        //            if (p.state.isOwnTurn == playerSide)
+        //            {
+        //                score = 1;
+        //            }
+        //            else
+        //            {
+        //                score = 0;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            //Helpfunctions.Instance.startTimer();
+        //            score = sample(p);
+        //            //Helpfunctions.Instance.logTime("sample time");
+        //            //Helpfunctions.Instance.startTimer();
+        //            //score = getNNEval(p);
+        //            //Helpfunctions.Instance.logTime("NN time");
+        //        }
+        //    }
+        //    //Helpfunctions.Instance.logg("score = " + score);
+
+        //    //update score
+        //    foreach (Node visitedPos in visited)
+        //    {
+        //        float lastMean = visitedPos.mean;
+        //        visitedPos.mean = (score + lastMean * visitedPos.numVisited) / (visitedPos.numVisited + 1);
+        //        visitedPos.numVisited++;
+        //    }
+
+        //    return;
         //}
 
         public void UCTRun(Node p, float c)
@@ -486,13 +870,21 @@ namespace HRSim
             int depth = 0;
             Node parent = null;
 
-            List<Action> actions = new List<Action>();
+            //List<Action> actions = new List<Action>();
 
             while (!isLeaf(p) && p.depth < rolloutDepth)
             {
                 parent = p;
                 p = select(p, c);
-                depth++;
+
+                //chanceNode
+                ChanceNode chanceNode = p as ChanceNode;
+                if (chanceNode != null)
+                {
+                    visited.Add(p);
+                    p = advanceChance(chanceNode);
+                }
+                //depth++;
                 if (p.move != null && depth == 1)
                 {
                     //Helpfunctions.Instance.logg("=======================MOVE TO SAMPLE===================");
@@ -500,30 +892,122 @@ namespace HRSim
                     //p.state.printBoard();
                     //p.move.print();
                 }
-                actions.Add(p.move);
+                //actions.Add(p.move);
                 depth++;
                 visited.Add(p);
             }
 
             float score;
-            if (p.depth == rolloutDepth)
+            if (p.depth == rolloutDepth && !isEndReached)
             {
-                score = p.state.getBoardValue();
+                //score = p.state.getBoardValue();
+                GameManager.Instance.moveCount++;
+                score = bh.getPlayfieldValue(p.state, this.playerSide);
+                //score = getNNEval(p.state);
+                //Helpfunctions.Instance.logg("NN value = " + score);
+                //Console.WriteLine("NN value = " + score);
             }
             else
             {
-                int count = expand(p, HeuristicType.Boardvalue);
-                score = sample(p);
+                //int count = expand(p, HeuristicType.Boardvalue);
+                //Helpfunctions.Instance.startTimer();
+                p.state.drawTurnStartCard();
+                int count = expandDecision(p, playoutNumberIter);
+                //Console.WriteLine("turn:" + p.state.isOwnTurn);
+                //Helpfunctions.Instance.logTime("expand");
+                if (count == 0)
+                {
+                    if (p.state.isOwnTurn == playerSide)
+                    {
+                        score = 1;
+                    }
+                    else
+                    {
+                        score = 0;
+                    }
+                }
+                else
+                {
+                    //Helpfunctions.Instance.startTimer();
+                    score = sample(p);
+                    //Helpfunctions.Instance.logTime("sample time");
+                    //Helpfunctions.Instance.startTimer();
+                    //score = getNNEval(p);
+                    //Helpfunctions.Instance.logTime("NN time");
+                }
             }
-            //Helpfunctions.Instance.logg("score = " + score);
+            if (log)
+                Console.WriteLine("score = " + score + "--------------------------------------");
 
             //update score
             foreach (Node visitedPos in visited)
             {
+                float realScore = score;
+                if (visitedPos.state.isOwnTurn == playerSide)
+                {
+                    realScore = 1.0f - score;
+                }
+                if (log)
+                    Console.WriteLine("turn:" + visitedPos.state.isOwnTurn + " score:" + realScore);
+
                 float lastMean = visitedPos.mean;
-                visitedPos.mean = (score + lastMean * visitedPos.numVisited) / (visitedPos.numVisited + 1);
+                visitedPos.mean = (realScore + lastMean * visitedPos.numVisited) / (visitedPos.numVisited + 1);
                 visitedPos.numVisited++;
             }
+        }
+
+        public float getNNEval(Playfield p)
+        {
+            string result = sendMessage(p);
+            return float.Parse(result);
+        }
+
+        private string sendMessage(Playfield p)
+        {
+            List<PlayerKeyInfo> playerInfoList = new List<PlayerKeyInfo>(2);
+            if (this.playerSide)
+            {
+                playerInfoList.Add(new PlayerKeyInfo(p.playerFirst, p.homeDeck));
+                playerInfoList.Add(new PlayerKeyInfo(p.playerSecond, p.awayDeck));
+            }
+            else
+            {
+                playerInfoList.Add(new PlayerKeyInfo(p.playerSecond, p.awayDeck));
+                playerInfoList.Add(new PlayerKeyInfo(p.playerFirst, p.homeDeck));
+            }
+            string message = JsonConvert.SerializeObject(playerInfoList);
+            string result = null;
+            //Helpfunctions.Instance.logTime("connect time");
+            if (requester == null)
+            {
+                requester = new ZSocket(ZSocketType.REQ);
+                requester.TcpKeepAlive = TcpKeepaliveBehaviour.Enable;
+                requester.Connect("tcp://127.0.0.1:5556");
+            }
+
+            //using (var requester = new ZSocket(ZSocketType.REQ))
+            //{
+                // Connect
+                requester.TcpKeepAlive = TcpKeepaliveBehaviour.Enable;
+                //for (int n = 0; n < 10; ++n)
+                //{
+                    //string requestText = "Hello";
+                    //Console.Write("Sending {0}...", message);
+                    //Helpfunctions.Instance.startTimer();
+                    // Send
+                    requester.Send(new ZFrame(message));
+
+                    // Receive
+                    using (ZFrame reply = requester.ReceiveFrame())
+                    {
+                        result = reply.ReadString();
+                        //Console.WriteLine(" Received: {0}", reply.ReadString());
+                    }
+                    //Helpfunctions.Instance.logTime("send time");
+                //}
+
+            //}
+            return result;
         }
 
         public float sample(Node p)
@@ -532,62 +1016,38 @@ namespace HRSim
             Action move = null;
             int turn = p.depth;
 
-            //Helpfunctions.Instance.logg("turn: " + turn);
+            //Console.WriteLine("start sample ...");
 
             int score = startState.getGameResult();
             while (score == -1)
             {
-                //List<Action> moves = Movegenerator.Instance.getMoveList(startState, false, false, true);
-                //if (move != null)
-                //{
-                //GameManager.Instance.moveCount++;
-                //if (GameManager.Instance.moveCount == 562)
-                //{
-                //    int debug = 1;
-                //}
-                    //var milliseconds = (DateTime.Now - DateTime.MinValue).TotalMilliseconds;
-                    Movegenerator.Instance.getMoveListForPlayfield(startState, false ,false);
-                    //double time = (DateTime.Now - DateTime.MinValue).TotalMilliseconds - milliseconds;
-                    //GameManager.Instance.myTimer += time;
-                    //Helpfunctions.Instance.logg("my:" + time + " total:" + GameManager.Instance.myTimer);
-
-
-                    //milliseconds = (DateTime.Now - DateTime.MinValue).TotalMilliseconds;
-                    //List<Action> bruteForceMoves = Movegenerator.Instance.getMoveList(startState, false, true, true);
-                    //time = (DateTime.Now - DateTime.MinValue).TotalMilliseconds - milliseconds;
-                    //GameManager.Instance.sfTimer += time;
-                    //Helpfunctions.Instance.logg("sf:" + time + " total:" + GameManager.Instance.sfTimer);
-
-                    //if (bruteForceMoves.Count != startState.moveList.Count) {
-                    //    startState.printBoard();
-                    //    int debug = 1;
-                    //    Helpfunctions.Instance.logg("BF Move List:------------------------------------");
-                    //    foreach (Action action in bruteForceMoves)
-                    //    {
-                    //        action.print();
-                    //    }
-                    //    startState.printMoveList();
-                    //}
-                //}
-                //Helpfunctions.Instance.logg("Count: " + startState.moveList.Count);
+                Movegenerator.Instance.getMoveListForPlayfield(startState, false ,false);                 
                 if (startState.moveList.Count == 0)
                 {
                     startState.endTurn(false, false);
-                    //Helpfunctions.Instance.logg("Turn = " + startState.isOwnTurn);
+                    startState.drawTurnStartCard();
+                    //Console.WriteLine("turn:" + turn);
+                    turn++;
+
                     if (!isEndReached)
                     {
-                        //if (startState.isOwnTurn && this.playerSide == 1 || !startState.isOwnTurn && this.playerSide == 0)
-                        //{
-                        //    turn++;
-                        //    //Helpfunctions.Instance.logg("Turn++");
-                        //}
-                        turn++;
                         move = null;
                         if (turn == rolloutDepth) //evaluate at deapth == 5
                         {
                             //startState.printBoard();
-                            float value = startState.getBoardValue();
-                            //Helpfunctions.Instance.logg("value = " + value);
+                            float value = bh.getPlayfieldValue(startState, this.playerSide);
+
+                            //float value = startState.getBoardValue();
+                            if (log)
+                                Console.WriteLine("sample turn:" + startState.isOwnTurn + " val:" + value);
+                            //startState.printBoard();
+                            if (startState.isOwnTurn == playerSide)
+                            {
+                                int debug = 1;
+                            }
+                            //float value = getNNEval(startState);
+                            //Helpfunctions.Instance.logg("NN value = " + value);
+                            //Console.WriteLine("Board value = " + value);
                             if (value > bestValue)
                             {
                                 bestBoard = new Playfield(startState);
@@ -606,38 +1066,125 @@ namespace HRSim
             }
 
             isEndReached = true;
-            if (playerSide == score)
+            if ((playerSide && score == 0) || (!playerSide && score == 1))
+            {
+                //Helpfunctions.Instance.logg("End game value = 1");
+                return 1;
+            }
+            //Helpfunctions.Instance.logg("End game value = 0");
+            return 0;
+        }
+
+        public float sampleTurn(Node p, float retVal)
+        {
+            Action move = null;
+            int turn = 0;
+            float count = retVal;
+            int score = p.state.getGameResult();
+            Node nextNode = p;
+            while (score == -1)
+            {
+                if (turn != 0)
+                    count = expandDecision(p, playoutNumberIter);
+
+                if (count == 0) break;
+                //choose a random state, no need to end turn   
+
+                nextNode = nextNode.children[GameManager.getRNG().Next(nextNode.children.Count)];
+                score = nextNode.state.getGameResult();
+                nextNode.state.drawTurnStartCard();
+                turn++;
+            }
+
+            isEndReached = true;
+            if ((playerSide && score == 0) || (!playerSide && score == 1))
             {
                 return 1;
             }
             return 0;
         }
 
-        public int expand(Node p, HeuristicType ht)
+        public int expand(Node p, HeuristicType ht, int numberIter)
         {
-            
-            int state = 0;
             Playfield afterState = new Playfield(p.state);
 
             ParetoMCTSPlayer m_player = new ParetoMCTSPlayer(new ParetoTreePolicy(0.7), GameManager.getRNG(), afterState, ht);
-            m_player.run(afterState, 30000, false);
+            m_player.run(afterState, numberIter, false);
             //m_player.m_root.printStats();
             //Helpfunctions.Instance.logg("turn: " + p.state.isOwnTurn);
             int memberSize = m_player.m_root.pa.m_members.size(); // will it always > 0?
 
-            if (memberSize == 1)
-            { // no moves available
-                state = 1;
-            }
+            //if (ht == HeuristicType.Boardvalue)
+            //    m_player.m_root.pa.printArchive();
 
+
+            if (ht == HeuristicType.DrawCard)
+            {
+                Console.WriteLine("chance: " + memberSize);
+                if (memberSize > 1)
+                {
+                    chanceCount += memberSize - 1;
+                    m_player.m_root.pa.printArchive();
+                }
+            }
             for(int i = 0; i < memberSize; i++) // this is other's turn
             {
+                Node afterNode;
                 Playfield pf = m_player.m_root.pa.m_members.get(i).m_state;
-                Node afterNode = new Node(pf, null, p.depth + 1);
+                if (ht == HeuristicType.DrawCard)
+                {
+                    if (pf.moveTrigger.newHandcardList.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    if ((pf.isOwnTurn && pf.playerFirst.ownDeckSize > 0) ||
+                        (!pf.isOwnTurn && pf.playerSecond.ownDeckSize > 0))
+                    {
+                        List<Action> actionList = pf.getActions();
+                        Playfield tempPf = new Playfield(afterState);
+                        for (int j = tempPf.getActions().Count; j < actionList.Count - 1; j++)
+                        {
+                            tempPf.doAction(actionList[j]);
+                        }
+                        afterNode = new ChanceNode(p, tempPf, actionList[actionList.Count - 1], p.depth, pf.moveTrigger.newHandcardList.Count);
+                    }
+                    else
+                    {
+                        afterNode = new Node(p, pf, null, p.depth);
+                    }
+
+                    if (memberSize > 1)
+                    {
+                        pf.printActions();
+                    }
+                    //pf.printActions();
+                }
+                else if (ht == HeuristicType.LethalCheck)
+                {
+                    if (pf.getLethalScore() == 1.0)
+                    {
+                        afterNode = new Node(p, pf, null, p.depth + 1);
+                    }
+                    continue;
+                }
+                else
+                {
+                    if ((pf.isOwnTurn && pf.playerFirst.ownDeckSize > 0) || 
+                        (!pf.isOwnTurn && pf.playerSecond.ownDeckSize > 0))
+                    {
+                        afterNode = new ChanceNode(p, pf, null, p.depth + 1, 1);
+                    }
+                    else
+                    {
+                        pf.drawTurnStartCard();
+                        afterNode = new Node(p, pf, null, p.depth + 1);
+                    }
+                }
                 p.children.Add(afterNode);
             }
 
-            return state;
+            return p.children.Count;
         }
 
         //public int expand(Node p)
@@ -717,7 +1264,6 @@ namespace HRSim
 
         public void getAllpossibleStates(Playfield state, ref List<Playfield> statesList)
         {
-            GameManager.Instance.moveCount++;
             if (state.moveList.Count == 0)
             {
                 Player mPlayer;
@@ -736,6 +1282,8 @@ namespace HRSim
                 //Helpfunctions.Instance.logg(turn + ": pre mana = " + mPlayer.ownMaxMana);
                 Playfield afterState = new Playfield(state);
                 afterState.endTurn(false, false);
+                afterState.drawTurnStartCard();
+
                 if (endTurnTt.addToMap(afterState) == false)
                 {
                     //GameManager.Instance.moveCount++;
@@ -788,10 +1336,9 @@ namespace HRSim
 
             float bestValue = float.MinValue;
             Node selected = null;
-            bool ownTurn = (playerSide == 0) ? true : false;
 
-            if (p.state.isOwnTurn == ownTurn)
-            {
+            //if (p.state.isOwnTurn == playerSide)
+            //{
 
                 foreach (Node child in p.children)
                 {
@@ -803,8 +1350,8 @@ namespace HRSim
 
                     float UCTValue = (float)(child.mean + c * Math.Sqrt(Math.Log(p.numVisited) / child.numVisited));
 
-                    if (child.move != null && p.depth == 0) 
-                        child.state.debugMinions();
+                    //if (child.move != null && p.depth == 0) 
+                    //    child.state.debugMinions();
                     //Helpfunctions.Instance.logg("UCTVale = " + UCTValue);
 
                     if (UCTValue > bestValue)
@@ -813,31 +1360,31 @@ namespace HRSim
                         selected = child;
                     }
 
-                }
-            }
-            else
-            {
+            //    }
+            //}
+            //else
+            //{
 
-                bestValue = float.MaxValue;
+            //    bestValue = float.MaxValue;
 
-                foreach (Node child in p.children)
-                {
+            //    foreach (Node child in p.children)
+            //    {
 
-                    if (child.numVisited == 0)
-                    {
-                        return child;
-                    }
+            //        if (child.numVisited == 0)
+            //        {
+            //            return child;
+            //        }
 
-                    float UCTValue = (float)(child.mean - c * Math.Sqrt(Math.Log(p.numVisited) / child.numVisited));
+            //        float UCTValue = (float)(child.mean - c * Math.Sqrt(Math.Log(p.numVisited) / child.numVisited));
 
 
-                    if (UCTValue < bestValue)
-                    {
-                        bestValue = UCTValue;
-                        selected = child;
-                    }
+            //        if (UCTValue < bestValue)
+            //        {
+            //            bestValue = UCTValue;
+            //            selected = child;
+            //        }
 
-                }
+            //    }
 
             }
 

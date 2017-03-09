@@ -20,6 +20,10 @@ using HREngine.Bots;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Windows.Threading;
+using ZeroMQ;
+using Newtonsoft.Json;
+using Python.Runtime;
+
 
 //TODO: update enemy hero hp
 //      trap for both sides
@@ -39,6 +43,9 @@ namespace HRSim
     public partial class MainWindow : Window
     {
 
+        private ZSocket responder, requester;
+        private GameRecord gameRecord = null;
+        private int recordTurn = 0;
         private static MainWindow instance;
 
         public static MainWindow Instance
@@ -123,131 +130,6 @@ namespace HRSim
             //bw.RunWorkerAsync();
         }
 
-        //private void BackgroundWorkerOnProgressChanged(object sender, ProgressChangedEventArgs e)
-        //{
-        //    object userObject = e.UserState;
-        //    int percentage = e.ProgressPercentage;
-        //}
-
-        //private void BackgroundWorkerOnDoWork(object sender, DoWorkEventArgs e)
-        //{
-        //    BackgroundWorker worker = (BackgroundWorker)sender;
-        //    while (!worker.CancellationPending)
-        //    {
-        //        //Do your stuff here
-        //        Thread.Sleep(4000);
-        //        if (!isInit)
-        //        {
-        //            Init();
-        //            InitPipe();
-        //            isInit = true;
-        //        }
-        //        worker.ReportProgress(0, "AN OBJECT TO PASS TO THE UI-THREAD");
-        //    }
-        //}
-
-        //private static int numThreads = 1;
-
-        //public void InitPipe()
-        //{
-        //    int i;
-        //    Thread server = new Thread(ServerThread);
-        //    server.Start();
-        //    //Thread[] servers = new Thread[numThreads];
-
-        //    //Console.WriteLine("\n*** Named pipe server stream with impersonation example ***\n");
-        //    //Console.WriteLine("Waiting for client connect...\n");
-        //    //for (i = 0; i < numThreads; i++)
-        //    //{
-        //    //    servers[i] = new Thread(ServerThread);
-        //    //    servers[i].Start();
-        //    //}
-        //    //Thread.Sleep(250);
-        //    //while (i > 0)
-        //    //{
-        //    //    for (int j = 0; j < numThreads; j++)
-        //    //    {
-        //    //        if (servers[j] != null)
-        //    //        {
-        //    //            if (servers[j].Join(250))
-        //    //            {
-        //    //                Console.WriteLine("Server thread[{0}] finished.", servers[j].ManagedThreadId);
-        //    //                servers[j] = null;
-        //    //                i--;    // decrement the thread watch count
-        //    //            }
-        //    //        }
-        //    //    }
-        //    //}
-        //    //Console.WriteLine("\nServer threads exhausted, exiting.");
-        //}
-
-        //private void ServerThread(object data)
-        //{
-        //    NamedPipeServerStream pipeServer =
-        //        new NamedPipeServerStream("testpipe", PipeDirection.InOut, numThreads);
-
-        //    int threadId = Thread.CurrentThread.ManagedThreadId;
-
-        //    // Wait for a client to connect
-        //    pipeServer.WaitForConnection();
-
-        //    Console.WriteLine("Client connected on thread[{0}].", threadId);
-
-        //    StreamString ss = new StreamString(pipeServer);
-        //    ss.WriteString("I am the one true server!");
-
-        //    while (true)
-        //    {
-        //        if (ss.ReadString() == "hi there")
-        //        {
-        //            //update board
-        //            displayMinions(testField);
-        //        }
-        //    }
-        //    pipeServer.Close();
-        //}
-
-        //// Defines the data protocol for reading and writing strings on our stream 
-        //public class StreamString
-        //{
-        //    private Stream ioStream;
-        //    private UnicodeEncoding streamEncoding;
-
-        //    public StreamString(Stream ioStream)
-        //    {
-        //        this.ioStream = ioStream;
-        //        streamEncoding = new UnicodeEncoding();
-        //    }
-
-        //    public string ReadString()
-        //    {
-        //        int len = 0;
-
-        //        len = ioStream.ReadByte() * 256;
-        //        len += ioStream.ReadByte();
-        //        byte[] inBuffer = new byte[len];
-        //        ioStream.Read(inBuffer, 0, len);
-
-        //        return streamEncoding.GetString(inBuffer);
-        //    }
-
-        //    public int WriteString(string outString)
-        //    {
-        //        byte[] outBuffer = streamEncoding.GetBytes(outString);
-        //        int len = outBuffer.Length;
-        //        if (len > UInt16.MaxValue)
-        //        {
-        //            len = (int)UInt16.MaxValue;
-        //        }
-        //        ioStream.WriteByte((byte)(len / 256));
-        //        ioStream.WriteByte((byte)(len & 255));
-        //        ioStream.Write(outBuffer, 0, len);
-        //        ioStream.Flush();
-
-        //        return outBuffer.Length + 2;
-        //    }
-        //}
-
         public void displayHandCards(bool shwoWithImage)
         {
             GameManager gameManager = GameManager.Instance;
@@ -294,20 +176,8 @@ namespace HRSim
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //ThreadPool.QueueUserWorkItem((x) =>
-            //{
-            //    while (true)
-            //    {
-            //        Dispatcher.BeginInvoke((Action)(() =>
-            //        {
-            //            mFileNames.Add(new FileInfo("X"));
-            //        }));
-            //        Thread.Sleep(500);
-            //    }
-            //});
-
             Helpfunctions.Instance.LogUpdate += appendLog;
-            Thread game = new Thread(Init);
+            Thread game = new Thread(() => Init(false, 0));
             game.Start();
         }
 
@@ -358,7 +228,7 @@ namespace HRSim
            }));
         }
 
-        public void Init()
+        public void Init(bool isLearning, int turn, Playfield playfield = null)
         {
 
             if (GameManager.Instance == null)
@@ -367,16 +237,49 @@ namespace HRSim
             }
             else
             {
-                GameManager.Instance.initPlayField();
+                if (playfield != null)
+                {
+                    GameManager.Instance.mPlayfield = new Playfield(playfield);
+                }
+                else
+                {
+                    GameManager.Instance.initPlayField();
+                }
             }
 
             //setplayer 1
 
-
-            //setplayer 2
-            GameManager.Instance.setPlayer(1, new Silverfish());
-            //GameManager.Instance.setPlayer(1, new Silverfish());
-            GameManager.Instance.setPlayer(0, new MCTSPlayer(0, GameManager.Instance.mPlayfield));
+            if (isLearning)
+            {
+                //GameManager.Instance.setPlayer(1, new Silverfish()); // we can try set to the same player
+                GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
+            }
+            else
+            {
+                //setplayer 2
+                //GameManager.Instance.setPlayer(1, new Silverfish());
+                if (turn % 2 == 0)
+                {
+                    Helpfunctions.Instance.logg("Player 1: MCTSPlayer, Player 2: Silverfish");
+                    //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
+                    //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, true));
+                    GameManager.Instance.setPlayer(0, new Silverfish());
+                    GameManager.Instance.setPlayer(1, new Silverfish());
+                    //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false));
+                    //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, true));
+                }
+                else
+                {
+                    Helpfunctions.Instance.logg("Player 1: Silverfish, Player 2: MCTSPlayer");
+                    GameManager.Instance.setPlayer(0, new Silverfish());
+                    GameManager.Instance.setPlayer(1, new Silverfish());
+                    //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, false));
+                    //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, true));
+                    //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false));
+                    //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, true));
+                }
+               
+            }
             //if (GameManager.Instance.playerFirst == null)
             //{
             //    GameManager.Instance.setPlayer(0, new QLearningAgent(true, GameManager.Instance.mPlayfield));
@@ -469,16 +372,585 @@ namespace HRSim
             //testField.printGraveyard();
         }
 
-        private void AutoPlay(object sender, RoutedEventArgs e)
+        public int expandDecision(Node p) //0: lethal 
+        {
+            if (expand(p, HeuristicType.LethalCheck) == 1) return 0;
+            expand(p, HeuristicType.Boardvalue); // no moves
+            return p.children.Count;
+        }
+
+        public int expand(Node p, HeuristicType ht)
+        {
+            Playfield afterState = new Playfield(p.state);
+
+            ParetoMCTSPlayer m_player = new ParetoMCTSPlayer(new ParetoTreePolicy(0.7), GameManager.getRNG(), afterState, ht);
+            m_player.run(afterState, 30000, false);
+            //m_player.m_root.printStats();
+            //Helpfunctions.Instance.logg("turn: " + p.state.isOwnTurn);
+            int memberSize = m_player.m_root.pa.m_members.size(); // will it always > 0?
+
+            for (int i = 0; i < memberSize; i++) // this is other's turn
+            {
+                Node afterNode;
+                Playfield pf = m_player.m_root.pa.m_members.get(i).m_state;
+                if (ht == HeuristicType.DrawCard)
+                {
+                    if (pf.moveTrigger.newHandcardList.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    afterNode = new ChanceNode(p, pf, null, p.depth, 1); //last param is wrong
+                    pf.printActions();
+                }
+                else if (ht == HeuristicType.LethalCheck)
+                {
+                    if (pf.getLethalScore() == 1.0)
+                    {
+                        afterNode = new Node(p, pf, null, p.depth + 1);
+                    }
+                    continue;
+                }
+                else
+                {
+                    afterNode = new Node(p, pf, null, p.depth + 1);
+                }
+                p.children.Add(afterNode);
+            }
+
+            return p.children.Count;
+        }
+      
+        //private string generateMessage(int result, Node currentState) // for player 1
+        //{
+        //    Message message = new Message();
+        //    message.result = result;
+
+        //    if (result == 1)
+        //    {
+        //        message.result = 0;
+        //        return JsonConvert.SerializeObject(message);
+        //    }
+
+        //    int count = expandDecision(currentState);
+
+        //    if (count == 0) //lethal
+        //    {
+        //        GameManager.Instance.mPlayfield = currentState.children[0].state;
+        //        message.result = 0;
+        //        return JsonConvert.SerializeObject(message);
+        //    }
+
+        //    message.features = new double[currentState.children.Count][];
+
+        //    for (int i = 0; i < currentState.children.Count; ++i)
+        //    {
+        //        Node child = currentState.children[i];
+        //        double[] delta = new double[] { child.state.getBoardValue(), -child.state.getEnemyBoardValue(), child.state.getHandValue() };
+        //        message.features[i] = delta;
+        //    }
+
+        //    return JsonConvert.SerializeObject(message);
+        //}
+
+        private void connect()
+        {
+            using (var requester = new ZSocket(ZSocketType.REQ))
+            {
+                // Connect
+                requester.Connect("tcp://127.0.0.1:5556");
+
+                for (int n = 0; n < 10; ++n)
+                {
+                    string requestText = "Hello";
+                    Console.Write("Sending {0}...", requestText);
+
+                    // Send
+                    requester.Send(new ZFrame(requestText));
+
+                    // Receive
+                    using (ZFrame reply = requester.ReceiveFrame())
+                    {
+                        Console.WriteLine(" Received: {0} {1}!", requestText, reply.ReadString());
+                    }
+                }
+            }
+
+            //requester = new ZSocket(ZSocketType.REP);
+            //try
+            //{
+            //    // Bind
+            //    //responder.Bind("tcp://*:5556");
+            //    requester.Connect("tcp://127.0.0.1:5556");
+            //    requester.Send(new ZFrame("Hello")); 
+            //    Helpfunctions.Instance.logg("connected to python server");
+            //}
+            //catch (Exception e)
+            //{
+            //    Helpfunctions.Instance.logg(e.ToString());
+            //}
+        }
+
+        private string sendMessage(string message)
+        {
+            //if (requester == null) connect();
+
+            //requester.Send(new ZFrame(message));
+            //// Receive
+            //string result = null;
+            //using (ZFrame reply = requester.ReceiveFrame())
+            //{
+            //    result = reply.ReadString();
+            //    Console.WriteLine(" Received: {0}!", reply.ReadString());
+            //}
+            //return result;
+            string result = null;
+            using (var requester = new ZSocket(ZSocketType.REQ))
+            {
+                // Connect
+                requester.Connect("tcp://127.0.0.1:5556");
+
+                for (int n = 0; n < 10; ++n)
+                {
+                    //string requestText = "Hello";
+                    Console.Write("Sending {0}...", message);
+
+                    // Send
+                    requester.Send(new ZFrame(message));
+
+                    // Receive
+                    using (ZFrame reply = requester.ReceiveFrame())
+                    {
+                        result = reply.ReadString();
+                        Console.WriteLine(" Received: {0}", reply.ReadString());
+                    }
+                }
+            }
+            return result;
+        }
+       
+        //private void FVI(object sender, RoutedEventArgs e) //For player 1
+        //{
+        //    //connect
+        //    using (responder = new ZSocket(ZSocketType.REP))
+        //    {
+        //        // Bind
+        //        responder.Bind("tcp://*:5556");
+        //        Node currentState = null;
+        //        bool turn = true;
+
+        //        while (true)
+        //        {
+        //            // Receive
+        //            using (ZFrame request = responder.ReceiveFrame())
+        //            {
+        //                int action = Int32.Parse(request.ReadString());
+        //                string message;
+
+        //                if (action == -1)
+        //                {
+        //                    //new a game
+        //                    Init(true, 0);
+        //                    currentState = new Node(null, GameManager.Instance.mPlayfield, null, 0);
+        //                    message = generateMessage(-1, currentState);
+        //                    responder.Send(new ZFrame(message));
+        //                }
+        //                else
+        //                {   //do a action, return result and successors
+        //                    Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
+        //                    Playfield state = currentState.children[action].state;
+        //                    GameManager.Instance.mPlayfield = state;
+        //                    int result = GameManager.Instance.mPlayfield.getGameResult(); //action result
+        //                    updateAllUI();
+
+
+        //                    if (result == -1)
+        //                    {
+        //                        while (!GameManager.Instance.mPlayfield.isOwnTurn && result == -1)
+        //                        {
+        //                            result = GameManager.Instance.playMove();
+        //                        }
+        //                    }
+        //                    updateAllUI();
+
+        //                    currentState = new Node(null, GameManager.Instance.mPlayfield, null, 0);
+        //                    message = generateMessage(result, currentState);
+        //                    responder.Send(new ZFrame(message));
+        //                }     
+        //            }
+        //        }
+        //    }          
+        //}
+
+        private void loadRecord(GameRecord gr)
+        {
+            this.gameRecord = gr;
+            this.recordTurn = 0;
+        }
+
+        private void nextSequence(object sender, RoutedEventArgs e)
+        {        
+            Playfield playfield = Helpfunctions.Instance.readJsonFile();
+            float score = DNNEval.Instance.getNNEval(playfield, playfield.isOwnTurn);
+            Console.WriteLine("score = " + score.ToString());
+
+            //while (playfield != null)
+            //{
+            //    PlayMultipleGames(5, playfield);
+            //    playfield = Helpfunctions.Instance.readJsonFile();
+            //}
+           
+            updateAllUI();
+        }
+       
+        private float simulateEnemyTurn(Playfield state, bool own, bool isSimulate, dynamic agent)
+        {
+            string playerName;
+            PlayerAgent playerAgent;
+            if (own)
+            {
+                playerName = "Player 1";
+                playerAgent = GameManager.Instance.playerFirst;
+            }
+            else
+            {
+                playerName = "Player 2";
+                playerAgent = GameManager.Instance.playerSecond;
+            }
+
+            int result = state.getGameResult();
+            float totalReward = 0.0f;
+
+            while (result == -1)
+            {
+                float reward = 0.0f;
+                dynamic state_t = DNNEval.Instance.parsePlayfield(state, own);
+                GameManager.Instance.playerSecond.updateState(state);
+                Action moveTodo = GameManager.Instance.playerSecond.getMove();
+                if (moveTodo != null)
+                {
+                    if (!isSimulate)
+                    {
+                        Helpfunctions.Instance.logg(playerName + " ##########Move##########");
+                        moveTodo.print();
+                    }
+                    state.doAction(moveTodo);
+                    result = state.getGameResult();
+                    reward = state.observerMoveReward();
+                    totalReward += reward;
+
+                    dynamic state_t1 = DNNEval.Instance.parsePlayfield(state, own);
+                    Helpfunctions.Instance.logg("Gd reward = " + reward);
+                    agent.store_transition(state_t, state_t1, reward);
+                }
+                else
+                {
+                    state.endTurn(false, false);
+                    state.drawTurnStartCard();
+                    dynamic state_t1 = DNNEval.Instance.parsePlayfield(state, own);
+                    agent.store_transition(state_t, state_t1, 0.0f);
+                    break;
+                }
+                result = state.getGameResult();
+            }
+
+            //bool winner = (result == 0) ? true : false;
+            //if (winner == own)
+            //    totalReward -= 1;
+            //else
+            //    totalReward += 1;
+
+            return -totalReward;
+        }
+
+        private void DQNTurn(object sender, RoutedEventArgs e)
+        {
+            bool side = true; //own side
+            int numGames = 500;
+            using (Py.GIL())
+            {
+                dynamic dqn = Py.Import("simple_dqn.dqn");
+                dynamic Agent = dqn.Agent;
+
+                Console.WriteLine("Done importing");
+                PyInt width = new PyInt(458);
+                dynamic state_size = new PyTuple(new PyObject[] { width });
+                dynamic agent = Agent(Py.kw("state_size", state_size), Py.kw("discount", 0.95));
+                Console.WriteLine(agent.discount);
+
+                for (int i = 0; i < numGames; i++)
+                {
+                    if (!isInit) Init(true, i);
+                    Playfield state = GameManager.Instance.mPlayfield;
+                    int result = state.getGameResult();
+                    float total_cost = 0.0f;
+                    float total_reward = 0.0f;
+                    float reward = 0.0f;
+                    float cost = 0.0f;
+                    int num_move = 0;
+                    int end_turn_count = 0;
+
+                    agent.new_episode();
+
+                    while (result == -1)
+                    {
+
+                        Action moveTodo = null;
+                        reward = 0.0f;
+                        cost = 0.0f;
+
+                        if (state.isOwnTurn)
+                        {
+
+                            List<Action> moveList = Movegenerator.Instance.getMoveList(state, false, true, true);
+                            moveList.Add(null);
+
+                            dynamic cur_state_vector = DNNEval.Instance.parsePlayfield(state, side);
+                            List<Playfield> stateList = new List<Playfield>();
+                            PyList state_vector_list = new PyList();
+                            foreach (Action action in moveList)
+                            {
+                                Playfield nextState = new Playfield(state);
+                                if (action != null)
+                                {
+                                    nextState.doAction(action);
+                                    stateList.Add(nextState);
+                                    reward = nextState.observerMoveReward();
+                                }
+                                else
+                                {
+                                    nextState.endTurn(false, false);
+                                    nextState.drawTurnStartCard();
+                                    //simulateEnemyTurn(nextState, false, true, agent);
+                                }
+                                dynamic state_vector = DNNEval.Instance.parsePlayfield(nextState, side);
+                                state_vector_list.Append(state_vector);
+                            }
+                            int action_index = agent.act(cur_state_vector, state_vector_list);
+                            Helpfunctions.Instance.logg("Length:" + state_vector_list.Length());
+
+                            moveTodo = moveList[action_index];
+
+                            if (moveTodo != null)
+                            {
+                                Helpfunctions.Instance.logg("Player 1 ##########Move##########");
+                                moveTodo.print();
+                                state.doAction(moveTodo);
+                                reward = state.observerMoveReward();
+                            }
+                            else
+                            {
+                                if (state.playerFirst.mana == state.playerFirst.ownMaxMana)
+                                    end_turn_count++;
+                                Helpfunctions.Instance.logg("Player 1 ##########Move##########");
+                                Helpfunctions.Instance.logg("Player 1 end turn");
+                                state.endTurn(false, false);
+                                state.drawTurnStartCard();
+                                reward = 0.0f;
+                                total_reward += simulateEnemyTurn(state, false, false, agent);
+                                Helpfunctions.Instance.logg("Player 2 end turn");
+                            }
+
+                            //state.printBoard();
+
+                            num_move += 1;
+
+                            cost = agent.observe(reward);
+                            Helpfunctions.Instance.logg("reward = " + reward);
+                            total_cost += cost;
+                            total_reward += reward;
+                            result = state.getGameResult();
+
+                        }
+                        else
+                        {
+                            int debug = 1;
+                        }
+                    }
+
+                    if (result == 0)
+                    {
+                        int debug = 1;
+                    }
+
+                    isInit = false;
+                    Helpfunctions.Instance.logg("last reward: " + reward);
+                    Helpfunctions.Instance.logg("total reward: " + total_reward);
+                    Helpfunctions.Instance.logg("avg cost: " + total_cost / num_move);
+                    Helpfunctions.Instance.WriteResultToFile(@"\learning_log.txt", "No." + i + " total/avg cost: " + total_reward + ", " + total_cost / num_move + ", end turn: " + (float)end_turn_count / num_move);
+
+                }
+            }
+        }
+
+
+        private void DQN(object sender, RoutedEventArgs e)
+        {
+            bool side = true; //own side
+            int numGames = 5000;
+            using (Py.GIL())
+            {
+                dynamic dqn = Py.Import("simple_dqn.dqn");
+                dynamic Agent = dqn.Agent;
+
+                Console.WriteLine("Done importing");
+                PyInt width = new PyInt(458);
+                dynamic state_size = new PyTuple(new PyObject[] {width});
+                dynamic agent = Agent(Py.kw("state_size", state_size), Py.kw("discount", 0.95));
+                Console.WriteLine(agent.discount);
+
+                for (int i = 0; i < numGames; i++)
+                {
+                    PyFloat epsilon = new PyFloat(Math.Max(0.1, 1 - (double)(i + 1) * 4 / numGames));
+                    agent.epsilon = epsilon;
+                    if (!isInit) Init(true, i);
+                    Playfield state = GameManager.Instance.mPlayfield;
+                    int result = state.getGameResult();
+                    float total_cost = 0.0f;
+                    float total_reward = 0.0f;
+                    float reward = 0.0f;
+                    float cost = 0.0f;
+                    int num_move = 0;
+                    int end_turn_count = 0;
+
+                    agent.new_episode();
+                    GreedyPlayer greedyPlayer = (GreedyPlayer) GameManager.Instance.playerFirst;
+
+                    while (result == -1)
+                    {
+
+                        Macro moveTodo = null;
+                        reward = 0.0f;
+                        cost = 0.0f;
+
+                        if (state.isOwnTurn)
+                        {
+                            List<Macro> macroMoveList = greedyPlayer.getMacros(state);
+
+                            macroMoveList.Add(null);
+
+                            dynamic cur_state_vector = DNNEval.Instance.parsePlayfield(state, side);
+                            List<Playfield> stateList = new List<Playfield>();
+                            PyList state_vector_list = new PyList();
+                            foreach (Macro macro in macroMoveList)
+                            {
+                                Playfield nextState = new Playfield(state);
+                                if (macro != null)
+                                {
+                                    nextState.doMacroAction(macro);
+                                    stateList.Add(nextState);
+                                    reward = nextState.observerMoveReward();
+                                }
+                                else
+                                {
+                                    nextState.endTurn(false, false);
+                                    nextState.drawTurnStartCard();
+                                    //simulateEnemyTurn(nextState, false, true);
+                                }
+                                dynamic state_vector = DNNEval.Instance.parsePlayfield(nextState, side);
+                                state_vector_list.Append(state_vector);
+                            }
+                            int action_index = agent.act(cur_state_vector, state_vector_list);
+                            Helpfunctions.Instance.logg("Length:" + state_vector_list.Length());
+
+                            moveTodo = macroMoveList[action_index];
+
+                            if (moveTodo != null)
+                            {
+                                Helpfunctions.Instance.logg("Player 1 ##########Move##########");
+                                //moveTodo.print();
+                                state.doMacroAction(moveTodo);
+                                reward = state.observerMoveReward();
+
+                                num_move += 1;
+                                cost = agent.observe(reward);
+                                Helpfunctions.Instance.logg("action_index = " + action_index + "/" + (macroMoveList.Count - 1) + "reward = " + reward);
+                            }
+                            else
+                            {
+                                if (state.playerFirst.mana == state.playerFirst.ownMaxMana)
+                                    end_turn_count++;
+                                Helpfunctions.Instance.logg("Player 1 ##########Move##########");
+                                Helpfunctions.Instance.logg("Player 1 end turn");
+                                state.endTurn(false, false);
+                                state.drawTurnStartCard();
+                                
+                                dynamic end_state_vector = DNNEval.Instance.parsePlayfield(state, side);
+                                agent.update_transition(end_state_vector);
+                                reward = 0.0f;
+
+                                num_move += 1;
+                                cost = agent.observe(reward);
+                                Helpfunctions.Instance.logg("action_index = " + action_index + "/" + (macroMoveList.Count - 1) + "reward = " + reward);
+
+                                total_reward += simulateEnemyTurn(state, false, false, agent);
+                                Helpfunctions.Instance.logg("Player 2 end turn");
+                            }
+
+                            //state.printBoard();
+
+                            total_cost += cost;
+                            total_reward += reward;
+                            result = state.getGameResult();
+
+                        }
+                        else
+                        {
+                            int debug = 1;
+                        }
+                    }
+
+                    if (result == 0)
+                    {
+                        int debug = 1;
+                    }
+
+                    isInit = false;
+                    Helpfunctions.Instance.logg("last reward: " + reward);
+                    Helpfunctions.Instance.logg("total reward: " + total_reward);
+                    Helpfunctions.Instance.logg("avg cost: " + total_cost / num_move);
+                    Helpfunctions.Instance.WriteResultToFile(@"\learning_log.txt", "No." + i + " total/avg cost: " + total_reward + ", " + total_cost / num_move + ", end turn: " + (float)end_turn_count/num_move);
+
+                }
+            }
+
+
+            //for e in xrange(num_episodes):
+            //    observation = env.reset()
+            //    done = False
+            //    agent.new_episode()
+            //    total_cost = 0.0
+            //    total_reward = 0.0
+            //    frame = 0
+            //    while not done:
+            //        frame += 1
+            //        #env.render()
+            //        action, values = agent.act(observation)
+            //        #action = env.action_space.sample()
+            //        observation, reward, done, info = env.step(action)
+            //        print reward
+            //        total_cost += agent.observe(reward)
+            //        total_reward += reward
+            //    print "total reward", total_reward
+            //    print "mean cost", total_cost/frame
+
+        }
+
+        private void TrainMultipleGames(int numGame, Playfield playfield)
         {
             int moveNum = 0;
-            int numGame = 50;
             int firstWon = 0;
             int secondWon = 0;
+            int P1Won = 0;
+            int P2Won = 0;
+            GameRecord gc = new GameRecord();
+            int trainStep = 10;
+            DateTime checkPoint = DateTime.Now;
+
             for (int i = 0; i < numGame; i++)
-            //for (; ; )
             {
-                if (!isInit) Init();
+                //if (!isInit) Init(false, i, playfield);
+                if (!isInit) Init(false, i);
                 moveNum++;
                 Helpfunctions.Instance.logg("movenum = " + moveNum);
 
@@ -488,34 +960,183 @@ namespace HRSim
                     moveNum++;
                     Helpfunctions.Instance.logg("movenum = " + moveNum);
                     result = GameManager.Instance.playMove();
+
+                    dynamic res = LogitEval.Instance.Train();
+                    //int trainResult = (int)res[0];
+                    //if (trainResult == 1)
+                    //{
+                    //    Helpfunctions.Instance.WriteResultToFile(@"\batch_sample.txt", res.ToString());
+                    //}
+                    res.Dispose();
+
                 }
+
                 if (result == 0)
                 {
                     firstWon++;
-                }
-                else if (result == 1)
-                {
-                    secondWon++;
+                    if (i % 2 == 0)
+                        P1Won++;
+                    else
+                        P2Won++;
+                    Helpfunctions.Instance.logg("i = " + i + "result = " + result);
+                    gc.result = 0;
                 }
                 else
-                {//for debuging
-                    break;
+                {
+                    secondWon++;
+                    if (i % 2 == 0)
+                        P2Won++;
+                    else
+                        P1Won++;
+                    Helpfunctions.Instance.logg("i = " + i + "result = " + result);
+                    gc.result = 1;
                 }
+  
+                gc.playSec = GameManager.Instance.featureList;
+                Helpfunctions.Instance.WriteResultToFile(@"\lvl_result.txt", JsonConvert.SerializeObject(gc));
+
+                LogitEval.Instance.SaveExp(gc);
+
+                if (i >= 10)
+                {
+                    Helpfunctions.Instance.logg("Train at trainStep = " + trainStep);
+                    Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
+                    Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
+                    
+                    if (i % 10 == 0)
+                    {
+                        DateTime newCheckPoint = DateTime.Now;
+                        Helpfunctions.Instance.WriteResultToFile(@"\train_result.txt", "Time: " + GameManager.Instance.P1Time + " VS " + GameManager.Instance.P2Time +", P1: " + P1Won + " VS P2: " + P2Won + "\n");
+                        //Helpfunctions.Instance.WriteResultToFile(@"\train_result.txt", "Time: " + GameManager.Instance.P1Time + " VS " + GameManager.Instance.P2Time + ", P1: " + P1Won + " VS P2: " + P2Won + "\n");
+                        P1Won = 0;
+                        P2Won = 0;
+                        GameManager.Instance.P1Time = 0.0;
+                        GameManager.Instance.P2Time = 0.0;
+                        checkPoint = newCheckPoint;
+                    }
+                }
+
+                GameManager.Instance.featureList.Clear();
+                isInit = false;               
+                GC.Collect();
+                GameManager.resetSeed();
+            }
+            Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
+            Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
+
+        }
+
+        private void SampleStates(int numGame, Playfield playfield)
+        {
+            for (int i = 0; i < numGame; i++)
+            //for (; ; )
+            {
+                //if (!isInit) Init(false, i, playfield);
+                if (!isInit) Init(false, i);
+                IOUtils.SaveState(GameManager.Instance.mPlayfield, @"\starting_states.txt");
                 isInit = false;
-                Helpfunctions.Instance.logg("PLAYER 1 WON " + firstWon + " GAMES");
-                Helpfunctions.Instance.logg("PLAYER 2 WON " + secondWon + " GAMES");
+                GC.Collect();
+                GameManager.resetSeed();
+            }
+        }
+
+        private void PlayMultipleGames(int numGame, Playfield playfield)
+        {
+            int moveNum = 0;
+            int firstWon = 0;
+            int secondWon = 0;
+            int P1Won = 0;
+            int P2Won = 0;
+            GameRecord gc = new GameRecord();
+
+            for (int i = 0; i < numGame; i++)
+            //for (; ; )
+            {
+                //if (!isInit) Init(false, i, playfield);
+                if (!isInit) Init(false, i);
+                moveNum++;
+                Helpfunctions.Instance.logg("movenum = " + moveNum);
+                GameManager.Instance.turnStartEntity = GameManager.Instance.mPlayfield.nextEntity;
+
+                int result = GameManager.Instance.playMove();
+                while (result == -1)
+                {
+                    moveNum++;
+                    Helpfunctions.Instance.logg("movenum = " + moveNum);
+                    result = GameManager.Instance.playMove();
+                }
+
+                //if (result == 0 && i % 2 == 0 || result == 1 && i % 2 != 0)
+                if (result == 0)
+                {
+                    firstWon++;
+                    if (i % 2 == 0)
+                        P1Won++;
+                    else
+                        P2Won++;
+                    Helpfunctions.Instance.logg("i = " + i + "result = " + result);
+                    gc.result = 0;
+                }
+                else
+                {
+                    secondWon++;
+                    if (i % 2 == 0)
+                        P2Won++;
+                    else
+                        P1Won++;
+                    Helpfunctions.Instance.logg("i = " + i + "result = " + result);
+                    gc.result = 1;
+                }
+                //else
+                //{//for debuging
+                //    break;
+                //}
+                gc.playSec = GameManager.Instance.featureList;
+                //Helpfunctions.Instance.WriteResultToFile(@"\ava_result_4.txt", JsonConvert.SerializeObject(gc));
+                //Console.WriteLine(gc.playSec[0].attackPlayer.playedActionJsonList[0].cardEntitiy);
+                Helpfunctions.Instance.WriteResultToFile(@"\svs_result_5.txt", JsonConvert.SerializeObject(gc));
+                //Console.WriteLine(gc.playSec[0].attackPlayer.playedActionJsonList[0].cardEntitiy);
+                PyDataEncoder.Instance.replay(gc);
+                //string player1BCString = ((GreedyPlayer)GameManager.Instance.playerFirst).getAvgBCString();
+                //string player2BCString = ((GreedyPlayer)GameManager.Instance.playerSecond).getAvgBCString();
+                //Helpfunctions.Instance.WriteResultToFile(@"\avg_bc.txt", player1BCString + " vs " + player2BCString);
+                //Helpfunctions.Instance.WriteResultToFile(JsonConvert.SerializeObject(gc));
+                //gcList.Add(gc);
+
+                
+
+                GameManager.Instance.featureList.Clear();
+                isInit = false;
+                Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
+                Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
                 //((QLearningAgent)GameManager.Instance.playerFirst).printWeights();
                 GC.Collect();
+                GameManager.resetSeed();
             }
-            Helpfunctions.Instance.logg("PLAYER 1 WON " + firstWon + " GAMES");
-            Helpfunctions.Instance.logg("PLAYER 2 WON " + secondWon + " GAMES");
+            Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
+            Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
+            //string sampleResult = firstWon.ToString() + '/' + secondWon.ToString();
+            //loadRecord(gc);
+
             //((QLearningAgent)GameManager.Instance.playerSecond).printWeights();
-            updateAllUI();
+            //updateAllUI();
+        }
+
+        private void AutoPlay(object sender, RoutedEventArgs e)
+        {
+            //PlayMultipleGames(20000, null);
+            //TrainMultipleGames(20000, null);
+            //SampleStates(20000, null);
+            string myDocPath =
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string fileName = @"\data_turn_end\svs_result_1.txt";
+            string filePath = myDocPath + fileName;
+            PyDataEncoder.Instance.Encode(filePath);
         }
 
         private void MakeMove(object sender, RoutedEventArgs e)
         {
-            if (!isInit) Init();
+            if (!isInit) Init(false, 0);
             //testField.printBoard();
             int result = GameManager.Instance.playMove();
             if (result != -1) isInit = false;
@@ -538,1098 +1159,6 @@ namespace HRSim
         }
     }
 
-    public class PlayerAgent {
-
-        public virtual void updateState(Playfield playField)
-        {
-            return;
-        }
-
-        public virtual Action getMove() {
-            return null;
-        }
-
-    }
-
-    public class GameManager {
-
-        public static Random rng = null;
-        public List<double> randomList;
-
-        private Playfield playField;
-        public PlayerAgent playerFirst, playerSecond;
-        public Bot playerOneBot, playerTwoBot;
-        public Behavior playerOneBH, playerTwoBH;
-
-        public int moveCount = 0;
-        public double myTimer = 0;
-        public double sfTimer = 0;
-        public int nodeCount = 0;
-
-        public Playfield mPlayfield
-        {
-
-            get { return playField; }
-
-            set { playField = value; }
-
-        }     
-
-        private static GameManager instance = null;
-
-        public static GameManager Instance
-        {
-            get
-            {          
-                return instance;
-            }
-        }
-
-        public static void Init(){
-            
-            //Playfield mPlayerField = new Playfield();
-            instance = new GameManager();
-            instance.initPlayField();
-            //instance.playField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", true);
-            //instance.playField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", false);
-            //instance.playField.drawInitCards();
-            //instance.playField.isOwnTurn = true;
-
-        }
-
-        public void initPlayField(){
-            //Playfield mPlayerField = new Playfield();
-            this.playField = new Playfield();
-            this.playField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", true);
-            this.playField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", false);
-            this.playField.drawInitCards();
-            this.playField.isOwnTurn = true;
-            this.randomList = new List<double>();
-        }
-
-        public GameManager()
-        {
-        }
-
-        public void setPlayer(int number, PlayerAgent player) {
-            if (number == 0)
-            {
-                playerFirst = player;
-            }
-            else {
-                playerSecond = player;
-            }
-        }
-
-        public int playMove()
-        {
-
-            int gameResult = playField.getGameResult();
-            if (gameResult == 0)
-            {
-                Helpfunctions.Instance.logg("##########PLAYER 1 WON##########");
-                return 0;
-            }
-            else if (gameResult == 1)
-            {
-                Helpfunctions.Instance.logg("##########PLAYER 2 WON##########");
-                return 1;
-            }
-            Action moveTodo = null;
-            if (playField.isOwnTurn)
-            {
-              
-                Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
-                Helpfunctions.Instance.logg("calculating... " + DateTime.Now.ToString("HH:mm:ss.ffff"));
-                if (playerFirst is QLearningAgent)
-                {
-                    GameManager.Instance.mPlayfield = ((QLearningAgent)playerFirst).QStep();
-                    playField.endTurn(false, false);
-                }
-                else if (playerFirst is MCTSPlayer)
-                {
-                    playerFirst.updateState(playField);
-                    GameManager.Instance.mPlayfield = ((MCTSPlayer)playerFirst).getBestPlayfield();
-                    //playField.endTurn(false, false);
-                }
-                else
-                {
-                    //if (GameManager.Instance.moveCount == 0)
-                    //{
-                    //    Playfield p = new Playfield(playField);
-                    //    ParetoMCTSPlayer m_player = new ParetoMCTSPlayer(new ParetoTreePolicy(0.7), GameManager.getRNG(), p);
-                    //    m_player.run(p, 30000, false);
-                    //    m_player.m_root.printStats();
-                    //}
-                    //GameManager.Instance.moveCount++;                  
-
-                    playerFirst.updateState(playField);
-                    moveTodo = playerFirst.getMove();
-                    if (moveTodo != null)
-                    {
-                        moveTodo.print();
-                        playField.doAction(moveTodo);
-                    }
-                    else
-                    {
-                        GameManager.Instance.moveCount = 0;
-                        playField.endTurn(false, false);
-                    }
-                }
-                Helpfunctions.Instance.logg("calculating end... " + DateTime.Now.ToString("HH:mm:ss.ffff"));
-            }
-            else
-            {
-                Helpfunctions.Instance.logg("PLAYER 2 ##########MOVE##########");
-                playerSecond.updateState(playField);
-                moveTodo = playerSecond.getMove();
-                if (moveTodo != null)
-                {
-                    moveTodo.print();
-                    playField.doAction(moveTodo);
-                }
-                else
-                {
-                    playField.endTurn(false, false);
-                }
-            }
-            //for debuging
-            //if (moveTodo != null && moveTodo.actionType == actionEnum.playcard && moveTodo.card.card.name == CardDB.cardName.loatheb)
-            //{
-            //    return -2;
-            //}
-            //UPDATE UI   
-            return -1;
-        }
-
-        public static Random getRNG()
-        {
-            if (rng == null)
-            {
-                //int seed = Environment.TickCount;
-                //int seed = 1237360984;
-                int seed = 290765484;
-                rng = new Random(seed);
-                Helpfunctions.Instance.logg("seed = " + seed);
-            }
-            return rng;
-        }
-    
-    }
 }
 
-    namespace HREngine.Bots
-    {
-        public class Bot
-        {
-            private int concedeLvl = 5; // the rank, till you want to concede
-            //PenalityManager penman = PenalityManager.Instance;
-            //DateTime starttime = DateTime.Now;
-            Silverfish sf;
-            Behavior behave;
 
-            public Bot(Silverfish sf)
-            {
-                //starttime = DateTime.Now;
-                //Settings set = Settings.Instance;
-                //this.sf = sf;
-                //set.setSettings();
-                //sf.setnewLoggFile();
-
-                //bool teststuff = true;
-                //bool printstuff = false;
-
-                //if (teststuff)
-                //{
-                //    Helpfunctions.Instance.logg("teststuff");
-                //    Playfield p = new Playfield();
-                //    Ai.Instance.autoTester( printstuff);
-                //}
-                //Helpfunctions.Instance.ErrorLog("wait for board...");
-            }
-
-            //public void doData(string data)
-            //{
-            //    Ai.Instance.updateTwoTurnSim();
-            //    Ai.Instance.autoTester(false, data);
-            //    HRSim.Helpfunctions.Instance.resetBuffer();
-            //    HRSim.Helpfunctions.Instance.writeToBuffer("board " + Ai.Instance.currentCalculatedBoard);
-            //    HRSim.Helpfunctions.Instance.writeToBuffer("value " + Ai.Instance.bestmoveValue);
-            //    if (Ai.Instance.bestmove != null)
-            //    {
-            //        Ai.Instance.bestmove.print(true);
-            //        foreach (Action a in Ai.Instance.bestActions)
-            //        {
-            //            a.print(true);
-            //        }
-            //    }
-            //    HRSim.Helpfunctions.Instance.writeBufferToActionFile();
-            //    Ai.Instance.currentCalculatedBoard = "1";
-            //    HRSim.Helpfunctions.Instance.ErrorLog("wait for next board...");
-
-            //    //sf.readActionFile();
-            //}
-
-            public void testing(int start)
-            {
-                //for (int i = start; i < 900; i++)
-                //{
-                //    homeHandManager.anzcards = 1;
-                //    handmanager.handCards.Clear();
-                //    Handmanager.Handcard hc = new Handmanager.Handcard();
-                //    hc.manacost = 1;
-                //    hc.position = 1;
-                //    hc.entity = 122;
-                //    hc.card = CardDB.Instance.getCardDataFromID((CardDB.cardIDEnum)i);
-                //    handmanager.handCards.Add(hc);
-                //    Helpfunctions.Instance.ErrorLog("test " + i + " " + hc.card.name + " " + hc.card.cardIDenum);
-                //    if (hc.card.sim_card == null)
-                //    {
-                //        Helpfunctions.Instance.logg("cant test " + i + " " + hc.card.name);
-                //    }
-                //    else
-                //    {
-                //        Ai.Instance.dosomethingclever(this.behave);
-                //    }
-                //}
-            }
-
-        }
-
-        public class Silverfish : HRSim.PlayerAgent
-        {
-            Behavior botbase;
-
-            //public Ai ai;
-            //public Settings Settings;
-            //public Helpfunctions Helpfunctions;
-            //public Movegenerator Movegenerator;
-            //public Hrtprozis Hrtprozis;
-            //public Handmanager Handmanager;
-            //public ComboBreaker Combobreaker;
-            //public PenalityManager PenalityManager;
-            //public Probabilitymaker Probabilitymaker;
-            //public Mulligan Mulligan; // read the mulligan list
-            public Ai ai;
-            public Settings settings;
-            public Helpfunctions helpfunctions;
-            public Movegenerator movegenerator;
-            public Hrtprozis hrtprozis;
-            public Handmanager handmanager;
-            public ComboBreaker combobreaker;
-            public PenalityManager penalityManager;
-            public Probabilitymaker probabilitymaker;
-            public Mulligan mulligan; // read the mulligan list
-
-            public string versionnumber = "115.0";
-            private bool singleLog = false;
-            private string botbehave = "rush";
-
-            //Settings settings = Settings.Instance;
-
-            List<Minion> ownMinions = new List<Minion>();
-            List<Minion> enemyMinions = new List<Minion>();
-            List<Handmanager.Handcard> handCards = new List<Handmanager.Handcard>();
-            int ownPlayerController = 0;
-            List<string> ownSecretList = new List<string>();
-            int enemySecretCount = 0;
-
-            int currentMana = 0;
-            int ownMaxMana = 0;
-            int cardsPlayedThisTurn = 0;
-            int ueberladung = 0;
-
-            int enemyMaxMana = 0;
-
-            string ownHeroWeapon = "";
-            int heroWeaponAttack = 0;
-            int heroWeaponDurability = 0;
-
-            string enemyHeroWeapon = "";
-            int enemyWeaponAttack = 0;
-            int enemyWeaponDurability = 0;
-
-            string heroname = "";
-            string enemyHeroname = "";
-
-            CardDB.Card heroAbility = new CardDB.Card();
-            bool ownAbilityisReady = false;
-            CardDB.Card enemyAbility = new CardDB.Card();
-
-            int anzcards = 0;
-            int enemyAnzCards = 0;
-
-            int ownHeroFatigue = 0;
-            int enemyHeroFatigue = 0;
-            int ownDecksize = 0;
-            int enemyDecksize = 0;
-
-            Minion ownHero;
-            Minion enemyHero;
-
-            //difference
-            private Playfield lastpf;
-            private int numOptionPlayedThisTurn = 0;
-            private int numMinionsPlayedThisTurn = 0;
-            private List<int> enemySecretList = new List<int>();
-
-            //private static Silverfish instance;
-
-            public override void updateState(HRSim.Playfield playfield)
-            {
-                this.updateEverything(playfield, playfield.isOwnTurn);
-            }
-
-            public override HRSim.Action getMove()
-            {
-                if (Ai.bestmove == null) return null;
-                return new HRSim.Action(Ai.bestmove);
-            }
-
-            public Ai Ai
-            {
-                get
-                {
-                    return ai ?? (ai = new Ai(this));
-                }
-            }
-
-            public Settings Settings
-            {
-                get
-                {
-                    return settings ?? (settings = new Settings(this));
-                }
-            }
-
-            public Helpfunctions Helpfunctions
-            {
-                get
-                {
-                    return helpfunctions ?? (helpfunctions = new Helpfunctions(this));
-                }
-            }
-
-            public Movegenerator Movegenerator
-            {
-                get
-                {
-                    return movegenerator ?? (movegenerator = new Movegenerator(this));
-                }
-            }
-
-            public Hrtprozis Hrtprozis
-            {
-                get
-                {
-                    return hrtprozis ?? (hrtprozis = new Hrtprozis(this));
-                }
-            }
-
-            public Handmanager Handmanager
-            {
-                get
-                {
-                    return handmanager ?? (handmanager = new Handmanager(this));
-                }
-            }
-
-            public ComboBreaker Combobreaker
-            {
-                get
-                {
-                    return combobreaker ?? (combobreaker = new ComboBreaker(this));
-                }
-            }
-
-            public PenalityManager PenalityManager
-            {
-                get
-                {
-                    return penalityManager ?? (penalityManager = new PenalityManager(this));
-                }
-            }
-
-            public Probabilitymaker Probabilitymaker
-            {
-                get
-                {
-                    return probabilitymaker ?? (probabilitymaker = new Probabilitymaker(this));
-                }
-            }
-
-            public Mulligan Mulligan
-            {
-                get
-                {
-                    return mulligan ?? (mulligan = new Mulligan(this));
-                }
-            }
-
-
-
-            public Silverfish()
-            {
-                botbase = new BehaviorControl(this);
-                //Ai = new Ai(this);
-                //Settings = new Settings(this);
-                //Helpfunctions = new Helpfunctions(this);
-                //Movegenerator = new Movegenerator(this);
-                //Hrtprozis = new Hrtprozis(this);
-                //Handmanager = new Handmanager(this);
-                //Combobreaker = new ComboBreaker(this);
-                //PenalityManager = new PenalityManager(this);
-                //Probabilitymaker = new Probabilitymaker(this);
-                //Mulligan = new Mulligan(this);
-
-                this.singleLog = Settings.writeToSingleFile;
-                HRSim.Helpfunctions.Instance.ErrorLog("init Silverfish");
-                string path = "";
-                //System.IO.Directory.CreateDirectory(path);
-                Settings.setFilePath("C:\\Code\\ConsoleApplication1\\ConsoleApplication1\\");
-
-                if (!singleLog)
-                {
-                    Settings.setLoggPath(path);
-                }
-                else
-                {
-                    Settings.setLoggPath("");
-                    Settings.setLoggFile("UILogg.txt");
-                    try
-                    {
-                        HRSim.Helpfunctions.Instance.createNewLoggfile();
-                    }
-                    catch
-                    {
-                    }
-                }
-                PenalityManager.setCombos();
-            }
-
-            public void updateHeroStuff(HRSim.Playfield p, bool own)
-            {
-                HRSim.Player mPlayer, ePlayer;
-                if (own)
-                {
-                    mPlayer = p.playerFirst;
-                    ePlayer = p.playerSecond;
-                }
-                else
-                {
-                    mPlayer = p.playerSecond;
-                    ePlayer = p.playerFirst;
-                }
-
-                int ownheroentity = mPlayer.ownHero.entitiyID;
-                int enemyheroentity = ePlayer.ownHero.entitiyID;
-                this.ownHero = new Minion(mPlayer.ownHero);
-                this.enemyHero = new Minion(ePlayer.ownHero);
-
-                this.currentMana = mPlayer.mana;
-                this.ownMaxMana = mPlayer.ownMaxMana;
-                this.enemyMaxMana = ePlayer.ownMaxMana;
-
-                //secret
-                this.ownSecretList = new List<string>();
-                foreach (CardDB.cardIDEnum cardIDenum in mPlayer.ownSecretsIDList)
-                {
-                    this.ownSecretList.Add(cardIDenum.ToString());
-                }
-                enemySecretCount = ePlayer.ownSecretsIDList.Count;
-
-                //minions
-                this.numMinionsPlayedThisTurn = mPlayer.mobsplayedThisTurn;
-                this.cardsPlayedThisTurn = mPlayer.cardsPlayedThisTurn;
-                //ueberladung = TritonHs.RecallOwed;
-
-                //get weapon stuff
-                this.ownHeroWeapon = mPlayer.ownWeaponName.ToString();
-                this.heroWeaponAttack = mPlayer.ownWeaponAttack;
-                this.heroWeaponDurability = mPlayer.ownWeaponDurability;
-
-                this.ownHeroFatigue = mPlayer.ownHeroFatigue;
-                this.enemyHeroFatigue = ePlayer.ownHeroFatigue;
-
-                this.ownDecksize = mPlayer.ownDeckSize;
-                this.enemyDecksize = ePlayer.ownDeckSize;
-
-                //own hero stuff###########################
-                int heroAtk = mPlayer.ownHero.Angr;
-                int heroHp = mPlayer.ownHero.Hp;
-                int heroDefence = mPlayer.ownHero.armor;
-                this.heroname = "mage"; //hard coded
-
-                //enmey weapon hardcoded for mage
-                this.enemyHeroname = "mage";
-                this.enemyHeroWeapon = ePlayer.ownWeaponName.ToString();
-                this.enemyWeaponAttack = ePlayer.ownWeaponAttack;
-                this.enemyWeaponDurability = ePlayer.ownWeaponDurability;
-
-                //own hero ablity stuff###########################################################
-                //hard coded for mage
-
-                this.heroAbility =
-                    CardDB.Instance.getCardData(CardDB.Instance.cardNamestringToEnum("fireblast"));
-                this.ownAbilityisReady = mPlayer.ownAbilityReady;
-                this.enemyAbility =
-                    CardDB.Instance.getCardData(CardDB.Instance.cardNamestringToEnum("fireblast"));
-
-                //generate Heros
-                this.ownHero = new Minion(mPlayer.ownHero);
-                this.enemyHero = new Minion(ePlayer.ownHero);
-                this.enemyHero.Ready = false;
-
-                this.ownHero.updateReadyness();
-
-                //load enchantments of the heros
-                //How to do this?
-
-                //fastmode weapon correction:
-                if (this.ownHero.Angr < this.heroWeaponAttack) this.ownHero.Angr = this.heroWeaponAttack;
-                if (this.enemyHero.Angr < this.enemyWeaponAttack) this.enemyHero.Angr = this.enemyWeaponAttack;
-
-            }
-
-            public void updateMinions(HRSim.Playfield p, bool own)
-            {
-                HRSim.Player mPlayer, ePlayer;
-                if (own)
-                {
-                    mPlayer = p.playerFirst;
-                    ePlayer = p.playerSecond;
-                }
-                else
-                {
-                    mPlayer = p.playerSecond;
-                    ePlayer = p.playerFirst;
-                }
-
-                this.ownMinions.Clear();
-                this.enemyMinions.Clear();
-                foreach (HRSim.Minion m in mPlayer.ownMinions)
-                {
-                    Minion mMinion = new Minion(m);
-                    mMinion.own = true;
-                    this.ownMinions.Add(mMinion);
-                }
-                foreach (HRSim.Minion m in ePlayer.ownMinions)
-                {
-                    Minion mMinion = new Minion(m);
-                    mMinion.own = false;
-                    this.enemyMinions.Add(mMinion);
-                }
-            }
-
-            private void updateHandcards(HRSim.Playfield p, bool own)
-            {
-                HRSim.Player mPlayer, ePlayer;
-                if (own)
-                {
-                    mPlayer = p.playerFirst;
-                    ePlayer = p.playerSecond;
-                }
-                else
-                {
-                    mPlayer = p.playerSecond;
-                    ePlayer = p.playerFirst;
-                }
-
-                this.handCards.Clear();
-                this.anzcards = 0;
-                this.anzcards = mPlayer.owncards.Count;
-                foreach (HRSim.Handmanager.Handcard hc in mPlayer.owncards)
-                {
-                    Handmanager.Handcard mHandcard = new Handmanager.Handcard(hc);
-                    this.handCards.Add(mHandcard);
-                }
-                enemyAnzCards = ePlayer.owncards.Count;
-            }
-
-            private void updateDecks(HRSim.Playfield p, bool own)
-            {
-                HRSim.Player mPlayer, ePlayer;
-                if (own)
-                {
-                    mPlayer = p.playerFirst;
-                    ePlayer = p.playerSecond;
-                }
-                else
-                {
-                    mPlayer = p.playerSecond;
-                    ePlayer = p.playerFirst;
-                }
-
-                List<CardDB.cardIDEnum> ownCards = new List<CardDB.cardIDEnum>();
-                List<CardDB.cardIDEnum> enemyCards = new List<CardDB.cardIDEnum>();
-                List<GraveYardItem> graveYard = new List<GraveYardItem>();
-
-                //own hands
-                foreach (HRSim.Handmanager.Handcard c in mPlayer.owncards)
-                {
-                    CardDB.cardIDEnum mCardID = (CardDB.cardIDEnum)Enum.Parse(typeof(CardDB.cardIDEnum), c.card.cardIDenum.ToString());
-                    ownCards.Add(mCardID);
-                }
-                //own minions
-                foreach (HRSim.Minion m in mPlayer.ownMinions)
-                {
-                    CardDB.cardIDEnum mCardID = (CardDB.cardIDEnum)Enum.Parse(typeof(CardDB.cardIDEnum), m.handcard.card.cardIDenum.ToString());
-                    ownCards.Add(mCardID);
-                }
-                //own secret
-                foreach (HRSim.CardDB.cardIDEnum c in mPlayer.ownSecretsIDList)
-                {
-                    CardDB.cardIDEnum mCardID = (CardDB.cardIDEnum)Enum.Parse(typeof(CardDB.cardIDEnum), c.ToString());
-                    ownCards.Add(mCardID);
-                }
-                //own weapon
-                CardDB.cardName weaponName = (CardDB.cardName)Enum.Parse(typeof(CardDB.cardName), mPlayer.ownWeaponName.ToString());
-                ownCards.Add(CardDB.Instance.getCardData(weaponName).cardIDenum);
-
-                //playerSecond.own minions
-                foreach (HRSim.Minion m in p.playerSecond.ownMinions)
-                {
-                    Minion mMinion = new Minion(m);
-                    ownCards.Add(mMinion.handcard.card.cardIDenum);
-                }
-                //playerSecond.own weapon
-                weaponName = (CardDB.cardName)Enum.Parse(typeof(CardDB.cardName), p.playerSecond.ownWeaponName.ToString());
-                ownCards.Add(CardDB.Instance.getCardData(weaponName).cardIDenum);
-
-                //grave yard
-                foreach (HRSim.GraveYardItem g in p.graveYard)
-                {
-                    CardDB.cardIDEnum graveCardID = (CardDB.cardIDEnum)Enum.Parse(typeof(CardDB.cardIDEnum), g.cardid.ToString());
-                    GraveYardItem mGraveItem = new GraveYardItem(graveCardID, g.entity, g.own);
-                    graveYard.Add(mGraveItem);
-                }
-
-                Probabilitymaker.setOwnCards(ownCards);
-                Probabilitymaker.setEnemyCards(enemyCards);
-                bool isTurnStart = false;
-                if (Ai.nextMoveGuess.mana == -100)
-                {
-                    isTurnStart = true;
-                    Ai.updateTwoTurnSim();
-                }
-                Probabilitymaker.setGraveYard(graveYard, isTurnStart);
-
-            }
-
-
-            private void updateBehaveString(Behavior botbase)
-            {
-                this.botbehave = "rush";
-                if (botbase is BehaviorControl) this.botbehave = "control";
-                if (botbase is BehaviorMana) this.botbehave = "mana";
-                this.botbehave += " " + Ai.maxwide;
-                this.botbehave += " face " + Combobreaker.attackFaceHP;
-                if (Settings.secondTurnAmount > 0)
-                {
-                    if (Ai.nextMoveGuess.mana == -100)
-                    {
-                        Ai.updateTwoTurnSim();
-                    }
-                    this.botbehave += " twoturnsim " + Settings.secondTurnAmount + " ntss " +
-                                      Settings.nextTurnDeep + " " + Settings.nextTurnMaxWide + " " +
-                                      Settings.nextTurnTotalBoards;
-                }
-
-                if (Settings.playarround)
-                {
-                    this.botbehave += " playaround";
-                    this.botbehave += " " + Settings.playaroundprob + " " + Settings.playaroundprob2;
-                }
-
-                this.botbehave += " ets " + Settings.enemyTurnMaxWide;
-
-                if (Settings.simEnemySecondTurn)
-                {
-                    this.botbehave += " ets2 " + Settings.enemyTurnMaxWideSecondTime;
-                    this.botbehave += " ents " + Settings.enemySecondTurnMaxWide;
-                }
-
-                if (Settings.useSecretsPlayArround)
-                {
-                    this.botbehave += " secret";
-                }
-
-                if (Settings.secondweight != 0.5f)
-                {
-                    this.botbehave += " weight " + (int)(Settings.secondweight * 100f);
-                }
-
-                if (Settings.simulatePlacement)
-                {
-                    this.botbehave += " plcmnt";
-                }
-
-
-            }
-
-            public bool updateEverything(HRSim.Playfield mp, bool own)
-            {
-                //HRSim.Helpfunctions.Instance.startTimer();
-                HRSim.Player mPlayer, ePlayer;
-                if (own)
-                {
-                    mPlayer = mp.playerFirst;
-                    ePlayer = mp.playerSecond;
-                }
-                else
-                {
-                    mPlayer = mp.playerSecond;
-                    ePlayer = mp.playerFirst;
-                }
-
-                this.updateBehaveString(botbase);
-
-                updateHeroStuff(mp, own);
-                updateMinions(mp, own);
-                updateHandcards(mp, own);
-                updateDecks(mp, own);
-
-                // send ai the data:
-                Hrtprozis.clearAll();
-                Handmanager.clearAll();
-
-                Hrtprozis.setOwnPlayer(mPlayer.ownController);
-                Handmanager.setOwnPlayer(mPlayer.ownController);
-
-                this.numOptionPlayedThisTurn = 0;
-                this.numOptionPlayedThisTurn += this.cardsPlayedThisTurn + this.ownHero.numAttacksThisTurn;
-                foreach (Minion m in this.ownMinions)
-                {
-                    if (m.Hp >= 1) this.numOptionPlayedThisTurn += m.numAttacksThisTurn;
-                }
-
-                Hrtprozis.updatePlayer(this.ownMaxMana, this.currentMana, this.cardsPlayedThisTurn,
-                    this.numMinionsPlayedThisTurn, this.numOptionPlayedThisTurn, this.ueberladung, mPlayer.ownHero.entitiyID,
-                    mp.playerSecond.ownHero.entitiyID);
-                Hrtprozis.updateSecretStuff(this.ownSecretList, this.enemySecretCount);
-
-                Hrtprozis.updateOwnHero(this.ownHeroWeapon, this.heroWeaponAttack, this.heroWeaponDurability,
-                    this.heroname, this.heroAbility, this.ownAbilityisReady, this.ownHero);
-                Hrtprozis.updateEnemyHero(this.enemyHeroWeapon, this.enemyWeaponAttack, this.enemyWeaponDurability,
-                    this.enemyHeroname, this.enemyMaxMana, this.enemyAbility, this.enemyHero);
-
-                Hrtprozis.updateMinions(this.ownMinions, this.enemyMinions);
-                Handmanager.setHandcards(this.handCards, this.anzcards, this.enemyAnzCards);
-
-                Hrtprozis.updateFatigueStats(this.ownDecksize, this.ownHeroFatigue, this.enemyDecksize,
-                    this.enemyHeroFatigue);
-
-                Hrtprozis.updateMaxEntity(mp.getNextEntity());
-
-                Probabilitymaker.getEnemySecretGuesses(this.enemySecretList,
-                    Hrtprozis.enemyHeroStartClass);
-                //learnmode :D
-                //HRSim.Helpfunctions.Instance.logTime("start to finish update");
-
-                Playfield p = new Playfield(this);
-
-                if (lastpf != null)
-                {
-                    if (lastpf.isEqualf(p))
-                    {
-                        return false;
-                    }
-
-                    //board changed we update secrets!
-                    //if(Ai.nextMoveGuess!=null) Probabilitymaker.Instance.updateSecretList(Ai.nextMoveGuess.enemySecretList);
-                    Probabilitymaker.updateSecretList(p, lastpf);
-                    lastpf = p;
-                }
-                else
-                {
-                    lastpf = p;
-                }
-
-                p = new Playfield(this); //secrets have updated :D
-
-                p.printBoard();
-
-                // calculate stuff
-                HRSim.Helpfunctions.Instance.ErrorLog("calculating stuff... " + DateTime.Now.ToString("HH:mm:ss.ffff"));
-                //if (runExtern)
-                //{
-                //    HRSim.Helpfunctions.Instance.logg("recalc-check###########");
-                //    if (p.isEqual(Ai.nextMoveGuess, true))
-                //    {
-                //        //printstuff(false);
-                //        Debug.WriteLine("equal");
-                //        Ai.doNextCalcedMove();
-                //    }
-                //    else
-                //    {
-                //        //printstuff(true);
-                //        Debug.WriteLine("not equal");
-                //        //readActionFile(passiveWait);
-                //    }
-                //}
-                //else
-                //{
-                // Drew: This prevents the freeze during AI updates, but no API functions may be called
-                // during this time!
-                //using (TritonHs.Memory.ReleaseFrame(true))
-                //{
-                //    printstuff(false);
-                Ai.dosomethingclever(botbase);
-                //}
-                //}
-                //HRSim.Helpfunctions.Instance.logTime("end of do sth clever");
-
-                //Ai.bestmove = Movegenerator.getRandomMove(new Playfield(p), true, false, true);
-
-                HRSim.Helpfunctions.Instance.ErrorLog("calculating ended! " + DateTime.Now.ToString("HH:mm:ss.ffff"));
-                return true;
-            }
-
-            public void setnewLoggFile(int number)
-            {
-                if (!singleLog)
-                {
-                    Settings.setLoggFile("UILogg_" + number + "_" + DateTime.Now.ToString("_yyyy-MM-dd_HH-mm-ss") + ".txt");
-                    HRSim.Helpfunctions.Instance.createNewLoggfile();
-                    HRSim.Helpfunctions.Instance.ErrorLog("#######################################################");
-                    HRSim.Helpfunctions.Instance.ErrorLog("fight is logged in: " + Settings.logpath + Settings.logfile);
-                    HRSim.Helpfunctions.Instance.ErrorLog("#######################################################");
-                }
-                else
-                {
-                    Settings.setLoggFile("UILogg.txt");
-                }
-            }
-
-            //public void readActionFile(bool passiveWaiting = false)
-            //{
-            //    Ai.nextMoveGuess = new Playfield(this);
-            //    bool readed = true;
-            //    List<string> alist = new List<string>();
-            //    float value = 0f;
-            //    string boardnumm = "-1";
-            //    while (readed)
-            //    {
-            //        try
-            //        {
-            //            string data = System.IO.File.ReadAllText(Settings.path + "actionstodo.txt");
-            //            if (data != "" && data != "<EoF>" && data.EndsWith("<EoF>"))
-            //            {
-            //                data = data.Replace("<EoF>", "");
-            //                //Helpfunctions.Instance.ErrorLog(data);
-            //                HRSim.Helpfunctions.Instance.resetBuffer();
-            //                HRSim.Helpfunctions.Instance.writeBufferToActionFile();
-            //                alist.AddRange(data.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries));
-            //                string board = alist[0];
-            //                if (board.StartsWith("board "))
-            //                {
-            //                    boardnumm = (board.Split(' ')[1].Split(' ')[0]);
-            //                    alist.RemoveAt(0);
-            //                    /*if (boardnumm != Ai.currentCalculatedBoard)
-            //                    {
-            //                        if (passiveWaiting)
-            //                        {
-            //                            System.Threading.Thread.Sleep(10);
-            //                            return;
-            //                        }
-            //                        continue;
-            //                    }*/
-            //                }
-            //                string first = alist[0];
-            //                if (first.StartsWith("value "))
-            //                {
-            //                    value = float.Parse((first.Split(' ')[1].Split(' ')[0]));
-            //                    alist.RemoveAt(0);
-            //                }
-            //                readed = false;
-            //            }
-            //            else
-            //            {
-            //                System.Threading.Thread.Sleep(10);
-            //                if (passiveWaiting)
-            //                {
-            //                    return;
-            //                }
-            //            }
-
-            //        }
-            //        catch
-            //        {
-            //            System.Threading.Thread.Sleep(10);
-            //        }
-
-            //    }
-            //    HRSim.Helpfunctions.Instance.logg("received " + boardnumm + " actions to do:");
-            //    Ai.currentCalculatedBoard = "0";
-            //    Playfield p = new Playfield(this);
-            //    List<Action> aclist = new List<Action>();
-
-            //    foreach (string a in alist)
-            //    {
-            //        aclist.Add(new Action(a, p));
-            //        HRSim.Helpfunctions.Instance.logg(a);
-            //    }
-
-            //    Ai.setBestMoves(aclist, value);
-
-            //}
-
-            public static int getLastAffected(int entityid)
-            {
-                return 0;
-            }
-
-            public static int getCardTarget(int entityid)
-            {
-                return 0;
-            }
-
-
-        }
-
-
-        // the ai :D
-        //please ask/write me if you use this in your project
-        public class Helpfunctions
-        {
-            Silverfish sf;
-
-            public static List<T> TakeList<T>(IEnumerable<T> source, int limit)
-            {
-                List<T> retlist = new List<T>();
-                int i = 0;
-
-                foreach (T item in source)
-                {
-                    retlist.Add(item);
-                    i++;
-
-                    if (i >= limit) break;
-                }
-                return retlist;
-            }
-
-
-            public bool runningbot = false;
-
-            //private static Helpfunctions instance;
-
-            //public static Helpfunctions Instance
-            //{
-            //    get
-            //    {
-            //        return instance ?? (instance = new Helpfunctions());
-            //    }
-            //}
-
-            public Helpfunctions(Silverfish sf)
-            {
-                //foreach (Window window in Application.Current.Windows)
-                //{
-                //    if (window.GetType() == typeof(HRSim.MainWindow))
-                //    {
-                //        this.window = (HRSim.MainWindow)window;
-                //    }
-                //}
-                this.sf = sf;
-                System.IO.File.WriteAllText(sf.Settings.logpath + sf.Settings.logfile, "");
-            }
-
-            private bool writelogg = true;
-            public void loggonoff(bool onoff)
-            {
-                writelogg = onoff;
-            }
-
-            public void createNewLoggfile()
-            {
-                System.IO.File.WriteAllText(sf.Settings.logpath + sf.Settings.logfile, "");
-            }
-
-            public void logg(string s)
-            {
-
-
-                if (!writelogg) return;
-                try
-                {
-                    using (StreamWriter sw = File.AppendText(sf.Settings.logpath + sf.Settings.logfile))
-                    {
-                        sw.WriteLine(s);
-                    }
-                }
-                catch { }
-                //Console.WriteLine(s);
-                //ErrorLog(s);
-            }
-
-            public DateTime UnixTimeStampToDateTime(int unixTimeStamp)
-            {
-                // Unix timestamp is seconds past epoch
-                System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
-                return dtDateTime;
-            }
-
-            public void ErrorLog(string s)
-            {
-                //HREngine.API.Utilities.HRLog.Write(s);
-                //Console.WriteLine(s);
-                //window.appendLog(s);
-            }
-
-            string sendbuffer = "";
-            public void resetBuffer()
-            {
-                this.sendbuffer = "";
-            }
-
-            public void writeToBuffer(string data)
-            {
-                this.sendbuffer += "\r\n" + data;
-            }
-
-            public void writeBufferToFile()
-            {
-                bool writed = true;
-                this.sendbuffer += "<EoF>";
-                while (writed)
-                {
-                    try
-                    {
-                        System.IO.File.WriteAllText(sf.Settings.path + "crrntbrd.txt", this.sendbuffer);
-                        writed = false;
-                    }
-                    catch
-                    {
-                        writed = true;
-                    }
-                }
-                this.sendbuffer = "";
-            }
-
-            public void writeBufferToActionFile()
-            {
-                bool writed = true;
-                this.sendbuffer += "<EoF>";
-                this.ErrorLog("write to action file: " + sendbuffer);
-                while (writed)
-                {
-                    try
-                    {
-                        System.IO.File.WriteAllText(sf.Settings.path + "actionstodo.txt", this.sendbuffer);
-                        writed = false;
-                    }
-                    catch
-                    {
-                        writed = true;
-                    }
-                }
-                this.sendbuffer = "";
-
-            }
-
-        }
-
-
-}

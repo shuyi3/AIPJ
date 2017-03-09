@@ -2625,7 +2625,7 @@
                 List<Minion> retval = new List<Minion>();
                 if (this.type == CardDB.cardtype.MOB && mPlayer.ownMinions.Count >= 7) return retval; // cant play mob, if we have allready 7 mininos
                 if (this.Secret && (mPlayer.ownSecretsIDList.Contains(this.cardIDenum) || mPlayer.ownSecretsIDList.Count >= 5)) return retval;
-                if (mPlayer.mana < this.calculateManaCost(p, 1, own)) return retval;
+                if (mPlayer.mana < this.calculateManaCost(p, 0, own)) return retval; //TODO: not sure if 0 works the same as 1
                 List<Minion> targets = new List<Minion>();
 
                 bool targetAll = false;
@@ -3556,7 +3556,7 @@
             string[] lines = new string[0] { };
             try
             {
-                string path = "C:\\Code\\ConsoleApplication1\\ConsoleApplication1\\";
+                string path = "C:\\Code\\WpfApplication1\\WpfApplication1\\";
                 lines = System.IO.File.ReadAllLines(path + "_carddb.txt");
                 Helpfunctions.Instance.ErrorLog("read carddb.txt");
             }
@@ -5954,6 +5954,7 @@
 
             this.priorityDatabase.Add(CardDB.cardName.emperorthaurissan, 5);
             this.priorityDatabase.Add(CardDB.cardName.grimpatron, 5);
+            this.priorityDatabase.Add(CardDB.cardName.flamewaker, 5);
         }
 
         private void setupAttackBuff()
@@ -6141,6 +6142,13 @@
             UsefulNeedKeepDatabase.Add(CardDB.cardName.knifejuggler, 10);
             UsefulNeedKeepDatabase.Add(CardDB.cardName.flamewaker, 12);
             UsefulNeedKeepDatabase.Add(CardDB.cardName.dragonkinsorcerer, 9);
+
+            //implementation and some magic
+            UsefulNeedKeepDatabase.Add(CardDB.cardName.goblinblastmage, 9);
+
+            UsefulNeedKeepDatabase.Add(CardDB.cardName.armorplating, 5);
+            UsefulNeedKeepDatabase.Add(CardDB.cardName.frostbolt, 4);
+            UsefulNeedKeepDatabase.Add(CardDB.cardName.fireball, 3);
         }
 
         private void setupDiscardCards()
@@ -6461,6 +6469,8 @@
             spellDependentDatabase.Add(CardDB.cardName.troggzortheearthinator, -1);
             spellDependentDatabase.Add(CardDB.cardName.flamewaker, 1);
             spellDependentDatabase.Add(CardDB.cardName.chromaggus, 1);
+            spellDependentDatabase.Add(CardDB.cardName.sorcerersapprentice, 1); //added
+
         }
 
         private void setupSilenceTargets()

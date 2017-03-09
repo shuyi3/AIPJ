@@ -14,11 +14,13 @@
             public int addattack = 0;
             public int addHp = 0;
             public CardDB.Card card;
+            public double playProb = 1.0;
 
             public Handcard()
             {
                 card = CardDB.Instance.unknownCard;
             }
+
             public Handcard(Handcard hc)
             {
                 this.permCostChange = hc.permCostChange;
@@ -28,6 +30,7 @@
                 this.card = hc.card;
                 this.addattack = hc.addattack;
                 this.addHp = hc.addHp;
+                this.playProb = hc.playProb;
             }
 
             public Handcard(HREngine.Bots.Handmanager.Handcard hc)
@@ -38,6 +41,7 @@
                 this.card = new CardDB.Card(hc.card);
                 this.addattack = hc.addattack;
                 this.addHp = hc.addHp;
+                this.playProb = 1.0;
             }
             public Handcard(CardDB.Card c)
             {
@@ -46,6 +50,7 @@
                 this.card = c;
                 this.addattack = 0;
                 this.addHp = 0;
+                this.playProb = 1.0;
             }
             public int getManaCost(Playfield p, bool own)
             {

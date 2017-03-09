@@ -156,7 +156,6 @@ namespace HRSim
         //if(debug) System.out.printf("%.5f\n", difference);
         List<float> features = getFeatures(lastState);
         //printFeatures(); //self play? 相减？ 检验正确性（update每一步打出来） tile coding？ binary？
-        lastState.debugMinions();
         for (int j = 0; j < NUM_FEATURES; j++)
         {
             //if(debug) System.out.printf("w%d = %.5f + %.5f * %.5f * %.1f = ", i, weights.get(i), LEARNING_RATE, difference, features.get(i));
@@ -261,6 +260,7 @@ namespace HRSim
                 if (moves.Count == 0)
                 {
                     lastState.endTurn(false, false);
+                    lastState.drawTurnStartCard();
                 }
                 else {
                     float maxQValue = 0;

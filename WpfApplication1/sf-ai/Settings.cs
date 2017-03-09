@@ -83,7 +83,7 @@
         public float firstweight = 0.5f;
         public float secondweight = 0.5f;
 
-        public int numberOfThreads = 32;
+        public int numberOfThreads = 1;
         public bool useSecretsPlayArround = false;
 
         public bool simulatePlacement = false; // rudiment!!!

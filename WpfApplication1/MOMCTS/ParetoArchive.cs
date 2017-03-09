@@ -145,8 +145,15 @@ namespace HRSim
                 }
                 Helpfunctions.Instance.logg(solutionStr);
                 //Helpfunctions.Instance.logg("########### PAACTIONS: ############");
+                //Console.WriteLine("------------------minions------------------");
                 //member.m_state.debugMinions();
-                member.m_state.printLastTurnActions();
+                Console.WriteLine("------------------actions------------------");
+                member.m_state.printActions();
+                //member.m_state.printLastTurnActions();
+                //Console.WriteLine("------------------manaleft------------------");
+                //Console.WriteLine("own mana:" + member.m_state.playerFirst.manaTurnEnd);
+                //Console.WriteLine("ene mana:" + member.m_state.playerSecond.manaTurnEnd);
+                Console.WriteLine("--------------------------------------------");
             }
             Console.WriteLine("############################");
 

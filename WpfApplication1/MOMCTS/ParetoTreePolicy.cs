@@ -13,9 +13,9 @@ namespace HRSim{
 
     public ParetoTreeNode bestChild(ParetoTreeNode node, double[][] bounds) {
 
-        if (node.numExpandedChildren < node.children.Length) 
+        if (node.numExpandedChildren < node.children.Count) 
         {
-            List<int> childrenToSelect = new List<int>();
+            List<int> childrenToSelect = new List<int>(node.children.Count);
             int j = 0;
             foreach (ParetoTreeNode child in node.children)
             {
@@ -57,12 +57,11 @@ namespace HRSim{
         }
         if (selected == null)          {
             node.children[0].getHV(false);
-            throw new Exception("Warning! returning null: " + bestValue + " : " + node.children.Length);
+            throw new Exception("Warning! returning null: " + bestValue + " : " + node.children.Count);
         }
 
         return selected;
     }
-
     //public SimpleTreeNode bestChild(SimpleTreeNode node, double[][] bounds) {
     //    return null;  //N/A
     //}

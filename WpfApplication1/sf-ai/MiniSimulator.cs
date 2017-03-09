@@ -340,24 +340,45 @@
                 float bestval = int.MinValue;
                 int bestanzactions = 1000;
                 Playfield bestplay = posmoves[0];//temp[0]
-                foreach (Playfield p in posmoves)//temp
+                String valString = "";
+                bool turn = bestplay.isOwnTurn;
+                int maxMana = bestplay.ownMaxMana;
+                if (Helpfunctions.getRNG().NextDouble() > 0.97)
                 {
-                    float val = botBase.getPlayfieldValue(p);
-                    sf.helpfunctions.logg("move val:" + val);
-                    if (bestval <= val)
+                    int r = Helpfunctions.getRNG().Next(posmoves.Count);
+                    bestplay = posmoves[r];
+                    bestval = botBase.getPlayfieldValue(bestplay);
+                    bestanzactions = bestplay.playactions.Count;
+                }
+                else
+                {
+                    //sf.helpfunctions.writeToBuffer("Turn:" + bestplay.isOwnTurn + "*********************************\n");
+                    foreach (Playfield p in posmoves)//temp
                     {
-                        if (bestval == val && bestanzactions < p.playactions.Count) continue;
-                        bestplay = p;
-                        bestval = val;
-                        bestanzactions = p.playactions.Count;
+                        float val = botBase.getPlayfieldValue(p);
+                        //sf.helpfunctions.logg("move val:" + val);
+                        //p.printActions(toBuffer:true);
+                        //sf.helpfunctions.writeToBuffer("p.ownMaxMana:" + p.ownMaxMana + ", val:" + val + "\n");
+                        //sf.helpfunctions.writeToBuffer("------------------------------------------------------------\n");
+                        valString += val + ",";
+                        //moveValString += ;
+                        if (bestval <= val)
+                        {
+                            if (bestval == val && bestanzactions < p.playactions.Count) continue;
+                            bestplay = p;
+                            bestval = val;
+                            bestanzactions = p.playactions.Count;
+                        }
+                        //HRSim.Helpfunctions.Instance.logTime("search best play itr");
                     }
-                    //HRSim.Helpfunctions.Instance.logTime("search best play itr");
+                    //sf.helpfunctions.writeToBuffer("{Turn:" + turn + ", ownMaxMana: " + maxMana + ", valString:\"" + valString.Remove(valString.Length - 1) + "\"}");
                 }
                 //HRSim.Helpfunctions.Instance.logTime("search best play 1: " + posmoves.Count);
                 this.bestmove = bestplay.getNextAction();
                 this.bestmoveValue = bestval;
                 this.bestboard = new Playfield(bestplay);
                 //HRSim.Helpfunctions.Instance.logTime("search best play 2");
+                sf.helpfunctions.writeBufferToFile();
                 return bestval;
             }
             //sf.helpfunctions.logg("return");

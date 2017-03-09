@@ -7,6 +7,8 @@
     {
         //Silverfish sf;
         PenalityManager pen = PenalityManager.Instance;
+        private double cardProbCut = 0.001;
+        private double minionProbCut = 0.0;
 
         private static Movegenerator instance;
 
@@ -52,16 +54,20 @@
                 playerNumber = 2;
             }
 
-            Action playedAction;          
+            Action playedAction;
 
             if (p.moveList.Count == 0) //if starting, generate move
             {
-                //GameManager.Instance.moveCount++;
                 p.moveList = new List<Action>(getMoveList(p, lethalCheck, true, true));
                 if (log)
                 {
                     Helpfunctions.Instance.logg("######################start turn for player " + playerNumber);
                 }
+            }
+            else if (p.moveTrigger.keepCard != -10000) //keep a card
+            {
+                p.moveList.RemoveAll(x => (x.card != null && x.card.entity == p.moveTrigger.keepCard));
+                p.moveTrigger.Clear();
             }
             else //non starting, generate move from existing moves
             {
@@ -79,7 +85,7 @@
                 {
                     p.moveList = getMoveList(p, lethalCheck, true, true);
                 }
-                else 
+                else
                 {
                     if (p.moveTrigger.minionDied)
                     {
@@ -95,10 +101,6 @@
                     }
                     if (playedAction.actionType == actionEnum.attackWithMinion)//
                     {
-                        if (playedAction.own.entitiyID == 1008 && playedAction.target.entitiyID == 1003)
-                        {
-                            int debug = 1;
-                        }
                         if ((playedAction.own.windfury && playedAction.own.numAttacksThisTurn == 2) || !playedAction.own.windfury)
                         {
                             p.moveList.RemoveAll(x => (x.actionType == actionEnum.attackWithMinion && x.own.entitiyID == playedAction.own.entitiyID));
@@ -114,13 +116,6 @@
                 }
             }
 
-            foreach (int m in p.moveTrigger.minionDiedList)
-            {
-                if (m == 1008)
-                {
-                    int debug = 1;
-                }
-            }
             p.moveTrigger.Clear();
 
             if (log)
@@ -136,6 +131,507 @@
                 p.printMoveList();
             }
         }
+
+        public List<Action> getMoveListSF(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
+        {
+            bool own = p.isOwnTurn;
+            Player mPlayer, ePlayer;
+            if (own)
+            {
+                mPlayer = p.playerFirst;
+                ePlayer = p.playerSecond;
+            }
+            else
+            {
+                mPlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
+            }
+
+            //double cardProbCut = 0.0;
+            //double minionProbCut = 1.0 / ePlayer.ownMinions.Count;
+
+            //generates only own moves
+            List<Action> ret = new List<Action>();
+            List<Minion> trgts = new List<Minion>();
+
+            if (mPlayer.ownHero.Hp <= 0)
+            {
+                return ret;
+            }
+
+            //play cards:
+            List<CardDB.cardName> playedcards = new List<CardDB.cardName>();
+
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                if (p.keepCardList.Contains(hc.entity))
+                    continue;
+                CardDB.Card c = hc.card;
+                //implementation
+                if (c.name == CardDB.cardName.armorplating)
+                {
+                    p.moveTrigger.hasOwnTargetMove = true;
+                }
+                //end of implementation
+                if (playedcards.Contains(c.name) || !hc.canplayCard(p, own) || hc.playProb < cardProbCut) continue; // dont play the same card in one loop
+                playedcards.Add(c.name);
+
+                int isChoice = (c.choice) ? 1 : 0;
+                for (int i = 0 + 1 * isChoice; i < 1 + 2 * isChoice; i++)
+                {
+                    if (isChoice == 1) c = getChooseCard(hc.card, i); // do all choice
+
+                    int manaCost = hc.getManaCost(p, own);
+                    if (mPlayer.mana >= manaCost) // if enough manna
+                    {
+                        int cardplayPenality = 0;
+                        int bestplace = p.getBestPlace(c, isLethalCheck, own);
+                        trgts = c.getTargetsForCard(p, isLethalCheck, own);
+                        foreach (Minion trgt in trgts)
+                        {
+                            if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
+                            if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, trgt, p, i, isLethalCheck);
+                            if (cardplayPenality <= 499)
+                            {
+                                Action a = new Action(actionEnum.playcard, hc, null, bestplace, trgt, cardplayPenality, i, manaCost); //i is the choice
+
+                                ret.Add(a);
+                                if (trgt != null && trgt.own == p.isOwnTurn)
+                                {
+                                    p.moveTrigger.hasOwnTargetMove = true;
+                                }                                
+                            }
+                        }
+                    }
+                }
+
+
+            }
+
+            //get targets for Hero weapon and Minions  ###################################################################################
+
+            trgts = p.getAttackTargets(own, isLethalCheck);
+            if (!isLethalCheck) trgts = this.cutAttackList(trgts);
+
+            // attack with minions
+            List<Minion> attackingMinions = new List<Minion>(8);
+            foreach (Minion m in mPlayer.ownMinions)
+            {
+                if (m.Ready && m.Angr >= 1 && !m.frozen) attackingMinions.Add(m); //* add non-attacing minions
+            }
+            attackingMinions = this.cutAttackList(attackingMinions);
+
+            foreach (Minion m in attackingMinions)
+            {
+                int attackPenality = 0;
+                foreach (Minion trgt in trgts)
+                {
+                    if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
+                    if (usePenalityManager) attackPenality = pen.getAttackWithMininonPenality(m, p, trgt, isLethalCheck);
+                    if (attackPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.attackWithMinion, null, m, 0, trgt, attackPenality, 0, 0);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            // attack with hero (weapon)
+            if (mPlayer.ownHero.Ready && mPlayer.ownHero.Angr >= 1)
+            {
+                int heroAttackPen = 0;
+                foreach (Minion trgt in trgts)
+                {
+                    if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
+                    if (usePenalityManager) heroAttackPen = pen.getAttackWithHeroPenality(trgt, p, isLethalCheck);
+                    if (heroAttackPen <= 499)
+                    {
+                        Action a = new Action(actionEnum.attackWithHero, null, mPlayer.ownHero, 0, trgt, heroAttackPen, 0, 0);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            //#############################################################################################################
+
+            // use ability
+            if (mPlayer.ownAbilityReady && mPlayer.mana >= 2) // if ready and enough manna TODO: TGT mana cost change
+            {
+                int cardplayPenality = 0;
+                int bestplace = mPlayer.ownMinions.Count + 1; //we can not manage it
+                trgts = mPlayer.ownHeroAblility.card.getTargetsForCard(p, isLethalCheck, own);
+                foreach (Minion trgt in trgts)
+                {
+                    if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
+                    if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, trgt, p, 0, isLethalCheck);
+                    if (cardplayPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0, 2);
+                        if (trgt.own == p.isOwnTurn)
+                        {
+                            //Helpfunctions.Instance.logg("ping on own minion");
+                        }
+                        if ((trgt.entitiyID == 0 && p.isOwnTurn) || (trgt.entitiyID == 1 && !p.isOwnTurn))
+                        {
+                            Helpfunctions.Instance.logg("ping on own hero");
+                        }
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            return ret;
+        }
+
+        public List<Action> getNoneTargetMove(Playfield p)
+        {
+            bool own = p.isOwnTurn;
+            bool isLethalCheck = false;
+            bool usePenalityManager = true;
+            Player mPlayer, ePlayer;
+            if (own)
+            {
+                mPlayer = p.playerFirst;
+                ePlayer = p.playerSecond;
+            }
+            else
+            {
+                mPlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
+            }
+
+            List<CardDB.cardName> playedcards = new List<CardDB.cardName>();
+            List<Minion> trgts = new List<Minion>();
+            List<Action> ret = new List<Action>();
+
+            int idx = 0;
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                if (p.keepCardList.Contains(hc.entity))
+                    continue;
+                CardDB.Card c = hc.card;
+
+                //implementation
+                if (c.name == CardDB.cardName.armorplating)
+                {
+                    p.moveTrigger.hasOwnTargetMove = true;
+                }
+                //end of implementation
+
+                if (playedcards.Contains(c.name) || !hc.canplayCard(p, own) || hc.playProb < cardProbCut) continue; // dont play the same card in one loop
+                playedcards.Add(c.name);
+
+                int isChoice = (c.choice) ? 1 : 0;
+                for (int i = 0 + 1 * isChoice; i < 1 + 2 * isChoice; i++)
+                {
+                    if (isChoice == 1) c = getChooseCard(hc.card, i); // do all choice
+
+                    int manaCost = hc.getManaCost(p, own);
+                    if (mPlayer.mana >= manaCost) // if enough manna
+                    {
+                        int cardplayPenality = 0;
+                        int bestplace = p.getBestPlace(c, isLethalCheck, own);
+
+                        trgts = c.getTargetsForCard(p, isLethalCheck, own);
+                        if (trgts.Count == 1 && trgts[0] == null)
+                        {
+
+                            if (c.name != CardDB.cardName.flamestrike)
+                            {
+                                if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, null, p, i, isLethalCheck);
+                                if (cardplayPenality <= 499)
+                                {
+                                    Action a = new Action(actionEnum.playcard, hc, null, bestplace, null, cardplayPenality, i, manaCost); //i is the choice
+                                    ret.Add(a);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            isLethalCheck = true;
+            trgts = p.getAttackTargets(own, isLethalCheck);
+
+            // attack with minions
+            List<Minion> attackingMinions = new List<Minion>(8);
+            foreach (Minion m in mPlayer.ownMinions)
+            {
+                if (m.Ready && m.Angr >= 1 && !m.frozen) attackingMinions.Add(m); //* add non-attacing minions
+            }
+
+            foreach (Minion m in attackingMinions)
+            {
+                int attackPenality = 0;
+                foreach (Minion trgt in trgts)
+                {
+                    if (usePenalityManager) attackPenality = pen.getAttackWithMininonPenality(m, p, trgt, isLethalCheck);
+                    if (attackPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.attackWithMinion, null, m, 0, trgt, attackPenality, 0, 0);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            // attack with hero (weapon)
+            if (mPlayer.ownHero.Ready && mPlayer.ownHero.Angr >= 1)
+            {
+                int heroAttackPen = 0;
+                foreach (Minion trgt in trgts)
+                {
+                    if (usePenalityManager) heroAttackPen = pen.getAttackWithHeroPenality(trgt, p, isLethalCheck);
+                    if (heroAttackPen <= 499)
+                    {
+                        Action a = new Action(actionEnum.attackWithHero, null, mPlayer.ownHero, 0, trgt, heroAttackPen, 0, 0);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            //#############################################################################################################
+
+            // use ability
+            if (mPlayer.ownAbilityReady && mPlayer.mana >= 2) // if ready and enough manna TODO: TGT mana cost change
+            {
+                int cardplayPenality = 0;
+                int bestplace = mPlayer.ownMinions.Count + 1; //we can not manage it
+                trgts = mPlayer.ownHeroAblility.card.getTargetsForCard(p, isLethalCheck, own);
+                foreach (Minion trgt in trgts)
+                {
+                    if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, trgt, p, 0, isLethalCheck);
+                    if (cardplayPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0, 2);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            return ret;
+        }
+
+        public List<Action> getMoveForTarget(Playfield p, Minion target)
+        {
+            bool own = p.isOwnTurn;
+            bool isLethalCheck = false;
+            bool usePenalityManager = true;
+            Player mPlayer, ePlayer;
+            if (own)
+            {
+                mPlayer = p.playerFirst;
+                ePlayer = p.playerSecond;
+            }
+            else
+            {
+                mPlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
+            }
+
+            List<CardDB.cardName> playedcards = new List<CardDB.cardName>();
+            List<Minion> trgts = new List<Minion>();
+            List<int> trgtsEntity = new List<int>();
+            List<Action> ret = new List<Action>();
+
+            int idx = 0;
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                if (p.keepCardList.Contains(hc.entity))
+                    continue;
+                CardDB.Card c = hc.card;
+
+                //implementation
+                if (c.name == CardDB.cardName.armorplating)
+                {
+                    p.moveTrigger.hasOwnTargetMove = true;
+                }
+                //end of implementation
+
+                if (playedcards.Contains(c.name) || !hc.canplayCard(p, own) || hc.playProb < cardProbCut) continue; // dont play the same card in one loop
+                playedcards.Add(c.name);
+
+                int isChoice = (c.choice) ? 1 : 0;
+                for (int i = 0 + 1 * isChoice; i < 1 + 2 * isChoice; i++)
+                {
+                    if (isChoice == 1) c = getChooseCard(hc.card, i); // do all choice
+
+                    int manaCost = hc.getManaCost(p, own);
+                    if (mPlayer.mana >= manaCost) // if enough manna
+                    {
+                        int cardplayPenality = 0;
+                        int bestplace = p.getBestPlace(c, isLethalCheck, own);
+
+                        trgtsEntity.Clear();
+                        trgts = c.getTargetsForCard(p, isLethalCheck, own);
+
+                        foreach (Minion m in trgts)
+                        {
+                            if (m != null)
+                                trgtsEntity.Add(m.entitiyID);
+                        }
+                        if (c.name == CardDB.cardName.flamestrike || trgtsEntity.Contains(target.entitiyID))
+                        {
+                            if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, target, p, i, isLethalCheck);
+                            if (cardplayPenality <= 499)
+                            {
+                                Action a = new Action(actionEnum.playcard, hc, null, bestplace, target, cardplayPenality, i, manaCost); //i is the choice
+
+                                ret.Add(a);
+                                if (target != null && target.own == p.isOwnTurn)
+                                {
+                                    p.moveTrigger.hasOwnTargetMove = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                idx++;
+            }
+
+            trgtsEntity.Clear();
+            trgts = p.getAttackTargets(own, isLethalCheck);
+            foreach (Minion m in trgts)
+            {
+                if (m != null)
+                    trgtsEntity.Add(m.entitiyID);
+            }
+            if (trgtsEntity.Contains(target.entitiyID))
+            {
+
+                List<Minion> attackingMinions = new List<Minion>(8);
+                foreach (Minion m in mPlayer.ownMinions)
+                {
+                    if (m.Ready && m.Angr >= 1 && !m.frozen) attackingMinions.Add(m); //* add non-attacing minions
+                }
+
+                foreach (Minion m in attackingMinions)
+                {
+                    int attackPenality = 0;
+
+                    if (usePenalityManager) attackPenality = pen.getAttackWithMininonPenality(m, p, target, isLethalCheck);
+                    if (attackPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.attackWithMinion, null, m, 0, target, attackPenality, 0, 0);
+                        ret.Add(a);
+                    }
+                }
+
+                if (mPlayer.ownHero.Ready && mPlayer.ownHero.Angr >= 1)
+                {
+                    int heroAttackPen = 0;
+                    if (usePenalityManager) heroAttackPen = pen.getAttackWithHeroPenality(target, p, isLethalCheck);
+                    if (heroAttackPen <= 499)
+                    {
+                        Action a = new Action(actionEnum.attackWithHero, null, mPlayer.ownHero, 0, target, heroAttackPen, 0, 0);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            if (mPlayer.ownAbilityReady && mPlayer.mana >= 2) // if ready and enough manna TODO: TGT mana cost change
+            {
+                int cardplayPenality = 0;
+                int bestplace = mPlayer.ownMinions.Count + 1; //we can not manage it
+                trgts = mPlayer.ownHeroAblility.card.getTargetsForCard(p, isLethalCheck, own);
+
+                trgtsEntity.Clear();
+                foreach (Minion m in trgts)
+                {
+                    if (m != null)
+                        trgtsEntity.Add(m.entitiyID);
+                }
+
+                if (trgtsEntity.Contains(target.entitiyID))
+                {
+                    if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, target, p, 0, isLethalCheck);
+                    if (cardplayPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, target, cardplayPenality, 0, 2);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            return ret;
+
+        }
+
+        public List<Action> getPlaycardMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
+        {
+            bool own = p.isOwnTurn;
+            Player mPlayer, ePlayer;
+            if (own)
+            {
+                mPlayer = p.playerFirst;
+                ePlayer = p.playerSecond;
+            }
+            else {
+                mPlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
+            }
+
+            //double cardProbCut = 0.0;
+            //double minionProbCut = 1.0 / ePlayer.ownMinions.Count;
+
+            //generates only own moves
+            List<Action> ret = new List<Action>();
+            List<Minion> trgts = new List<Minion>();
+
+            if (mPlayer.ownHero.Hp <= 0)
+            {
+                return ret;
+            }
+
+            //play cards:
+            List<CardDB.cardName> playedcards = new List<CardDB.cardName>();
+
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                if (p.keepCardList.Contains(hc.entity))
+                    continue;
+                CardDB.Card c = hc.card;
+                //implementation
+                if (c.name == CardDB.cardName.armorplating)
+                {
+                    p.moveTrigger.hasOwnTargetMove = true;
+                }   
+                //end of implementation
+                if (playedcards.Contains(c.name) || !hc.canplayCard(p, own) || hc.playProb < cardProbCut) continue; // dont play the same card in one loop
+                playedcards.Add(c.name);
+
+                int isChoice = (c.choice) ? 1 : 0;
+                for (int i = 0 + 1 * isChoice; i < 1 + 2 * isChoice; i++)
+                {
+                    if (isChoice == 1) c = getChooseCard(hc.card, i); // do all choice
+
+                    int manaCost = hc.getManaCost(p, own);
+                    if (mPlayer.mana >= manaCost) // if enough manna
+                    {
+                        int cardplayPenality = 0;
+                        int bestplace = p.getBestPlace(c, isLethalCheck, own);
+                        trgts = c.getTargetsForCard(p, isLethalCheck, own);
+                        foreach (Minion trgt in trgts)                        
+                        {
+                            if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
+                            if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, trgt, p, i, isLethalCheck);
+                            if (cardplayPenality <= 499)
+                            {
+                                Action a = new Action(actionEnum.playcard, hc, null, bestplace, trgt, cardplayPenality, i, manaCost); //i is the choice
+
+                                ret.Add(a);
+                                if (trgt != null && trgt.own == p.isOwnTurn) 
+                                {
+                                    p.moveTrigger.hasOwnTargetMove = true;
+                                }
+                            }
+                        }              
+                    }
+                }
+            }
+
+            return ret;
+        }
+
         
         public List<Action> getMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
         {
@@ -151,29 +647,39 @@
                 ePlayer = p.playerFirst;
             }
 
+            //double cardProbCut = 0.0;
+            //double minionProbCut = 1.0 / ePlayer.ownMinions.Count;
+
             //generates only own moves
             List<Action> ret = new List<Action>();
             List<Minion> trgts = new List<Minion>();
 
-            if (p.complete || mPlayer.ownHero.Hp <= 0)
+            if (mPlayer.ownHero.Hp <= 0)
             {
                 return ret;
             }
 
-          //play cards:
+            //play cards:
             List<CardDB.cardName> playedcards = new List<CardDB.cardName>();
 
+            int idx = 0;
             foreach (Handmanager.Handcard hc in mPlayer.owncards)
             {
+                if (p.keepCardList.Contains(hc.entity))
+                    continue;
                 CardDB.Card c = hc.card;
                 //implementation
+                if (c.name == CardDB.cardName.thecoin)
+                {
+                    int debug = 1;
+                }   
                 if (c.name == CardDB.cardName.armorplating)
                 {
                     p.moveTrigger.hasOwnTargetMove = true;
                 }   
                 //end of implementation
-                if (playedcards.Contains(c.name) || !hc.canplayCard(p, own)) continue; // dont play the same card in one loop
-                //playedcards.Add(c.name);
+                if (playedcards.Contains(c.name) || !hc.canplayCard(p, own) || hc.playProb < cardProbCut) continue; // dont play the same card in one loop
+                playedcards.Add(c.name);
 
                 int isChoice = (c.choice) ? 1 : 0;
                 for (int i = 0 + 1 * isChoice; i < 1 + 2 * isChoice; i++)
@@ -185,15 +691,13 @@
                     {
                         int cardplayPenality = 0;
                         int bestplace = p.getBestPlace(c, isLethalCheck, own);
-                        //if (c.cardIDenum == CardDB.cardIDEnum.NEW1_005) {
-                        //    int toBreak = 1;
-                        //}
                         trgts = c.getTargetsForCard(p, isLethalCheck, own);
                         float bestReward = Single.MinValue;
 
                         List<Tuple<Action, float>> tempRet = new List<Tuple<Action, float>>();
                         foreach (Minion trgt in trgts)                        
                         {
+                            if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
                             if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, trgt, p, i, isLethalCheck);
                             if (cardplayPenality <= 499)
                             {
@@ -204,44 +708,12 @@
                                 {
                                     p.moveTrigger.hasOwnTargetMove = true;
                                 }
-                                //if (trgt != null)
-                                //{
-                                //    if (trgt.isHero && trgt.Hp <= 12)
-                                //    {
-                                //        ret.Add(a);
-                                //        continue;
-                                //    }
-                                //    float reward = pen.getOffenseReward(a, p);
-                                //    tempRet.Add(new Tuple<Action, float>(a, reward));
-                                //}
-                                //else 
-                                //{
-                                //    ret.Add(a);
-                                //}
                             }
-                        }
-
-                        //tempRet.Sort((x, y) => y.Item2.CompareTo(x.Item2));
-                        //if (tempRet.Count > 0)
-                        //{
-                        //    ret.Add(tempRet[0].Item1);
-                        //    if (tempRet[0].Item1.target.own == p.isOwnTurn) 
-                        //    {
-                        //        p.moveTrigger.hasOwnTargetMove = true;
-                        //    }
-                        //}
-                        //if (tempRet.Count > 1)
-                        //{
-                        //    ret.Add(tempRet[1].Item1);
-                        //    if (tempRet[1].Item1.target.own == p.isOwnTurn)
-                        //    {
-                        //        p.moveTrigger.hasOwnTargetMove = true;
-                        //    }
-                        //}
+                        }              
                     }
                 }
 
-
+                idx++;
             }
 
           //get targets for Hero weapon and Minions  ###################################################################################
@@ -262,6 +734,7 @@
                 int attackPenality = 0;
                 foreach (Minion trgt in trgts)
                 {
+                    if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
                     if (usePenalityManager) attackPenality = pen.getAttackWithMininonPenality(m, p, trgt, isLethalCheck);
                     if (attackPenality <= 499)
                     {
@@ -277,6 +750,7 @@
                 int heroAttackPen = 0;
                 foreach (Minion trgt in trgts)
                 {
+                    if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
                     if (usePenalityManager) heroAttackPen = pen.getAttackWithHeroPenality(trgt, p, isLethalCheck);
                     if (heroAttackPen <= 499)
                     {
@@ -296,6 +770,7 @@
                 trgts = mPlayer.ownHeroAblility.card.getTargetsForCard(p, isLethalCheck, own);
                 foreach (Minion trgt in trgts)
                 {
+                    if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
                     if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, trgt, p, 0, isLethalCheck);
                     if (cardplayPenality <= 499)
                     {

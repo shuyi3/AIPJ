@@ -16,6 +16,7 @@ namespace HRSim
                 p.homeDeck.Add(target.handcard.card);
                 p.homeDeck.Add(target.handcard.card);
                 p.homeDeck.Add(target.handcard.card);
+                //p.addCardToBucket(target.handcard.card, true);
             }
             else
             {
@@ -23,6 +24,7 @@ namespace HRSim
                 p.awayDeck.Add(target.handcard.card);
                 p.awayDeck.Add(target.handcard.card);
                 p.awayDeck.Add(target.handcard.card);
+                //p.addCardToBucket(target.handcard.card, false);
             }
         }
     }

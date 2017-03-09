@@ -11,6 +11,7 @@
 namespace HRSim
 {
     using System;
+    using System.Collections.Generic;
 
     public enum actionEnum
     {
@@ -33,6 +34,58 @@ namespace HRSim
 
     
     //}
+
+    public class ActionResult
+    {
+        actionEnum actionType;
+
+        int[] cardDrawList;
+
+        public ActionResult(int[] cardDraw)
+        {
+            cardDrawList = cardDraw;
+        }
+
+        public override bool Equals(System.Object obj)
+        {
+            // If parameter is null return false.
+            if (obj == null)
+            {
+                return false;
+            }
+
+            // If parameter cannot be cast to Point return false.
+            ActionResult p = obj as ActionResult;
+            if ((System.Object)p == null)
+            {
+                return false;
+            }
+
+            if (this.cardDrawList.Length != p.cardDrawList.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < cardDrawList.Length; ++i)
+            {
+                if (cardDrawList[i] != p.cardDrawList[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            int hc = cardDrawList.Length;
+            foreach (int i in cardDrawList)
+            {
+                hc = unchecked(hc * 314159 + i);
+            }
+            return hc;
+        }
+    }
     
     public class Action
     {

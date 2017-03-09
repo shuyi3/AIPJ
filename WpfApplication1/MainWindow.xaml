@@ -81,7 +81,9 @@ Text="TextBlock" VerticalAlignment="Top"/>
         </ListBox>
         <TextBlock Name="OwnHeroBlock" Text="" Grid.Column="1" HorizontalAlignment="Left" Margin="88.6,691,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock Name="EnemyHeroBlock" Text="" Grid.Column="1" HorizontalAlignment="Left" Margin="88.6,10,0,0" Grid.RowSpan="2" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <Button Content="Play a Move" Click="MakeMove" Grid.Column="3" HorizontalAlignment="Left" Margin="10,711,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="109" RenderTransformOrigin="-0.645,0.079" Height="33"/>
-        <Button Content="Play a Game" Click="AutoPlay" Grid.Column="3" HorizontalAlignment="Left" Margin="190.6,711,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="109" RenderTransformOrigin="-0.645,0.079" Height="33"/>
+        <Button Content="Play a Move" Click="MakeMove" Grid.Column="3" HorizontalAlignment="Left" Margin="9.6,711,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="60" RenderTransformOrigin="-0.645,0.079" Height="33"/>
+        <Button Content="Play a Game" Click="AutoPlay" Grid.Column="3" HorizontalAlignment="Left" Margin="77.6,711,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="60" RenderTransformOrigin="-0.645,0.079" Height="33"/>
+        <Button Content="DQN" Click="DQN" Grid.Column="3" HorizontalAlignment="Left" Margin="142.6,711,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="60" RenderTransformOrigin="-0.645,0.079" Height="33"/>
+        <Button Content="Replay" Click="nextSequence" Grid.Column="3" HorizontalAlignment="Left" Margin="207.6,711,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="60" RenderTransformOrigin="-0.645,0.079" Height="33"/>
     </Grid>
 </Window>

@@ -26,7 +26,7 @@
                         return true;
                     }
                 }
-                if (TTable[key][0].getBoardValue() < state.getBoardValue())
+                if (TTable[key][0].getBoardValue(true) < state.getBoardValue(true))
                 {
                     //Helpfunctions.Instance.logg("orig board " + TTable[key][0].getBoardValue());
                     //TTable[key][0].debugMinions();

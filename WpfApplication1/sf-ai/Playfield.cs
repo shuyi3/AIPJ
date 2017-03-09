@@ -2017,7 +2017,8 @@
             this.turnCounter++;
             //penalty for destroying combo
 
-            this.evaluatePenality += sf.Combobreaker.checkIfComboWasPlayed(this.playactions, this.ownWeaponName, this.ownHeroName);
+            int comboBreakPenalty = sf.Combobreaker.checkIfComboWasPlayed(this.playactions, this.ownWeaponName, this.ownHeroName);
+            this.evaluatePenality += comboBreakPenalty;
 
             if (this.complete) return;
             this.triggerEndTurn(this.isOwnTurn);

@@ -54,7 +54,7 @@ namespace HRSim
         public bool attacked = false;
         public int attackFaceHP = 15;
 
-        public int evaluatePenality = 0;
+        //public int evaluatePenality = 0;
         public int ownController = 0;
 
         //public int ownHeroEntity = -1;
@@ -84,6 +84,8 @@ namespace HRSim
 
         public List<Action> playactions = new List<Action>();
         public List<Action> lastTurnActions = new List<Action>();
+        public List<Macro> playMacros = new List<Macro>();
+        public List<Macro> lastTurnMacros = new List<Macro>();
 
         public int spellpower = 0;
 
@@ -136,24 +138,19 @@ namespace HRSim
         //Helpfunctions help = Helpfunctions.Instance;
 
         //implementation
-        //public MyHandManager homeHandManager = new MyHandManager();
-        //public MyHandManager awayHandManager = new MyHandManager();
-        public static Random rng = null;
+        public bool hasCoin;
 
-        public List<CardDB.Card> homeDeck = new List<CardDB.Card>();
-        public List<CardDB.Card> awayDeck = new List<CardDB.Card>();
-
-        public List<GraveYardItem> graveYard = new List<GraveYardItem>();
 
         public Player(int player)
         {
 
             this.ownController = player;
+            this.hasCoin = (player == 1) ? true : false;
  
             this.mana = (player == 0)? 1: 0;
             this.manaTurnEnd = this.mana;
             this.ownMaxMana = mana;
-            this.evaluatePenality = 0;
+            //this.evaluatePenality = 0;
 
             this.attackFaceHP = 15;
 
@@ -360,10 +357,11 @@ namespace HRSim
             this.attacked = p.attacked;
             this.sEnemTurn = p.sEnemTurn;
             this.ownController = p.ownController;
+            this.hasCoin = p.hasCoin;
             //this.ownHeroEntity = p.ownHeroEntity;
             //this.enemyHeroEntity = p.enemyHeroEntity;
 
-            this.evaluatePenality = p.evaluatePenality;
+            //this.evaluatePenality = p.evaluatePenality;
             this.ownSecretsIDList.AddRange(p.ownSecretsIDList);
 
             this.mana = p.mana;
@@ -377,6 +375,8 @@ namespace HRSim
 
             this.playactions.AddRange(p.playactions);
             this.lastTurnActions.AddRange(p.lastTurnActions);
+            this.playMacros.AddRange(p.playMacros);
+            this.lastTurnMacros.AddRange(p.lastTurnMacros);
 
             this.attackFaceHP = p.attackFaceHP;
 

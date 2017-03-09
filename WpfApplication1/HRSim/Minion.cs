@@ -22,6 +22,10 @@ namespace HRSim
 
     public class Minion
     {
+
+        //for policy
+        public double targetProb = 1.0;
+
         //dont silence----------------------------
         public int anzGotDmg = 0;
         public bool isHero = false;
@@ -92,6 +96,7 @@ namespace HRSim
 
         public Minion(Minion m)
         {
+            this.targetProb = m.targetProb;
             //dont silence----------------------------
             this.anzGotDmg = m.anzGotDmg;
             this.isHero = m.isHero;
@@ -158,6 +163,7 @@ namespace HRSim
 
         public Minion(HREngine.Bots.Minion m)
         {
+            this.targetProb = 1.0;
             //dont silence----------------------------
             this.anzGotDmg = m.anzGotDmg;
             this.isHero = m.isHero;
@@ -376,11 +382,11 @@ namespace HRSim
                 {
                     if (isMinionAttack)
                     {
-                        p.playerFirst.lostDamage += damage - 1;
+                        p.lostDamage += damage - 1;
                     }
                     else
                     {
-                        p.playerFirst.lostDamage += (damage - 1) * (damage - 1);
+                        p.lostDamage += (damage - 1) * (damage - 1);
                     }
                 }
                 return;
@@ -392,11 +398,11 @@ namespace HRSim
             {
                 if (isMinionAttack)
                 {
-                    p.playerFirst.lostDamage += (damage - this.Hp);
+                    p.lostDamage += (damage - this.Hp);
                 }
                 else
                 {
-                    p.playerFirst.lostDamage += (damage - this.Hp) * (damage - this.Hp);
+                    p.lostDamage += (damage - this.Hp) * (damage - this.Hp);
                 }
             }
 
@@ -409,7 +415,7 @@ namespace HRSim
 
             if (heal >= 1)
             {
-                if (own && !dontCalcLostDmg && heal <= 999 && this.Hp + heal > this.maxHp) p.playerFirst.lostHeal += this.Hp + heal - this.maxHp;
+                if (own && !dontCalcLostDmg && heal <= 999 && this.Hp + heal > this.maxHp) p.lostHeal += this.Hp + heal - this.maxHp;
 
                 this.Hp = this.Hp + Math.Min(heal, this.maxHp - this.Hp);
             }
@@ -527,8 +533,19 @@ namespace HRSim
             }
 
             //move trigger
-            if (p.isOwnTurn != this.own)
+            int maxMana = Math.Max(p.getCurrentPlayer(true).ownMaxMana, p.getCurrentPlayer(false).ownMaxMana);
+            if (p.isOwnTurn == this.own)
             {
+                p.moveTrigger.ownMinionDied += 1;
+                float minionTurnVal = this.getTurnValue(maxMana);
+                p.moveTrigger.moveReward -= minionTurnVal;
+            }
+            else
+            {
+                p.moveTrigger.enemyMinionDied += 1;
+                float minionTurnVal = this.getTurnValue(maxMana);
+                p.moveTrigger.moveReward += minionTurnVal;
+
                 if (this.taunt) p.moveTrigger.tauntChanged = true;
             }
             if (this.handcard.card.name == CardDB.cardName.mechwarper && p.isOwnTurn == this.own)
@@ -640,16 +657,12 @@ namespace HRSim
             if (this.silenced) return minionValue;
 
             if (this.handcard.card.deathrattle)
-                minionValue++;
+                minionValue+= 0.5f;
 
-            switch (this.name)
-            {
-                case CardDB.cardName.archmageantonidas:
-                    minionValue *= 1.2f;
-                    break;
-            }
+            if (CardDB.Instance.priorityDatabase.ContainsKey(this.name)) minionValue += (float)(20 + CardDB.Instance.priorityDatabase[this.name]) / 20;
 
-            if (this.divineshild || this.stealth || this.taunt || this.handcard.card.deathrattle || this.handcard.card.isSpecialMinion)
+            //if (this.divineshild || this.stealth || this.taunt || this.handcard.card.deathrattle || this.handcard.card.isSpecialMinion)
+            if (this.divineshild || this.stealth || this.handcard.card.deathrattle || this.handcard.card.isSpecialMinion)
             {
                 minionValue += 1;
             }
@@ -664,14 +677,17 @@ namespace HRSim
             switch (this.name)
             {
                 case CardDB.cardName.archmageantonidas:
-                    minionValue *= 1.5f;
+                    minionValue *= 1.2f;
                     break;
             }
 
             if (this.handcard.card.deathrattle)
-                minionValue++;
+                minionValue+= 0.5f;
 
-            if (this.divineshild || this.stealth || this.taunt || this.handcard.card.deathrattle || this.handcard.card.isSpecialMinion)
+            if (CardDB.Instance.priorityDatabase.ContainsKey(this.name)) minionValue += (float)(20 + CardDB.Instance.priorityDatabase[this.name]) / 20;
+
+            //if (this.divineshild || this.stealth || this.taunt || this.handcard.card.deathrattle || this.handcard.card.isSpecialMinion)
+            if (this.divineshild || this.stealth || this.handcard.card.deathrattle || this.handcard.card.isSpecialMinion)
             {
                 minionValue++;
             }
@@ -867,6 +883,11 @@ namespace HRSim
 
 
             }
+        }
+
+        public float getTurnValue(int mana)
+        {
+            return (float)this.handcard.card.cost / mana * 0.25f;
         }
 
     }

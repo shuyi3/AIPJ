@@ -17,21 +17,21 @@ namespace HRSim
                 if (p.playerSecond.ownDeckSize <= 6)
                 {
                     p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(10, p.playerSecond.ownHero.Hp-1), true);
-                    //p.evaluatePenality -= 6;
+                    p.evaluatePenality -= 6;
                 }
                 else
                 {
                     if (p.playerSecond.ownDeckSize <= 16)
                     {
                         p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(5, p.playerSecond.ownHero.Hp - 1), true);
-                        //p.evaluatePenality -= 8;
+                        p.evaluatePenality -= 8;
                     }
                     else
                     {
                         if (p.playerSecond.ownDeckSize <= 26)
                         {
                             p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(2, p.playerSecond.ownHero.Hp - 1), true);
-                            //p.evaluatePenality -= 10;
+                            p.evaluatePenality -= 10;
                         }
                     }
                 }

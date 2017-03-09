@@ -16,8 +16,9 @@ namespace HRSim
             }
             else
             {
-                p.playerFirst.mana++;
+                p.playerSecond.mana++;
             }
+            p.moveTrigger.manaChanged = true;
         }
 
 	}
