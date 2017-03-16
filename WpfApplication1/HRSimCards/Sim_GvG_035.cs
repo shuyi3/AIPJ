@@ -13,11 +13,13 @@ namespace HRSim
         {
             if (m.own)
             {
-                p.playerFirst.ownDeckSize++;
+                CardDB.Card card = CardDB.Instance.getDeckCardData(CardDB.cardName.malorne);
+                p.homeDeck.Add(card);
             }
             else
             {
-                p.playerSecond.ownDeckSize++;
+                CardDB.Card card = CardDB.Instance.getDeckCardData(CardDB.cardName.malorne);
+                p.awayDeck.Add(card);
             }
         }
 

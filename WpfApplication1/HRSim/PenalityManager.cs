@@ -71,7 +71,7 @@
 
         public int getAttackWithMininonPenality(Minion m, Playfield p, Minion target, bool lethal)
         {
-                        bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
+            bool isTargetOwn = false; if (target != null) isTargetOwn = target.own == p.isOwnTurn;
 
             int pen = 0;
             pen = getAttackSecretPenality(m, p, target);
@@ -797,17 +797,21 @@
 
         private int getCardDrawPenality(CardDB.cardName name, Minion target, Playfield p, int choice, bool lethal)
         {
-            Player mPlayer, ePlayer;
-
+            Player mPlayer, ePlayer; //know mplayer, but not eplayer
+            List<CardDB.Card> mDeck, eDeck;
             if (p.isOwnTurn)
             {
                 mPlayer = p.playerFirst;
                 ePlayer = p.playerSecond;
+                mDeck = p.homeDeck;
+                eDeck = p.awayDeck;
             }
             else
             {
-                mPlayer = p.playerFirst;
-                ePlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
+                mPlayer = p.playerSecond;
+                eDeck = p.homeDeck;
+                mDeck = p.awayDeck;
             }
 
             // penality if carddraw is late or you have enough cards
@@ -858,7 +862,7 @@
                         break;
 
                     case CardDB.cardName.thoughtsteal:
-                        carddraw = Math.Min(2, ePlayer.ownDeckSize);
+                        carddraw = Math.Min(2, eDeck.Count);
                         if (carddraw == 2) break;
                         if (carddraw == 1) pen +=4;
                         else

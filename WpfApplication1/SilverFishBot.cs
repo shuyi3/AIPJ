@@ -338,8 +338,8 @@ namespace HREngine.Bots
             this.ownHeroFatigue = mPlayer.ownHeroFatigue;
             this.enemyHeroFatigue = ePlayer.ownHeroFatigue;
 
-            this.ownDecksize = mPlayer.ownDeckSize;
-            this.enemyDecksize = ePlayer.ownDeckSize;
+            //this.ownDecksize = mPlayer.ownDeckSize;
+            //this.enemyDecksize = ePlayer.ownDeckSize;
 
             //own hero stuff###########################
             int heroAtk = mPlayer.ownHero.Angr;

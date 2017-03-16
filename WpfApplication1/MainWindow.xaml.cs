@@ -263,20 +263,22 @@ namespace HRSim
                     Helpfunctions.Instance.logg("Player 1: MCTSPlayer, Player 2: Silverfish");
                     //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
                     //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, true));
-                    GameManager.Instance.setPlayer(0, new Silverfish());
-                    GameManager.Instance.setPlayer(1, new Silverfish());
+                    //GameManager.Instance.setPlayer(0, new Silverfish());
+                    //GameManager.Instance.setPlayer(1, new Silverfish());
                     //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false));
-                    //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, true));
+                    GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 1.0));
+                    GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 0.0));
                 }
                 else
                 {
                     Helpfunctions.Instance.logg("Player 1: Silverfish, Player 2: MCTSPlayer");
-                    GameManager.Instance.setPlayer(0, new Silverfish());
-                    GameManager.Instance.setPlayer(1, new Silverfish());
+                    //GameManager.Instance.setPlayer(0, new Silverfish());
+                    //GameManager.Instance.setPlayer(1, new Silverfish());
                     //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, false));
                     //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, true));
                     //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false));
-                    //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, true));
+                    GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 0.0));
+                    GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 1.0));
                 }
                
             }
@@ -702,7 +704,7 @@ namespace HRSim
                         if (state.isOwnTurn)
                         {
 
-                            List<Action> moveList = Movegenerator.Instance.getMoveList(state, false, true, true);
+                            List<Action> moveList = Movegenerator.Instance.getMoveList(state, false, true, true, 0.0);
                             moveList.Add(null);
 
                             dynamic cur_state_vector = DNNEval.Instance.parsePlayfield(state, side);
@@ -1091,12 +1093,12 @@ namespace HRSim
                 //{//for debuging
                 //    break;
                 //}
-                gc.playSec = GameManager.Instance.featureList;
+                //gc.playSec = GameManager.Instance.featureList;
                 //Helpfunctions.Instance.WriteResultToFile(@"\ava_result_4.txt", JsonConvert.SerializeObject(gc));
                 //Console.WriteLine(gc.playSec[0].attackPlayer.playedActionJsonList[0].cardEntitiy);
-                Helpfunctions.Instance.WriteResultToFile(@"\svs_result_5.txt", JsonConvert.SerializeObject(gc));
+                //Helpfunctions.Instance.WriteResultToFile(@"\svs_result_5.txt", JsonConvert.SerializeObject(gc));
                 //Console.WriteLine(gc.playSec[0].attackPlayer.playedActionJsonList[0].cardEntitiy);
-                PyDataEncoder.Instance.replay(gc);
+                //PyDataEncoder.Instance.replay(gc);
                 //string player1BCString = ((GreedyPlayer)GameManager.Instance.playerFirst).getAvgBCString();
                 //string player2BCString = ((GreedyPlayer)GameManager.Instance.playerSecond).getAvgBCString();
                 //Helpfunctions.Instance.WriteResultToFile(@"\avg_bc.txt", player1BCString + " vs " + player2BCString);
@@ -1105,7 +1107,7 @@ namespace HRSim
 
                 
 
-                GameManager.Instance.featureList.Clear();
+                //GameManager.Instance.featureList.Clear();
                 isInit = false;
                 Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
                 Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
@@ -1124,14 +1126,14 @@ namespace HRSim
 
         private void AutoPlay(object sender, RoutedEventArgs e)
         {
-            //PlayMultipleGames(20000, null);
+            PlayMultipleGames(20000, null);
             //TrainMultipleGames(20000, null);
             //SampleStates(20000, null);
-            string myDocPath =
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string fileName = @"\data_turn_end\svs_result_1.txt";
-            string filePath = myDocPath + fileName;
-            PyDataEncoder.Instance.Encode(filePath);
+            //string myDocPath =
+            //    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            //string fileName = @"\data_turn_end\svs_result_3.txt";
+            //string filePath = myDocPath + fileName;
+            //PyDataEncoder.Instance.Encode(filePath);
         }
 
         private void MakeMove(object sender, RoutedEventArgs e)

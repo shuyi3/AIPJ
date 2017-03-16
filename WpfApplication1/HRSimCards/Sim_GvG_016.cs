@@ -15,14 +15,12 @@ namespace HRSim
 
             if (triggerEffectMinion.own)
             {
-                p.playerFirst.ownDeckSize = Math.Max(0, p.playerFirst.ownDeckSize - 3);
                 p.getArandomCardFromDeck(true);
                 p.getArandomCardFromDeck(true);
                 p.getArandomCardFromDeck(true);
             }
             else
             {
-                p.playerSecond.ownDeckSize = Math.Max(0, p.playerSecond.ownDeckSize - 3);
                 p.getArandomCardFromDeck(false);
                 p.getArandomCardFromDeck(false);
                 p.getArandomCardFromDeck(false);

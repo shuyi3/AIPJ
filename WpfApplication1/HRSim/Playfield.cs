@@ -577,7 +577,7 @@
                 int r = GameManager.getRNG().Next(secList.Count);
                 secIDtoDraw = secList[r].Item2;
                 deckToDrawFrom.RemoveAt(secList[r].Item1);
-                mPlayer.ownDeckSize--;
+                //mPlayer.ownDeckSize--;
             }
             return secIDtoDraw;
         }
@@ -592,21 +592,22 @@
                     drawACard(getArandomCardFromDeck(true), true, passive: true);
                 }
                 //mulligan for mechmage and zoo TODO: change for handlock and other deck
-                int newDrawSize = 0;
+                //int newDrawSize = 0;
                 foreach (Handmanager.Handcard hc in playerFirst.owncards.ToArray())
                 {
                     if (hc.manacost > 2)
                     {
-                        newDrawSize++;
+                        //newDrawSize++;
                         playerFirst.owncards.Remove(hc);
+                        drawACard(getArandomCardFromDeck(true), true, passive: true);
                         addCardBackToDeck(hc, true);
                     }
                 }
 
-                for (int i = 0; i < newDrawSize; i++)
-                {
-                    drawACard(getArandomCardFromDeck(true), true, passive: true);
-                }
+                //for (int i = 0; i < newDrawSize; i++)
+                //{
+                //    drawACard(getArandomCardFromDeck(true), true, passive: true);
+                //}
 
                 //second player
 
@@ -615,21 +616,21 @@
                     drawACard(getArandomCardFromDeck(false), false, passive: true);
                 }
 
-                newDrawSize = 0;
                 foreach (Handmanager.Handcard hc in playerSecond.owncards.ToArray())
                 {
                     if (hc.manacost > 2)
                     {
-                        newDrawSize++;
+                        //newDrawSize++;
                         playerSecond.owncards.Remove(hc);
+                        drawACard(getArandomCardFromDeck(false), false, passive: true);
                         addCardBackToDeck(hc, false);
                     }
                 }
 
-                for (int i = 0; i < newDrawSize; i++)
-                {
-                    drawACard(getArandomCardFromDeck(false), false, passive: true);
-                }
+                //for (int i = 0; i < newDrawSize; i++)
+                //{
+                //    drawACard(getArandomCardFromDeck(false), false, passive: true);
+                //}
 
                 drawACard(CardDB.cardIDEnum.GAME_005, false, nopen: true, passive: true);
 
@@ -661,7 +662,7 @@
 
             deck.Add(hc.card);
             //addCardToBucket(hc.card, own);
-            mPlayer.ownDeckSize++;
+            //mPlayer.ownDeckSize++;
         }
 
         //end of implementation
@@ -1181,9 +1182,9 @@
                 return false;
             }
 
-            if (this.playerFirst.ownDeckSize != p.playerFirst.ownDeckSize || this.playerSecond.ownDeckSize != p.playerSecond.ownDeckSize || this.playerFirst.ownHeroFatigue != p.playerFirst.ownHeroFatigue || this.playerSecond.ownHeroFatigue != p.playerSecond.ownHeroFatigue)
+            if (this.homeDeck.Count != p.homeDeck.Count || this.awayDeck.Count != p.awayDeck.Count || this.playerFirst.ownHeroFatigue != p.playerFirst.ownHeroFatigue || this.playerSecond.ownHeroFatigue != p.playerSecond.ownHeroFatigue)
             {
-                if (logg) Helpfunctions.Instance.logg("deck/fatigue changed " + this.playerFirst.ownDeckSize + " " + p.playerFirst.ownDeckSize + " " + this.playerSecond.ownDeckSize + " " + p.playerSecond.ownDeckSize + " " + this.playerFirst.ownHeroFatigue + " " + p.playerFirst.ownHeroFatigue + " " + this.playerSecond.ownHeroFatigue + " " + p.playerSecond.ownHeroFatigue);
+                if (logg) Helpfunctions.Instance.logg("deck/fatigue changed " + this.homeDeck.Count + " " + p.homeDeck.Count + " " + this.awayDeck.Count + " " + p.awayDeck.Count + " " + this.playerFirst.ownHeroFatigue + " " + p.playerFirst.ownHeroFatigue + " " + this.playerSecond.ownHeroFatigue + " " + p.playerSecond.ownHeroFatigue);
             }
 
             if (this.playerFirst.cardsPlayedThisTurn != p.playerFirst.cardsPlayedThisTurn || this.playerFirst.mobsplayedThisTurn != p.playerFirst.mobsplayedThisTurn || this.ueberladung != p.ueberladung || this.playerFirst.ownAbilityReady != p.playerFirst.ownAbilityReady)
@@ -4888,7 +4889,7 @@
             p.ueberladung = 0;
 
             p.ownHeroFatigue = 0;
-            p.ownDeckSize = (p.ownController == 0) ? homeDeck.Count : awayDeck.Count;
+            //p.ownDeckSize = (p.ownController == 0) ? homeDeck.Count : awayDeck.Count;
 
             //need the following for manacost-calculation
             //this.ownHeroHpStarted = this.ownHero.Hp;
@@ -5271,16 +5272,19 @@
         public int getCardDrawPossibility(int cardDraw)
         {
             Player mPlayer;
+            int deckSize;
+
             if (isOwnTurn)
             {
                 mPlayer = this.playerFirst;
+                deckSize = this.homeDeck.Count;
             }
             else
             {
                 mPlayer = this.playerSecond;
+                deckSize = this.awayDeck.Count;
             }
 
-            int deckSize = mPlayer.ownDeckSize;
             if (deckSize <= cardDraw) return 1;
             return Helpfunctions.Instance.c(deckSize, cardDraw);
         }
@@ -5304,7 +5308,7 @@
             this.triggerCardsChanged(own);
         }
 
-        public int drawACard(CardDB.cardName ss, bool own,  bool nopen = false, bool passive = false) //passive: drawn by system //nopen: not from the deck //0: draw a card, -1 hand is full, -2 out of cards
+        public int drawACard(CardDB.cardName ss, bool own,  bool nopen = false, bool passive = false) //passive: drawn by system, not by user //nopen: not from the deck //0: draw a card, -1 hand is full, -2 out of cards
         {
             CardDB.cardName s = ss;
 
@@ -5326,7 +5330,7 @@
 
             if (!nopen)
             {
-                if (s == CardDB.cardName.unknown && mPlayer.ownDeckSize == 0)
+                if (s == CardDB.cardName.unknown && mDeck.Count == 0)
                 { //out of cards
                     mPlayer.ownHeroFatigue++;
                     mPlayer.ownHero.getDamageOrHeal(mPlayer.ownHeroFatigue, this, false, true);
@@ -5335,7 +5339,6 @@
                 else
                 {
 
-                    mPlayer.ownDeckSize--;
                     if (mPlayer.owncards.Count >= 10)
                     {
                         if (ownDraw)
@@ -5417,7 +5420,7 @@
 
             if (!nopen)
             {
-                if (s == CardDB.cardIDEnum.None && mPlayer.ownDeckSize == 0)
+                if (s == CardDB.cardIDEnum.None && mDeck.Count == 0)
                 { //out of cards
                     mPlayer.ownHeroFatigue++;
                     mPlayer.ownHero.getDamageOrHeal(mPlayer.ownHeroFatigue, this, false, true);
@@ -5425,7 +5428,6 @@
                 }
                 else
                 {
-                    mPlayer.ownDeckSize--;
                     if (mPlayer.owncards.Count >= 10)
                     {
                         if (ownDraw)
@@ -6690,9 +6692,42 @@
             this.getCurrentPlayer(true).playMacros.Add(m); 
         }
 
-        void getActionFromIndex(int action_index)
+        public void randomize(double probability)
         {
-            
+            Player mPlayer, ePlayer; //not mPlayer, but not ePlayer
+            List<CardDB.Card> mDeck, eDeck;
+            if (this.isOwnTurn)
+            {
+                mPlayer = playerFirst;
+                ePlayer = playerSecond;
+                mDeck = homeDeck;
+                eDeck = awayDeck;
+            }
+            else
+            {
+                ePlayer = playerFirst;
+                mPlayer = playerSecond;
+                eDeck = homeDeck;
+                mDeck = awayDeck;
+            }
+
+            List<int> cardToRemove = new List<int>();
+            int cardReturned = 0;
+            foreach (Handmanager.Handcard hc in ePlayer.owncards.ToArray())
+            {
+                if (GameManager.getRNG().NextDouble() < probability)
+                {
+                    //randomly swap a card in the deack
+                    ePlayer.owncards.Remove(hc);
+                    addCardBackToDeck(hc, !this.isOwnTurn);
+                    cardReturned++;
+                }
+            }
+
+            for (int i = 0; i < cardReturned; i++)
+            {
+                drawACard(getArandomCardFromDeck(!this.isOwnTurn), !this.isOwnTurn, passive: true);
+            }
         }
 
     }

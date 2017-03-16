@@ -341,8 +341,9 @@ namespace HRSim
                 }
                 if (canPlayCard)
                 {
-                    dynamic board_encode = parsePlayfieldCNNAction(p, own, mPlayer.playactions);
-                    double cardToPlay = model.predict_classes(board_encode)[0];                    
+                    dynamic board_encode = parsePlayfieldCNNAction(p, temp, own);
+                    double cardToPlay = model.predict_classes(board_encode)[0];
+                    Console.WriteLine("cardToPlay: " + cardToPlay);
                     foreach (Handmanager.Handcard hc in mPlayer.owncards)
                     {
                         if (cardIdxDict[hc.card.name] == cardToPlay)
@@ -353,7 +354,15 @@ namespace HRSim
                         }
                     }
 
-                    List<Action> actions = new List<Action>(Movegenerator.Instance.getPlaycardMoveList(temp, false, true, true));
+                    List<Action> actions;
+                    if (cardIdxDict[CardDB.cardName.fireblast] == cardToPlay)
+                    {
+                        actions = new List<Action>(Movegenerator.Instance.getHeroPowerMoveList(temp, false, true, true));
+                    }
+                    else
+                    {
+                        actions = new List<Action>(Movegenerator.Instance.getPlaycardMoveList(temp, false, true, true, 1.0));
+                    }
                     if (actions.Count == 0)
                     {
                         canPlayCard = false;
@@ -502,24 +511,24 @@ namespace HRSim
             return card_prob[0];
         }
 
-        public dynamic parsePlayfieldCNNAction(Playfield p, bool own, List<Action> actions)
+        public dynamic parsePlayfieldCNNAction(Playfield startP, Playfield curP, bool own)
         {
 
             Player mPlayer, ePlayer;
             List<CardDB.Card> mDeck, eDeck;
             if (own)
             {
-                mPlayer = p.playerFirst;
-                ePlayer = p.playerSecond;
-                mDeck = p.homeDeck;
-                eDeck = p.awayDeck;
+                mPlayer = startP.playerFirst;
+                ePlayer = startP.playerSecond;
+                mDeck = startP.homeDeck;
+                eDeck = startP.awayDeck;
             }
             else
             {
-                ePlayer = p.playerFirst;
-                mPlayer = p.playerSecond;
-                eDeck = p.homeDeck;
-                mDeck = p.awayDeck;
+                ePlayer = startP.playerFirst;
+                mPlayer = startP.playerSecond;
+                eDeck = startP.homeDeck;
+                mDeck = startP.awayDeck;
             }
 
             PyInt ownMana = new PyInt(mPlayer.ownMaxMana);
@@ -583,8 +592,10 @@ namespace HRSim
                 PythonUtils.AppendRecycle(enemy_deck_list, card_name);
             }
 
-            dynamic own_play_list = new PyList();
-            foreach (Action action in actions)
+            PyList own_play_list = new PyList();
+            PyList playable_list = new PyList();
+            Player curPlayer = curP.getCurrentPlayer(true);
+            foreach (Action action in curPlayer.playactions)
             {
                 if (action.actionType == actionEnum.playcard)
                 {
@@ -593,8 +604,24 @@ namespace HRSim
                 }
             }
 
+            foreach (Handmanager.Handcard hc in curPlayer.owncards)
+            {
+                if (hc.canplayCard(curP, own))
+                {
+                    PyString playable_card = new PyString(hc.card.name.ToString());
+                    PythonUtils.AppendRecycle(playable_list, playable_card);
+                }
+            }
+
+            //fire blast
+            if (curPlayer.ownAbilityReady && curPlayer.mana >= 2)
+            {
+                PyString playable_card = new PyString("fireblast");
+                PythonUtils.AppendRecycle(playable_list, playable_card);
+            }
+
             dynamic res_list = board_encoder.encode_for_cnn_phase(hero_feature, own_hand_list, own_minion_list,
-                enemy_hand_list, enemy_minion_list, own_deck_list, enemy_deck_list, own_play_list);
+                enemy_hand_list, enemy_minion_list, own_deck_list, enemy_deck_list, own_play_list, playable_list);
 
             hero_feature.Dispose();
             own_hand_list.Dispose();
@@ -604,8 +631,6 @@ namespace HRSim
             own_deck_list.Dispose();
             enemy_deck_list.Dispose();
             own_play_list.Dispose();
-
-            Console.WriteLine(res_list[1][3]);
 
             return res_list;
         }

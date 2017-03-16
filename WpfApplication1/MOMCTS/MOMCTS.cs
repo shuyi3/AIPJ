@@ -70,7 +70,7 @@ public class ParetoTreeNode {
         if (state.isOwnTurn != m_player.m_root.state.isOwnTurn)
             return;
 
-        Movegenerator.Instance.getMoveListForPlayfield(state, false, lethalCheck);
+        Movegenerator.Instance.getMoveListForPlayfield(state, false, lethalCheck, 0.0);
         Playfield afterState = new Playfield(state);
 
         //afterState.printMoveList();
@@ -155,7 +155,7 @@ public class ParetoTreeNode {
             int depth = 0;
             while (score == -1)
             {
-                if (depth != 0) Movegenerator.Instance.getMoveListForPlayfield(startState, false, lethalCheck);
+                if (depth != 0) Movegenerator.Instance.getMoveListForPlayfield(startState, false, lethalCheck, 0.0);
 
                 if (startState.moveList.Count == 0)
                 {
@@ -185,7 +185,7 @@ public class ParetoTreeNode {
         int depth = 0;
         while (startState.moveTrigger.newHandcardList.Count == 0 && score == -1) //exit loop if it's chance move or end of game
         {
-            if (depth != 0) Movegenerator.Instance.getMoveListForPlayfield(startState, false, false);
+            if (depth != 0) Movegenerator.Instance.getMoveListForPlayfield(startState, false, false, 0.0);
 
             if (startState.moveList.Count == 0)
             {

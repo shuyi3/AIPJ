@@ -11,24 +11,25 @@ namespace HRSim
 
         public override void getBattlecryEffect(Playfield p, Minion own, Minion target, int choice)
         {
+            CardDB.Card card = CardDB.Instance.getDeckCardData(CardDB.cardName.burrowingmine);
             if (own.own)
             {
-                p.playerSecond.ownDeckSize++;
-                if (p.playerSecond.ownDeckSize <= 6)
+                p.awayDeck.Add(card);
+                if (p.awayDeck.Count <= 6)
                 {
                     p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(10, p.playerSecond.ownHero.Hp-1), true);
                     p.evaluatePenality -= 6;
                 }
                 else
                 {
-                    if (p.playerSecond.ownDeckSize <= 16)
+                    if (p.awayDeck.Count <= 16)
                     {
                         p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(5, p.playerSecond.ownHero.Hp - 1), true);
                         p.evaluatePenality -= 8;
                     }
                     else
                     {
-                        if (p.playerSecond.ownDeckSize <= 26)
+                        if (p.awayDeck.Count <= 26)
                         {
                             p.minionGetDamageOrHeal(p.playerSecond.ownHero, Math.Min(2, p.playerSecond.ownHero.Hp - 1), true);
                             p.evaluatePenality -= 10;
@@ -38,7 +39,7 @@ namespace HRSim
             }
             else
             {
-                p.playerFirst.ownDeckSize++;
+                p.homeDeck.Add(card);
             }
         }
 

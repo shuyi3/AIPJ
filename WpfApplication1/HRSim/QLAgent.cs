@@ -68,7 +68,7 @@ namespace HRSim
 
     public void getAllpossibleStates(Playfield state, ref List<Playfield> statesList) 
     {
-        List<Action> moves = Movegenerator.Instance.getMoveList(state, false, true, true);
+        List<Action> moves = Movegenerator.Instance.getMoveList(state, false, true, true, 0.0);
         if (moves.Count == 0)
         {
             if (tt.addToMap(state) == false)
@@ -182,7 +182,7 @@ namespace HRSim
         Playfield bestState = null;
         //epsilon greedy             
 
-        List<Action> moves = Movegenerator.Instance.getMoveList(lastState, false, true, true);
+        List<Action> moves = Movegenerator.Instance.getMoveList(lastState, false, true, true, 0.0);
         //int prevCount = lastState.playerSecond.ownMinions.Count;
 
         if (moves.Count == 0)
@@ -255,7 +255,7 @@ namespace HRSim
             int score = lastState.getGameResult();
             while (score == -1)
             {
-                List<Action> moves = Movegenerator.Instance.getMoveList(lastState, false, true, true);
+                List<Action> moves = Movegenerator.Instance.getMoveList(lastState, false, true, true, 0.0);
 
                 if (moves.Count == 0)
                 {

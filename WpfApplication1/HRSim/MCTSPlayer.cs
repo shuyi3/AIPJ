@@ -290,10 +290,11 @@ namespace HRSim
         int numExpand = 0;
         float constC = 0.7f;
         bool useNNEval = false;
-        bool isOpenHand = true;
+        bool isOpenHand = false;
+        double randomProb = 1.0;
         //做partial order 或者 TT
 
-        public MCTSPlayer(bool side, Playfield playfield, bool useNNEval)
+        public MCTSPlayer(bool side, Playfield playfield, bool useNNEval, double randomProb)
         {
             this.playerSide = side;
             this.board = new Playfield(playfield);
@@ -302,6 +303,7 @@ namespace HRSim
             bh = new BehaviorControl();
             this.useNNEval = useNNEval;
             //this.isOpenHand = isOpenHand;
+            this.randomProb = randomProb;
         }
 
         public override void updateState(Playfield playfield)
@@ -313,7 +315,14 @@ namespace HRSim
         {
             if (moveList.Count == 0)
             {
-                moveList = getBestPlayfield();
+                if (this.isOpenHand)
+                {
+                    moveList = getBestPlayfield();
+                }
+                else
+                {
+                    moveList = getBestPlayfieldClosedHand();
+                }
             }
  
             Action moveToPlay = moveList[0];
@@ -326,7 +335,7 @@ namespace HRSim
             bool lethalCheck = false;
 
             //Movegenerator.Instance.getMoveListForPlayfield(p.state, false, lethalCheck);
-            p.state.moveList = new List<Action>(Movegenerator.Instance.getMoveList(p.state, lethalCheck, true, true));
+            p.state.moveList = new List<Action>(Movegenerator.Instance.getMoveList(p.state, lethalCheck, true, true, 0.0));
 
             Playfield afterState = new Playfield(p.state);
 
@@ -408,14 +417,129 @@ namespace HRSim
                         Console.WriteLine(i + " th iteration");
                     //currentState.state = new Playfield(board);
                 }
+            }
+        }
+
+
+        public void UCTClosedHand(Node startNode, List<Playfield> sampledStates)
+        {
+            int numIter = 750;
+            bool isEndReachedBefore = isEndReached;
+            foreach (Playfield sampled in sampledStates)
+            {
+                Playfield temp = currentState.state;
+                currentState.state = sampled;
+                for (int i = 0; i < numIter; i++)
+                {
+                    if (isEndReachedBefore != isEndReached)
+                    {
+                        rolloutDepth = int.MaxValue;
+                        break;
+                    }
+                    UCTRun(currentState, constC);
+                    if (i % 100 == 0)
+                        Console.WriteLine(i + " th iteration");
+
+                }
+                currentState.state = temp;
+            }
+
+            if (isEndReachedBefore != isEndReached)
+            {
+                board.moveList.Clear();
+                currentState = new Node(null, board, null, 0);
+                foreach (Playfield sampled in sampledStates)
+                {
+                    Playfield temp = currentState.state;
+                    currentState.state = sampled;
+                    for (int i = 0; i < numIter; i++)
+                    {
+                        UCTRun(currentState, constC);
+                        if (i % 1000 == 0)
+                            Console.WriteLine(i + " th iteration");
+                    }
+                    currentState.state = temp;
+                }
             }      
         }
 
-        public void sampleState(Node state)
+        public List<Playfield> sampleState(Playfield state, int numWorlds)
         {
-            if (this.playerSide)
-            { 
+            List<Playfield> stateList = new List<Playfield>();
+            for (int i = 0; i < numWorlds; i++)
+            {
+                Playfield sampled = new Playfield(state);
+                sampled.randomize(this.randomProb);
+                stateList.Add(sampled);
             }
+            return stateList;
+        }
+
+        public List<Action> getBestPlayfieldClosedHand()
+        {
+            //Helpfunctions.Instance.startTimer();
+            numExpand = 0;
+            expandTime = 0.0;
+            expandCount = 0;
+            chanceCount = 0;
+            Playfield selectedMove = null;
+            bestValue = float.MinValue;
+            //Playfield tempBoard = new Playfield(board);
+            currentState = new Node(null, board, null, 0);
+            List<Action> actionList = new List<Action>();
+
+            if (expand(currentState, HeuristicType.LethalCheck, 500) == 1)
+            {
+                actionList.AddRange(currentState.children[0].state.getLastTurnAction());
+                actionList.Add(null);
+                return actionList;
+            }
+
+            int count = expandDecision(currentState, firstNumberIter);
+
+            if (count == 0)
+            {
+                actionList.AddRange(currentState.children[0].state.getLastTurnAction());
+                actionList.Add(null);
+                return actionList;
+            }
+
+            List<Playfield> stateList = sampleState(currentState.state, 10);
+            UCTClosedHand(currentState, stateList);
+
+            int depth = currentState.depth;
+            while (currentState.depth == depth)
+            {
+                int maxVisit = 0;
+                Node selectedChild = null;
+                foreach (Node child in currentState.children)
+                {
+                    if (child.numVisited > maxVisit)
+                    {
+                        maxVisit = child.numVisited;
+                        selectedMove = child.state;
+                        selectedChild = child;
+                    }
+                }
+
+                currentState.printChildren();
+                actionList.Add(selectedChild.move);
+                currentState = selectedChild;
+
+                if (selectedChild.numVisited <= 50)
+                {
+                    int result = expandDecision(currentState, firstNumberIter);
+                    if (result != 0) //chance node
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        UCTClosedHand(currentState, stateList);
+                    }
+                }
+            }
+            return actionList;
         }
 
         public List<Action> getBestPlayfield()
@@ -826,7 +950,7 @@ namespace HRSim
                 }
 
                 //Movegenerator.Instance.getMoveListForPlayfield(startState, false, false);
-                startState.moveList = new List<Action>(Movegenerator.Instance.getMoveList(startState, false, true, true));
+                startState.moveList = new List<Action>(Movegenerator.Instance.getMoveList(startState, false, true, true, 0.0));
                 score = startState.getGameResult();
             }
 
@@ -872,8 +996,8 @@ namespace HRSim
                         continue;
                     }
 
-                    if ((pf.isOwnTurn && pf.playerFirst.ownDeckSize > 0) ||
-                        (!pf.isOwnTurn && pf.playerSecond.ownDeckSize > 0))
+                    if ((pf.isOwnTurn && pf.homeDeck.Count > 0) ||
+                        (!pf.isOwnTurn && pf.awayDeck.Count > 0))
                     {
                         List<Action> actionList = pf.getActions();
                         Playfield tempPf = new Playfield(afterState);
@@ -904,8 +1028,8 @@ namespace HRSim
                 }
                 else
                 {
-                    if ((pf.isOwnTurn && pf.playerFirst.ownDeckSize > 0) ||
-                        (!pf.isOwnTurn && pf.playerSecond.ownDeckSize > 0))
+                    if ((pf.isOwnTurn && pf.homeDeck.Count > 0) ||
+                        (!pf.isOwnTurn && pf.awayDeck.Count > 0))
                     {
                         afterNode = new ChanceNode(p, pf, null, p.depth + 1, 1);
                     }
@@ -1035,7 +1159,7 @@ namespace HRSim
                 Playfield afterState = new Playfield(state);
                 afterState.doAction(action);
                 //Movegenerator.Instance.getMoveListForPlayfield(afterState, false, false);
-                afterState.moveList = new List<Action>(Movegenerator.Instance.getMoveList(afterState, false, true, true));
+                afterState.moveList = new List<Action>(Movegenerator.Instance.getMoveList(afterState, false, true, true, 0.0));
 
 
                 //if (action.actionType == actionEnum.playcard && action.card.card.name == CardDB.cardName.arcaneintellect)

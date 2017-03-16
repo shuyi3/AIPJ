@@ -14,7 +14,7 @@
             public int addattack = 0;
             public int addHp = 0;
             public CardDB.Card card;
-            public double playProb = 1.0;
+            public double playProb = 0.0;
 
             public Handcard()
             {

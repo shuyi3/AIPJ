@@ -17,12 +17,12 @@ namespace HRSim
             if (ownplay)
             {
                 p.tempTrigger.enemyMininsChanged = true;
-                p.playerSecond.ownDeckSize++;
+                p.awayDeck.Add(target.handcard.card);
             }
             else
             {
                 p.tempTrigger.ownMinionsChanged = true;
-                p.playerFirst.ownDeckSize++;
+                p.homeDeck.Add(target.handcard.card);
             }
         }
     }

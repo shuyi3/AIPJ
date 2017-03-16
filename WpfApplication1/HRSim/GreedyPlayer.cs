@@ -11,7 +11,7 @@ namespace HRSim
         private List<Playfield> posibleMoves;
         private List<Action> moveList;
         private Playfield board;
-        private int maxWide = 1000;
+        private int maxWide = 500;
         private Behavior bh;
         private bool playerSide;
         private bool useNNEval;
@@ -57,6 +57,7 @@ namespace HRSim
             this.playerSide = side;
             this.useNNEval = useNNEval;
             this.macroMaxCount = 0;
+            if (this.useNNEval) maxWide = 100;
         }
 
         public override void updateState(Playfield playfield)
@@ -154,7 +155,7 @@ namespace HRSim
                     GameManager.Instance.moveCount++;
 
                     Playfield pf = temp[i];
-                    List<Action> actions = new List<Action>(Movegenerator.Instance.getNoneTargetMove(pf));
+                    List<Action> actions = new List<Action>(Movegenerator.Instance.getNoneTargetMove(pf, 0.0));
 
                     foreach (Action a in actions)
                     {
@@ -266,7 +267,7 @@ namespace HRSim
                 {
 
                     Playfield pf = temp[i];
-                    List<Action> actions = new List<Action>(Movegenerator.Instance.getMoveForTarget(pf, target));
+                    List<Action> actions = new List<Action>(Movegenerator.Instance.getMoveForTarget(pf, target, 0.0));
 
                     foreach (Action a in actions)
                     {
@@ -424,8 +425,6 @@ namespace HRSim
 
         private List<Action> getBestPlayfield(bool lethalCheck)
         {
-       
-           
             this.currentRandom = (GameManager.getRNG().NextDouble() > this.randomCut) ? true : false;
             this.currentRandom = false;
             this.turnPlayed += 1;
@@ -438,7 +437,7 @@ namespace HRSim
             bool havedonesomething = true;
 
             Playfield currentState = new Playfield(this.board);
-
+            double probCut = this.useNNEval ? 1.0 : 0.0;
             //if (this.playerSide == false)
             //{
             //    for (int i = 0; i < currentState.getCurrentPlayer(true).owncards.Count; i++)
@@ -472,12 +471,6 @@ namespace HRSim
                     Console.WriteLine(hc.card.name + ":" + hc.playProb);
                 }
             }
-
-
-            //for (int i = 0; i < currentState.getCurrentPlayer(true).owncards.Count; i++)
-            //{
-            //    Console.WriteLine(currentState.getCurrentPlayer(true).owncards[i].card.name + ":" + currentState.getCurrentPlayer(true).owncards[i].playProb);
-            //}
                             
             int boardcount = 0;
             int deep = 0;
@@ -506,7 +499,7 @@ namespace HRSim
                         continue;
                     }
 
-                    List<Action> actions = new List<Action>(Movegenerator.Instance.getMoveList(p, false, true, true));
+                    List<Action> actions = new List<Action>(Movegenerator.Instance.getMoveList(p, false, true, true, probCut));
 
                     foreach (Action a in actions)
                     {
@@ -530,16 +523,23 @@ namespace HRSim
                     bool followPolicy = true;
                     if (this.useNNEval)
                     {
+                        int violated = 0;
                         for (int j = 0; j < p.getCurrentPlayer(true).owncards.Count; j++)
                         {
                             Handmanager.Handcard hc = p.getCurrentPlayer(true).owncards[j];
                             //Helpfunctions.Instance.logg(hc.card.name + ":" + hc.playProb);
+                            //Helpfunctions.Instance.logg("Entity:" + hc.entity);
+                            violated = hc.entity;
                             if (p.getCurrentPlayer(true).owncards[j].playProb > 0)
                             {
-                                followPolicy = false;
+                                followPolicy = false; 
                                 break;
                             }
                         }
+                        //if (p.getCurrentPlayer(true).playactions.Count > 0 && violated != 1041)
+                        //{
+                        //    int ddbug = 1;
+                        //}
                     }
 
                     p.endTurn(false, false);

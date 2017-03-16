@@ -124,7 +124,7 @@ namespace HRSim
         public int lostHeal = 0;
         public int lostWeaponDamage = 0;
 
-        public int ownDeckSize = 30;
+        //public int ownDeckSize = 30;
         public int ownHeroFatigue = 0;
 
         public bool ownAbilityReady = false;
@@ -235,7 +235,7 @@ namespace HRSim
             this.ueberladung = 0;
 
             this.ownHeroFatigue = 0;
-            this.ownDeckSize = 30;
+            //this.ownDeckSize = 30;
 
             //need the following for manacost-calculation
             //this.ownHeroHpStarted = this.ownHero.Hp;
@@ -400,7 +400,7 @@ namespace HRSim
             this.cardsPlayedThisTurn = p.cardsPlayedThisTurn;
             this.ueberladung = p.ueberladung;
 
-            this.ownDeckSize = p.ownDeckSize;
+            //this.ownDeckSize = p.ownDeckSize;
             this.ownHeroFatigue = p.ownHeroFatigue;
 
             //need the following for manacost-calculation

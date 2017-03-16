@@ -7,7 +7,6 @@
     {
         //Silverfish sf;
         PenalityManager pen = PenalityManager.Instance;
-        private double cardProbCut = 0.001;
         private double minionProbCut = 0.0;
 
         private static Movegenerator instance;
@@ -38,7 +37,7 @@
             return c;
         }
 
-        public void getMoveListForPlayfield(Playfield p, bool log, bool lethalCheck)
+        public void getMoveListForPlayfield(Playfield p, bool log, bool lethalCheck, double cardProbCut)
         {
             bool own = p.isOwnTurn;
             Player mPlayer;
@@ -58,7 +57,7 @@
 
             if (p.moveList.Count == 0) //if starting, generate move
             {
-                p.moveList = new List<Action>(getMoveList(p, lethalCheck, true, true));
+                p.moveList = new List<Action>(getMoveList(p, lethalCheck, true, true, 0.0));
                 if (log)
                 {
                     Helpfunctions.Instance.logg("######################start turn for player " + playerNumber);
@@ -83,7 +82,7 @@
                 if (p.moveTrigger.handcardAdded || p.moveTrigger.tauntChanged || p.moveTrigger.manaChanged ||
                     p.moveTrigger.ownNewTarget || p.moveTrigger.enemyNewTarget)
                 {
-                    p.moveList = getMoveList(p, lethalCheck, true, true);
+                    p.moveList = getMoveList(p, lethalCheck, true, true, cardProbCut);
                 }
                 else
                 {
@@ -132,7 +131,7 @@
             }
         }
 
-        public List<Action> getMoveListSF(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
+        public List<Action> getMoveListSF(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets, double cardProbCut)
         {
             bool own = p.isOwnTurn;
             Player mPlayer, ePlayer;
@@ -283,7 +282,7 @@
             return ret;
         }
 
-        public List<Action> getNoneTargetMove(Playfield p)
+        public List<Action> getNoneTargetMove(Playfield p, double cardProbCut)
         {
             bool own = p.isOwnTurn;
             bool isLethalCheck = false;
@@ -411,7 +410,7 @@
             return ret;
         }
 
-        public List<Action> getMoveForTarget(Playfield p, Minion target)
+        public List<Action> getMoveForTarget(Playfield p, Minion target, double cardProbCut)
         {
             bool own = p.isOwnTurn;
             bool isLethalCheck = false;
@@ -556,7 +555,7 @@
 
         }
 
-        public List<Action> getPlaycardMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
+        public List<Action> getPlaycardMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets, double cardProbCut)
         {
             bool own = p.isOwnTurn;
             Player mPlayer, ePlayer;
@@ -632,8 +631,54 @@
             return ret;
         }
 
-        
-        public List<Action> getMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
+        public List<Action> getHeroPowerMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
+        {
+            bool own = p.isOwnTurn;
+            Player mPlayer, ePlayer;
+            if (own)
+            {
+                mPlayer = p.playerFirst;
+                ePlayer = p.playerSecond;
+            }
+            else
+            {
+                mPlayer = p.playerSecond;
+                ePlayer = p.playerFirst;
+            }
+
+            List<Action> ret = new List<Action>();
+            List<Minion> trgts = new List<Minion>();
+
+            if (mPlayer.ownHero.Hp <= 0)
+            {
+                return ret;
+            }
+
+            //#############################################################################################################
+
+            // use ability
+            if (mPlayer.ownAbilityReady && mPlayer.mana >= 2) // if ready and enough manna TODO: TGT mana cost change
+            {
+                int cardplayPenality = 0;
+                int bestplace = mPlayer.ownMinions.Count + 1; //we can not manage it
+                trgts = mPlayer.ownHeroAblility.card.getTargetsForCard(p, isLethalCheck, own);
+                foreach (Minion trgt in trgts)
+                {
+                    if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
+                    if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, trgt, p, 0, isLethalCheck);
+                    if (cardplayPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0, 2);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            return ret;
+        }
+
+
+        public List<Action> getMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets, double cardProbCut)
         {
             bool own = p.isOwnTurn;
             Player mPlayer, ePlayer;
@@ -792,9 +837,9 @@
         }
 
         //implememtation
-        public Action getRandomMove(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets, bool own)
+        public Action getRandomMove(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets, bool own, double cardProbCut)
         {
-            List<Action> actions = getMoveList(p, isLethalCheck, usePenalityManager, useCutingTargets);
+            List<Action> actions = getMoveList(p, isLethalCheck, usePenalityManager, useCutingTargets, cardProbCut);
             if (actions.Count > 0)
             {
                 return actions[GameManager.getRNG().Next(actions.Count)];

@@ -120,7 +120,7 @@ namespace HRSim
                     GameManager.Instance.moveCount++;
 
                     Playfield pf = temp[i];
-                    List<Action> actions = new List<Action>(Movegenerator.Instance.getNoneTargetMove(pf));
+                    List<Action> actions = new List<Action>(Movegenerator.Instance.getNoneTargetMove(pf, 0.0));
 
                     foreach (Action a in actions)
                     {
@@ -232,7 +232,7 @@ namespace HRSim
                 {
 
                     Playfield pf = temp[i];
-                    List<Action> actions = new List<Action>(Movegenerator.Instance.getMoveForTarget(pf, target));
+                    List<Action> actions = new List<Action>(Movegenerator.Instance.getMoveForTarget(pf, target, 0.0));
 
                     foreach (Action a in actions)
                     {

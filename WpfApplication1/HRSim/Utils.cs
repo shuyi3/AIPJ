@@ -26,6 +26,11 @@ namespace HRSim
             //StateKeyInfo stateInfo = new StateKeyInfo(ownkeyInfo, enemykeyInfo);
             //Helpfunctions.Instance.WriteResultToFile(fileName, JsonConvert.SerializeObject(stateInfo));
         }
+
+        public static void Featurization(Playfield pf)
+        {
+            
+        }
     }
 
 

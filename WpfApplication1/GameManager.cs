@@ -172,6 +172,7 @@ namespace HRSim
         //public List<float> minionValueList { get; set; }
         public List<CardKeyInfo> handcardJsonList { get; set; }
         public List<List<CardKeyInfo>> handcardChange { get; set; }
+        public List<int> canPlayHeroPower { get; set; }
         public List<ActionKeyInfo> playedActionJsonList { get; set; }
         public List<CardKeyInfo> playedCardJsonList { get; set; }
         public List<string> ownDeckList { get; set; }
@@ -542,7 +543,7 @@ namespace HRSim
             {
                 //int seed = Environment.TickCount;
                 //int seed = 564654093;
-                int seed = 674765484;
+                int seed = 1220632265;
                 rng = new Random(seed);
                 Helpfunctions.Instance.logg("seed = " + seed);
             }

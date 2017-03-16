@@ -299,6 +299,10 @@ namespace HRSim
                         stKeyInfo.defensePlayer.handcardJsonList.Add(hcInfo);
                     }
 
+                    //hero power
+                    stKeyInfo.attackPlayer.canPlayHeroPower = new List<int>();
+                    stKeyInfo.attackPlayer.canPlayHeroPower.Add(1);
+
                     //Console.WriteLine("===================");
                     //tempPf.printBoard();
                     //Console.WriteLine("Next Entity:" + tempPf.nextEntity);
@@ -339,6 +343,19 @@ namespace HRSim
                             //    Console.WriteLine(cardInfo.playable);
                             //}
                             stKeyInfo.attackPlayer.handcardChange.Add(interState.attackPlayer.handcardJsonList);
+
+                            bool canPlayHeroPower = mPlayer.ownAbilityReady && mPlayer.mana >= 2;
+                            if (action.actionType == actionEnum.useHeroPower)
+                                Debug.Assert(canPlayHeroPower == false);
+
+                            if (canPlayHeroPower)
+                            {
+                                stKeyInfo.attackPlayer.canPlayHeroPower.Add(1);
+                            }
+                            else
+                            {
+                                stKeyInfo.attackPlayer.canPlayHeroPower.Add(0);
+                            }
                         }                      
                     }
 
@@ -350,7 +367,7 @@ namespace HRSim
                 }
                 gameRecord.playSec = playSec;
                 count++;
-                Helpfunctions.Instance.WriteResultToFile(@"\svs_result_1.1.txt", JsonConvert.SerializeObject(gameRecord));
+                Helpfunctions.Instance.WriteResultToFile(@"\svs_result_3.1.txt", JsonConvert.SerializeObject(gameRecord));
             }
         }
     }
