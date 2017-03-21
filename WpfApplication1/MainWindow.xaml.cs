@@ -261,24 +261,24 @@ namespace HRSim
                 if (turn % 2 == 0)
                 {
                     Helpfunctions.Instance.logg("Player 1: MCTSPlayer, Player 2: Silverfish");
-                    //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
-                    //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, true));
+                    GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
+                    GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, true));
                     //GameManager.Instance.setPlayer(0, new Silverfish());
                     //GameManager.Instance.setPlayer(1, new Silverfish());
                     //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false));
-                    GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 1.0));
-                    GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 0.0));
+                    //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 1.0));
+                    //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 0.0));
                 }
                 else
                 {
                     Helpfunctions.Instance.logg("Player 1: Silverfish, Player 2: MCTSPlayer");
                     //GameManager.Instance.setPlayer(0, new Silverfish());
                     //GameManager.Instance.setPlayer(1, new Silverfish());
-                    //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, false));
-                    //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, true));
+                    GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, false));
+                    GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, true));
                     //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false));
-                    GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 0.0));
-                    GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 1.0));
+                    //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 0.0));
+                    //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 1.0));
                 }
                
             }
@@ -1035,7 +1035,7 @@ namespace HRSim
             {
                 //if (!isInit) Init(false, i, playfield);
                 if (!isInit) Init(false, i);
-                IOUtils.SaveState(GameManager.Instance.mPlayfield, @"\starting_states.txt");
+                //IOUtils.SaveState(GameManager.Instance.mPlayfield, @"\starting_states.txt");
                 isInit = false;
                 GC.Collect();
                 GameManager.resetSeed();
@@ -1126,14 +1126,22 @@ namespace HRSim
 
         private void AutoPlay(object sender, RoutedEventArgs e)
         {
-            PlayMultipleGames(20000, null);
+            //PlayMultipleGames(20000, null);
             //TrainMultipleGames(20000, null);
             //SampleStates(20000, null);
             //string myDocPath =
             //    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            //string fileName = @"\data_turn_end\svs_result_3.txt";
+            //string fileName = @"\C:\Code\dqn-master\simple_dqn\svs_result_1.1.txt";
             //string filePath = myDocPath + fileName;
-            //PyDataEncoder.Instance.Encode(filePath);
+            //string filePath = @"C:\Code\dqn-master\simple_dqn\svs_result_2.1.txt";
+            string filePath = @"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt";
+
+            PyDataEncoder.Instance.EncodeInteractionFeature(filePath);
+            //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
+            //filePath = @"C:\Code\dqn-master\simple_dqn\svs_result_3.1.txt";
+
+            //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
+
         }
 
         private void MakeMove(object sender, RoutedEventArgs e)

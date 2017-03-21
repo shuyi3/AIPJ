@@ -1,4 +1,4 @@
-﻿using System;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,28 +44,6 @@ namespace HRSim
         {
             Handmanager.Handcard card = null;
 
-
-            //if (keyInfo.cardEntitiy > pf.nextEntity-1)
-            //{
-            //    keyInfo.cardEntitiy = pf.nextEntity-1;
-            //    debug1++;
-            //}
-            //if (keyInfo.ownEntity > pf.nextEntity - 1)
-            //{
-            //    keyInfo.ownEntity = pf.nextEntity - 1;
-            //    debug1++;
-            //}
-            //if (keyInfo.targetEntity > pf.nextEntity - 1)
-            //{
-            //    keyInfo.targetEntity = pf.nextEntity - 1;
-            //    debug1++;
-            //}
-
-            //if (debug1 > 1)
-            //{
-            //    int debug = 1;
-            //}
-
             if (keyInfo.cardEntitiy != -10 && keyInfo.cardEntitiy != -1)
             {
                 foreach (Handmanager.Handcard hc in mPlayer.owncards)
@@ -87,12 +65,10 @@ namespace HRSim
                         }
                     }
                 }
-                //if (card == null)
-                //{
-                //    pf.printBoard();
-                //    int debug = 1;
-                //    return null;
-                //}
+                if (card == null)
+                {                  
+                    return null;
+                }
             }
 
             Minion ownMinion = null;
@@ -120,13 +96,10 @@ namespace HRSim
                         }
                     }
                 }
-                //if (!found)
-                //{
-                //    pf.printBoard();
-                //    pf.printActions();
-                //    int debug = 1;
-                //    return null;
-                //}
+                if (!found)
+                {                    
+                    return null;
+                }
             } 
 
             Minion target = null;
@@ -170,8 +143,7 @@ namespace HRSim
                 }
                 if (!found)
                 {
-                    //int debug = 1;
-                    target = mDRMinion;
+                    return null;
                 }
             }
 
@@ -233,28 +205,129 @@ namespace HRSim
             }
         }
 
+        public void EncodeNormalFeatureH5(string fileName)
+        {
+            dynamic h5py = Py.Import("h5py");
+            StreamReader file = new StreamReader(fileName);
+            string line = null;
+            PyList[] features = new PyList[9];
+            for (int i = 0; i < 9; i++) features[i] = new PyList();
+            PyList resultList = new PyList();
+            int count = 0;
+            string[] featureNames = null;
+            while ((line = file.ReadLine()) != null)
+            {
+                GameRecord gameRecord = JsonConvert.DeserializeObject<GameRecord>(line);
+                List<StateKeyInfo> playSec = new List<StateKeyInfo>();
+                foreach (StateKeyInfo stKeyInfo in gameRecord.playSec)
+                {
+                    int result = (stKeyInfo.attackPlayer.turn == gameRecord.result) ? 1 : 0;
+                    StateFeature normalFeature = Featurization.normalFeaturization(stKeyInfo);
+                    Feature playableFeature = normalFeature.featrueArray[5];
+                    PyList[] featureList = normalFeature.getPyFeatureData();
+                    if (featureNames == null) featureNames = normalFeature.getFeatureNames();
+                    for (int i = 0; i < 9; i++){
+                        PythonUtils.AppendRecycle(features[i], featureList[i]);
+                    }
+                    PythonUtils.AppendRecycle(resultList, new PyInt(result));
+                }
+            }
+            string outFileName = fileName + "norm.hdf5";
+            dynamic outFile = h5py.File(outFileName, "w");
+            for (int i = 0; i < 9; i++)
+                outFile.create_dataset(featureNames[i], Py.kw("data", features[i]));
+            outFile.close();
+
+        }
+
+        public void EncodeInteractionFeature(string fileName)
+        {
+            dynamic h5py = Py.Import("h5py");
+            StreamReader file = new StreamReader(fileName);
+            PyList[] features = new PyList[6];
+            for (int i = 0; i < 6; i++) features[i] = new PyList();
+            PyList targetList = new PyList();
+            string line = null;
+            string[] featureNames = null;
+            int count = 0;
+            while ((line = file.ReadLine()) != null)
+            {
+                GameRecord gameRecord = JsonConvert.DeserializeObject<GameRecord>(line);
+                List<StateKeyInfo> playSec = new List<StateKeyInfo>();
+
+                int lastEntity = 1000;
+                foreach (StateKeyInfo stKeyInfo in gameRecord.playSec)
+                {
+                    int result = (stKeyInfo.attackPlayer.turn == gameRecord.result) ? 1 : 0;
+                    PlayerKeyInfo p1Info = stKeyInfo.attackPlayer;
+                    PlayerKeyInfo p2Info = stKeyInfo.defensePlayer;
+
+                    bool isOwnTurn = p1Info.turn == 0 ? true : false;
+
+                    Playfield tempPf = null;
+                    if (isOwnTurn)
+                    {
+                        tempPf = new Playfield(lastEntity, isOwnTurn, p1Info, p2Info);
+                    }
+                    else
+                    {
+                        tempPf = new Playfield(lastEntity, isOwnTurn, p2Info, p1Info);
+                    }
+
+                    Player mPlayer = tempPf.getCurrentPlayer(true);
+                    Player ePlayer = tempPf.getCurrentPlayer(false);
+                    StateFeature interFeature = Featurization.interactionFeaturization(tempPf);                   
+
+                    foreach (PlayerKeyInfo.ActionKeyInfo actionKeyInfo in p1Info.playedActionJsonList)
+                    {                        
+                        Action action = CreateActionFromInfo(tempPf, mPlayer, ePlayer, actionKeyInfo);
+                        int target;
+                        if (action.actionType == actionEnum.playcard)
+                        {
+                            target = Featurization.cardIdxDict[action.card.card.name];
+                            
+                        }
+                        else if (action.actionType == actionEnum.useHeroPower)
+                        {
+                            target = Featurization.cardIdxDict[CardDB.cardName.fireblast];
+                        }
+                        tempPf.getNextEntity();
+                        tempPf.doAction(action);
+                        PyList[] featureList = interFeature.getPyData();
+                        if (featureNames == null) featureNames = interFeature.getFeatureNames();
+                        for (int i = 0; i < interFeature.numFeatures; i++)
+                        {
+                            PythonUtils.AppendRecycle(features[i], featureList[i]);
+                        }
+                        PythonUtils.AppendRecycle(targetList, new PyInt(result)); 
+                        interFeature = Featurization.interactionFeaturization(tempPf);
+                    }
+                    lastEntity = tempPf.getNextEntity() + 1;                    
+                }
+                count++;
+                if (count % 1000 == 0) Console.WriteLine(count);
+            }
+            string outFileName = fileName + "inter.hdf5";
+            dynamic outFile = h5py.File(outFileName, "w");
+            for (int i = 0; i < features.Length; i++)
+                outFile.create_dataset(featureNames[i], Py.kw("data", features[i]));
+            outFile.create_dataset("Target", Py.kw("data", targetList));
+            outFile.close();
+        }
+
+
         public void Encode(string fileName)
         {
             StreamReader file = new StreamReader(fileName);
-            //for (int i = 0; i < 10; i++)
             string line = null;
             int count = 0;
-            //while ((line = file.ReadLine()) != null)
-            //{
-            //    count++;
-            //}
-            //Console.WriteLine(count);
             while ((line = file.ReadLine()) != null)  
             {              
                 if (count % 500 == 0)
                 {
                     Console.WriteLine("Read " + count + " lines.");
                 }
-                //if (count < 8945)
-                //{
-                //    count++;
-                //    continue;
-                //}
+               
                 GameRecord gameRecord = JsonConvert.DeserializeObject<GameRecord>(line);
                 List<StateKeyInfo> playSec = new List<StateKeyInfo>();
 
@@ -371,4 +444,4 @@ namespace HRSim
             }
         }
     }
-}
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                

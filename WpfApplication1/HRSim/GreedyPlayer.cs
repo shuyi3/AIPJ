@@ -19,8 +19,8 @@ namespace HRSim
         private int debug = 0;
         private int turnPlayed = 0;
         private int avgBoardCount = 0;
-        private bool currentRandom = true;
-        private double randomCut = 0.7;
+        private bool currentRandom = false;
+        private double randomCut = 1.0;
         //class Node
         //{
         //    public List<Node> children;
@@ -57,7 +57,7 @@ namespace HRSim
             this.playerSide = side;
             this.useNNEval = useNNEval;
             this.macroMaxCount = 0;
-            if (this.useNNEval) maxWide = 100;
+            if (this.useNNEval) maxWide = 50;
         }
 
         public override void updateState(Playfield playfield)
