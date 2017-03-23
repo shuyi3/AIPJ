@@ -49,9 +49,12 @@ namespace HRSim
             public actionEnum actionType { get; set; }
             //public Handmanager.Handcard card;
             public int cardEntitiy { get; set; }
+            public string cardName { get; set; }
             public int place { get; set; } //= target where card/minion is placed
             public int ownEntity { get; set; } // -10 for none
+            public string ownName { get; set; }
             public int targetEntity { get; set; } //-10 for none
+            public string targetName { get; set; }
             //public int druidchoice; // 1 left card, 2 right card
             //public int penalty;
             public int manaCost { get; set; }
@@ -65,9 +68,19 @@ namespace HRSim
             {
                 this.actionType = action.actionType;
                 this.cardEntitiy = (action.card != null) ? action.card.entity : -10;
+                if (action.actionType == actionEnum.useHeroPower)
+                {
+                    this.cardName = "fireblast";
+                }
+                else
+                {
+                    this.cardName = (action.card != null) ? action.card.card.name.ToString() : null;
+                }
                 this.place = action.place;
                 this.ownEntity = (action.own != null) ? action.own.entitiyID : -10;
+                this.ownName = (action.own != null) ? action.own.name.ToString() : null;
                 this.targetEntity = (action.target != null) ? action.target.entitiyID : -10;
+                this.targetName = (action.target != null) ? action.target.name.ToString() : null;
                 this.manaCost = action.manaCost;
             }
         }

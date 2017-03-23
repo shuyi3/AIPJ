@@ -222,7 +222,13 @@ namespace HRSim
             }
         }
 
-
+        public void WriteResultToFileAbs(string fullFileName, string result)
+        {
+            using (StreamWriter outputFile = new StreamWriter(fullFileName, true))
+            {
+                outputFile.WriteLine(result);
+            }
+        }
 
         public Playfield readJsonFile()
         {

@@ -427,6 +427,9 @@ namespace HRSim
             {
                 int idx = cardIdxDict[hc.card.name]; 
                 ret.featrueArray[1].data[idx]++;
+                if (ret.featrueArray[1].data[idx] > 6) {
+                    int debug = 1;
+                }
                 if (hc.canplayCard(pf, pf.isOwnTurn)){
                     ret.featrueArray[2].data[idx] = 1;
 
@@ -447,7 +450,6 @@ namespace HRSim
 
             foreach (Handmanager.Handcard hc in mPlayer.owncards){         
                 int idx = cardIdxDict[hc.card.name]; 
-                ret.featrueArray[1].data[idx]++;
                 if (ret.featrueArray[2].data[idx] == 1){
                     //mana after play
                     int temp = mPlayer.mana;

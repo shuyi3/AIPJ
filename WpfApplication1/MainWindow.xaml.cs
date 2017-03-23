@@ -1134,11 +1134,17 @@ namespace HRSim
             //string fileName = @"\C:\Code\dqn-master\simple_dqn\svs_result_1.1.txt";
             //string filePath = myDocPath + fileName;
             //string filePath = @"C:\Code\dqn-master\simple_dqn\svs_result_2.1.txt";
-            string filePath = @"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt";
-
-            PyDataEncoder.Instance.EncodeInteractionFeature(filePath);
-            //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
             //filePath = @"C:\Code\dqn-master\simple_dqn\svs_result_3.1.txt";
+
+            //PyDataEncoder.Instance.EncodeInteractionFeature(filePath);
+            //PyDataEncoder.Instance.Encode(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt");
+            //PyDataEncoder.Instance.Encode(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_2.txt");
+            //PyDataEncoder.Instance.Encode(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt");
+            PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt");
+            PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_2.txt.2.txt");
+            PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt.2.txt");
+
+            //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
 
             //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
 

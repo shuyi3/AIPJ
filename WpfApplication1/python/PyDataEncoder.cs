@@ -15,6 +15,8 @@ namespace HRSim
         private dynamic dataEncoder;
         private dynamic py_utils;
         private static PyDataEncoder instance;
+        private bool debug = false;
+        private int debugCounter = 0;
 
         private PyDataEncoder()
         {
@@ -40,9 +42,11 @@ namespace HRSim
             }
         }
 
-        public Action CreateActionFromInfo(Playfield pf, Player mPlayer, Player ePlayer, PlayerKeyInfo.ActionKeyInfo keyInfo)
+        public Action CreateActionFromInfo(Playfield pf, PlayerKeyInfo.ActionKeyInfo keyInfo)
         {
             Handmanager.Handcard card = null;
+            Player mPlayer = pf.getCurrentPlayer(true);
+            Player ePlayer = pf.getCurrentPlayer(false);
 
             if (keyInfo.cardEntitiy != -10 && keyInfo.cardEntitiy != -1)
             {
@@ -58,7 +62,7 @@ namespace HRSim
                 {
                     foreach (Handmanager.Handcard hc in mPlayer.owncards)
                     {
-                        if (hc.entity == keyInfo.cardEntitiy)
+                        if (hc.card.name.ToString() == keyInfo.cardName)
                         {
                             card = hc;
                             break;
@@ -74,36 +78,32 @@ namespace HRSim
             Minion ownMinion = null;
             if (keyInfo.ownEntity != -10)
             {
-                bool found = false;
                 foreach (Minion m in mPlayer.ownMinions)
                 {
                     if (m.entitiyID == keyInfo.ownEntity)
                     {
                         ownMinion = m;
-                        found = true;
                         break;
                     }
                 }
-                if (!found)
+                if (ownMinion == null)
                 {
-                    foreach (Minion m in ePlayer.ownMinions)
+                    foreach (Minion m in mPlayer.ownMinions)
                     {
-                        if (m.entitiyID == keyInfo.ownEntity)
+                        if (m.handcard.card.name.ToString() == keyInfo.ownName)
                         {
                             ownMinion = m;
-                            found = true;
                             break;
                         }
                     }
                 }
-                if (!found)
+                if (ownMinion == null)
                 {                    
                     return null;
                 }
             } 
 
             Minion target = null;
-            Minion mDRMinion = null;
 
             if (keyInfo.targetEntity == 0 || keyInfo.targetEntity == 1)
             {
@@ -120,28 +120,38 @@ namespace HRSim
                         found = true;
                         break;
                     }
-                    if (m.name == CardDB.cardName.damagedgolem)
+                }
+                foreach (Minion m in mPlayer.ownMinions)
+                {
+                    if (m.entitiyID == keyInfo.targetEntity)
                     {
-                        mDRMinion = m;
+                        target = m;
+                        found = true;
+                        break;
                     }
                 }
-                if (!found)
+                if (target == null)
                 {
-                    foreach (Minion m in mPlayer.ownMinions)
+                    foreach (Minion m in ePlayer.ownMinions)
                     {
-                        if (m.entitiyID == keyInfo.targetEntity)
+                        if (m.handcard.card.name.ToString() == keyInfo.targetName)
                         {
                             target = m;
                             found = true;
                             break;
                         }
-                        if (m.name == CardDB.cardName.damagedgolem)
+                    }
+                    foreach (Minion m in mPlayer.ownMinions)
+                    {
+                        if (m.handcard.card.name.ToString() == keyInfo.targetName)
                         {
-                            mDRMinion = m;
+                            target = m;
+                            found = true;
+                            break;
                         }
                     }
                 }
-                if (!found)
+                if (target == null)
                 {
                     return null;
                 }
@@ -186,7 +196,7 @@ namespace HRSim
                     //Console.WriteLine("Action: " + actionKeyInfo.ToString());
                     //tempPf.printBoard();
                     //tempPf.printBoard();
-                    Action action = CreateActionFromInfo(tempPf, mPlayer, ePlayer, actionKeyInfo);
+                    Action action = CreateActionFromInfo(tempPf, actionKeyInfo);
                     if (action != null)
                     {
                         tempPf.getNextEntity();
@@ -280,8 +290,8 @@ namespace HRSim
 
                     foreach (PlayerKeyInfo.ActionKeyInfo actionKeyInfo in p1Info.playedActionJsonList)
                     {                        
-                        Action action = CreateActionFromInfo(tempPf, mPlayer, ePlayer, actionKeyInfo);
-                        int target;
+                        Action action = CreateActionFromInfo(tempPf, actionKeyInfo);
+                        int target = 0;
                         if (action.actionType == actionEnum.playcard)
                         {
                             target = Featurization.cardIdxDict[action.card.card.name];
@@ -299,7 +309,7 @@ namespace HRSim
                         {
                             PythonUtils.AppendRecycle(features[i], featureList[i]);
                         }
-                        PythonUtils.AppendRecycle(targetList, new PyInt(result)); 
+                        PythonUtils.AppendRecycle(targetList, new PyInt(target)); 
                         interFeature = Featurization.interactionFeaturization(tempPf);
                     }
                     lastEntity = tempPf.getNextEntity() + 1;                    
@@ -315,6 +325,226 @@ namespace HRSim
             outFile.close();
         }
 
+        public class Node
+        {
+            public Playfield pf;
+            public int pcAction;
+            public int nonPCaction;
+            public Node par;
+            public bool triedLeft;
+            public bool triedRight;
+            public Action action;
+            public Node(Playfield pf, Node par, int pcAction, int nonPCaction, Action action)
+            {
+                this.pf = pf;
+                this.pcAction = pcAction;
+                this.nonPCaction = nonPCaction;
+                this.par = par;
+                this.triedLeft = false;
+                this.triedRight = false;
+                this.action = action;
+            }
+        }
+
+        public Node tryDoAction(Node cur, PlayerKeyInfo.ActionKeyInfo keyInfo)
+        {
+            Node ret = null;
+            Action action = CreateActionFromInfo(cur.pf, keyInfo);
+            Playfield temp = null;
+            bool noError = true;
+
+            if (action != null)
+            {
+                try
+                {
+                    temp = new Playfield(cur.pf);
+                    temp.getNextEntity();
+                    temp.doAction(action);
+                }
+                catch (NullReferenceException e)
+                {
+                    noError = false;
+                }
+                if (noError)
+                {
+                    if (action.actionType == actionEnum.playcard || action.actionType == actionEnum.useHeroPower)
+                    {
+                        ret = new Node(temp, cur, cur.pcAction + 1, cur.nonPCaction, action);
+                    }
+                    else
+                    {
+                        ret = new Node(temp, cur, cur.pcAction, cur.nonPCaction + 1, action);
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public LinkedList<Action> searchValidSeq(Playfield pf, PlayerKeyInfo p1Info)
+        {
+            //this.debugCounter++;
+            //Console.WriteLine(this.debugCounter);
+            //if (this.debugCounter == 11)
+            //{
+            //    this.debug = true;
+            //}
+            Playfield tempPf = new Playfield(pf);
+            Player mPlayer = tempPf.getCurrentPlayer(true);
+            Player ePlayer = tempPf.getCurrentPlayer(false);
+            List<int> pcActionId = new List<int>();
+            List<int> nonPcActionId = new List<int>();
+
+            for (int i = 0; i < p1Info.playedActionJsonList.Count; i++){
+                PlayerKeyInfo.ActionKeyInfo keyInfo = p1Info.playedActionJsonList[i];
+                if (keyInfo.actionType == actionEnum.useHeroPower || keyInfo.actionType == actionEnum.playcard)
+                {
+                    pcActionId.Add(i);
+                }
+                else
+                {
+                    nonPcActionId.Add(i);
+                }
+            }
+
+            Node root = new Node(new Playfield(pf), null, 0, 0, null);
+            Node cur = root;
+            while (cur.pcAction + cur.nonPCaction < p1Info.playedActionJsonList.Count)
+            {
+                if (this.debug) Console.WriteLine("pc:" + cur.pcAction + "/" + pcActionId.Count + "| nonPc:" + cur.nonPCaction + "/" + nonPcActionId.Count);
+                Node nextNode = null;
+                if (cur.pcAction < pcActionId.Count && !cur.triedLeft)
+                {
+                    //try left                    
+                    cur.triedLeft = true;
+                    nextNode = tryDoAction(cur, p1Info.playedActionJsonList[pcActionId[cur.pcAction]]);
+                }
+                else if (cur.nonPCaction < nonPcActionId.Count && !cur.triedRight)
+                {
+                    cur.triedRight = true;
+                    nextNode = tryDoAction(cur, p1Info.playedActionJsonList[nonPcActionId[cur.nonPCaction]]);
+                }
+                else
+                {
+                    nextNode = cur.par;
+                }
+                if (nextNode != null)
+                {
+                    cur = nextNode;
+                }
+            }
+
+            LinkedList<Action> ret = new LinkedList<Action>();
+            while (cur.action != null)
+            {
+                ret.AddFirst(cur.action);
+                cur = cur.par;
+            }
+            return ret;
+        }
+
+        public void EncodeModified(string fileName)
+        {
+            StreamReader file = new StreamReader(fileName);
+            string line = null;
+            int count = 0;
+            while ((line = file.ReadLine()) != null)
+            {
+                //Helpfunctions.Instance.logg(line);
+                if (count % 1000 == 0)
+                {
+                    Console.WriteLine("Finished " + count + " lines.");
+                }
+
+                GameRecord gameRecord = JsonConvert.DeserializeObject<GameRecord>(line);
+                int lastEntity = 1000;
+                foreach (StateKeyInfo stKeyInfo in gameRecord.playSec)
+                {
+                    PlayerKeyInfo p1Info = stKeyInfo.attackPlayer;
+                    PlayerKeyInfo p2Info = stKeyInfo.defensePlayer;
+
+                    bool isOwnTurn = p1Info.turn == 0 ? true : false;
+                    lastEntity = stKeyInfo.nextEntity;
+                    Playfield tempPf = null;
+                    if (isOwnTurn)
+                    {
+                        tempPf = new Playfield(lastEntity, isOwnTurn, p1Info, p2Info);
+                    }
+                    else
+                    {
+                        tempPf = new Playfield(lastEntity, isOwnTurn, p2Info, p1Info);
+                    }
+
+                    stKeyInfo.turnSt = 1;
+                    Player mPlayer = tempPf.getCurrentPlayer(true);
+                    Player ePlayer = tempPf.getCurrentPlayer(false);
+
+                    int length = stKeyInfo.attackPlayer.handcardJsonList.Count;
+                    stKeyInfo.attackPlayer.handcardJsonList.Clear();
+
+                    foreach (Handmanager.Handcard hc in mPlayer.owncards)
+                    {
+                        PlayerKeyInfo.CardKeyInfo hcInfo = new PlayerKeyInfo.CardKeyInfo(hc, true, tempPf);
+                        stKeyInfo.attackPlayer.handcardJsonList.Add(hcInfo);
+                    }
+
+                    length = stKeyInfo.defensePlayer.handcardJsonList.Count;
+                    stKeyInfo.defensePlayer.handcardJsonList.Clear();
+
+                    foreach (Handmanager.Handcard hc in ePlayer.owncards)
+                    {
+                        PlayerKeyInfo.CardKeyInfo hcInfo = new PlayerKeyInfo.CardKeyInfo(hc, true, tempPf);
+                        stKeyInfo.defensePlayer.handcardJsonList.Add(hcInfo);
+                    }
+                   
+                    LinkedList<Action> actionSeq = searchValidSeq(tempPf, p1Info);
+                    stKeyInfo.attackPlayer.canPlayHeroPower = new List<int>();
+                    stKeyInfo.attackPlayer.playedActionJsonList = new List<PlayerKeyInfo.ActionKeyInfo>();
+                    stKeyInfo.attackPlayer.handcardChange = new List<List<PlayerKeyInfo.CardKeyInfo>>();
+
+                    foreach (Action action in actionSeq)
+                    {
+                        if (action.actionType == actionEnum.useHeroPower || action.actionType == actionEnum.playcard)
+                        {
+                            PlayerKeyInfo ownkeyInfo, enemykeyInfo;
+                            if (isOwnTurn)
+                            {
+                                ownkeyInfo = new PlayerKeyInfo(tempPf.playerFirst, tempPf.homeDeck, true, tempPf);
+                                enemykeyInfo = new PlayerKeyInfo(tempPf.playerSecond, tempPf.awayDeck, false, tempPf);
+                            }
+                            else
+                            {
+                                ownkeyInfo = new PlayerKeyInfo(tempPf.playerSecond, tempPf.awayDeck, false, tempPf);
+                                enemykeyInfo = new PlayerKeyInfo(tempPf.playerFirst, tempPf.homeDeck, true, tempPf);
+                            }
+                            StateKeyInfo interState = new StateKeyInfo(tempPf.nextEntity, ownkeyInfo, enemykeyInfo, false, 0.0);
+                            stKeyInfo.attackPlayer.handcardChange.Add(interState.attackPlayer.handcardJsonList);
+                            bool canPlayHeroPower = mPlayer.ownAbilityReady && mPlayer.mana >= 2;
+                            if (canPlayHeroPower)
+                            {
+                                stKeyInfo.attackPlayer.canPlayHeroPower.Add(1);
+                            }
+                            else
+                            {
+                                stKeyInfo.attackPlayer.canPlayHeroPower.Add(0);
+                            }
+                        }
+
+                        Debug.Assert(stKeyInfo.attackPlayer.canPlayHeroPower.Count == stKeyInfo.attackPlayer.handcardChange.Count);
+                        
+                        tempPf.getNextEntity();
+                        tempPf.doAction(action);
+                        stKeyInfo.attackPlayer.playedActionJsonList.Add(new PlayerKeyInfo.ActionKeyInfo(action));
+                        if (debug) action.print();
+                    }
+                    lastEntity = tempPf.getNextEntity() + 1;
+                    //Console.WriteLine("===================");
+                    //Console.WriteLine("End turn Next Entity:" + lastEntity);
+                    //Console.WriteLine("===================");
+                }
+                count++;
+                Helpfunctions.Instance.WriteResultToFileAbs(fileName + ".3.txt", JsonConvert.SerializeObject(gameRecord));
+            }
+        }       
 
         public void Encode(string fileName)
         {
@@ -374,7 +604,15 @@ namespace HRSim
 
                     //hero power
                     stKeyInfo.attackPlayer.canPlayHeroPower = new List<int>();
-                    stKeyInfo.attackPlayer.canPlayHeroPower.Add(1);
+                    bool canPlayHeroPower = mPlayer.ownAbilityReady && mPlayer.mana >= 2;
+                    if (canPlayHeroPower)
+                    {
+                        stKeyInfo.attackPlayer.canPlayHeroPower.Add(1);
+                    }
+                    else
+                    {
+                        stKeyInfo.attackPlayer.canPlayHeroPower.Add(0);
+                    }
 
                     //Console.WriteLine("===================");
                     //tempPf.printBoard();
@@ -383,11 +621,7 @@ namespace HRSim
 
                     foreach (PlayerKeyInfo.ActionKeyInfo actionKeyInfo in p1Info.playedActionJsonList)
                     {
-                        //Player mPlayer = tempPf.getCurrentPlayer(true);
-                        //Player ePlayer = tempPf.getCurrentPlayer(false);
-                        //Console.WriteLine("Action: " + actionKeyInfo.ToString());
-                        //tempPf.printBoard();
-                        Action action = CreateActionFromInfo(tempPf, mPlayer, ePlayer, actionKeyInfo);
+                        Action action = CreateActionFromInfo(tempPf, actionKeyInfo);
 
                         tempPf.getNextEntity();
                         tempPf.doAction(action);
@@ -406,20 +640,23 @@ namespace HRSim
                         StateKeyInfo interState = new StateKeyInfo(tempPf.nextEntity, ownkeyInfo, enemykeyInfo,
                             false, 0.0);
                         //playSec.Add(interState);
+                        if (action.own != null) actionKeyInfo.ownName = action.own.name.ToString();
+                        if (action.target != null) actionKeyInfo.targetName = action.target.name.ToString();
                         if (action.actionType == actionEnum.playcard || action.actionType == actionEnum.useHeroPower)
                         {
                             if (stKeyInfo.attackPlayer.handcardChange == null) stKeyInfo.attackPlayer.handcardChange = new List<List<PlayerKeyInfo.CardKeyInfo>>();
-                            //tempPf.printBoard();
-                            //foreach (PlayerKeyInfo.CardKeyInfo cardInfo in interState.attackPlayer.handcardJsonList){
-                            //    Console.WriteLine(cardInfo.cardName);
-                            //    Console.WriteLine(cardInfo.manacost);
-                            //    Console.WriteLine(cardInfo.playable);
-                            //}
                             stKeyInfo.attackPlayer.handcardChange.Add(interState.attackPlayer.handcardJsonList);
 
-                            bool canPlayHeroPower = mPlayer.ownAbilityReady && mPlayer.mana >= 2;
+                            canPlayHeroPower = mPlayer.ownAbilityReady && mPlayer.mana >= 2;
                             if (action.actionType == actionEnum.useHeroPower)
+                            {
                                 Debug.Assert(canPlayHeroPower == false);
+                                actionKeyInfo.cardName = "fireblast";
+                            }
+                            else
+                            {
+                                actionKeyInfo.cardName = action.card.card.name.ToString();
+                            }
 
                             if (canPlayHeroPower)
                             {
@@ -429,7 +666,7 @@ namespace HRSim
                             {
                                 stKeyInfo.attackPlayer.canPlayHeroPower.Add(0);
                             }
-                        }                      
+                        }                   
                     }
 
                     playSec.Add(stKeyInfo);
@@ -440,7 +677,7 @@ namespace HRSim
                 }
                 gameRecord.playSec = playSec;
                 count++;
-                Helpfunctions.Instance.WriteResultToFile(@"\svs_result_3.1.txt", JsonConvert.SerializeObject(gameRecord));
+                Helpfunctions.Instance.WriteResultToFileAbs(fileName + ".2.txt", JsonConvert.SerializeObject(gameRecord));
             }
         }
     }
