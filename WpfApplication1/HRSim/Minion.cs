@@ -890,6 +890,39 @@ namespace HRSim
             return (float)this.handcard.card.cost / mana * 0.25f;
         }
 
+        public int getHpValue()
+        { 
+            /* hp_idx = np.select(
+                [hp <= 1,
+                 1 < hp <= 2,
+                 2 < hp <= 4,
+                 4 < hp <= 6,
+                 6 < hp],
+                [0, 1, 2, 3, 4]).astype(int).tolist()
+            */
+            if (this.Hp <= 1) return 0;
+            if (this.Hp <= 2) return 1;
+            if (this.Hp <= 4) return 2;
+            if (this.Hp <= 6) return 3;
+            return 4;
+        }
+
+        public int getHeroHpValue()
+        {
+            /* 
+                        ownHeroHp <= 6,
+                        6 < ownHeroHp <= 12,
+                        12 < ownHeroHp <= 15,
+                        15 < ownHeroHp <= 20,
+                        20 < ownHeroHp
+            */
+            if (this.Hp <= 6) return 0;
+            if (this.Hp <= 12) return 1;
+            if (this.Hp <= 15) return 2;
+            if (this.Hp <= 20) return 3;
+            return 4;
+        }
+
     }
 
 }

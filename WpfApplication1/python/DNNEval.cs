@@ -17,6 +17,8 @@ namespace HRSim
         HashSet<int> featureSparseSet = new HashSet<int>();
         int offset = 0;
 
+        PyTuple tp1, tp2, tp3, tp4;
+        PyList encode;
 
         //static string[] minionCardArray = { "annoyotron", "archmageantonidas", "boombot", "clockworkgnome", 
         //                         "cogmaster", "damagedgolem", "drboom",
@@ -85,7 +87,8 @@ namespace HRSim
                 py_utils = Py.Import("simple_dqn.py_utils");
                 dynamic cnn_model = Py.Import("simple_dqn.cnn_model");
                 //model = cnn_model.CNNPhaseEval();
-                model = cnn_model.CNNPhaseActionPolicy();
+                //model = cnn_model.CNNPhaseActionPolicy();
+                model = cnn_model.CNNPhaseActionPolicyFast();
                 //model = cnn_model.CNNPhasePolicy();
                 //dynamic models = Py.Import("keras.models");
                 //dynamic layers = Py.Import("keras.layers");
@@ -97,6 +100,25 @@ namespace HRSim
                 //dynamic sequential = models.Sequential;
                 //dynamic SGD = optimizers.SGD;
                 //model = sequential();
+
+                //tp1 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[36) });
+                //tp2 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[9 * 17 * 5) });
+                //tp3 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[18 * 23) });
+                //tp4 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[46) });
+                //dynamic global_ft = np.zeros(tp1, Py.kw("dtype", "float32"));
+                //dynamic board_ft = np.zeros(tp2, Py.kw("dtype", "float32"));
+                //dynamic hand_ft = np.zeros(tp3, Py.kw("dtype", "float32"));
+                //dynamic play_ft = np.zeros(tp4, Py.kw("dtype", "float32"));
+                //dynamic ft = new PyList();
+                //PythonUtils.AppendRecycle(ft, global_ft);
+                //PythonUtils.AppendRecycle(ft, board_ft);
+                //PythonUtils.AppendRecycle(ft, hand_ft);
+                //PythonUtils.AppendRecycle(ft, play_ft);
+                //encode = new PyList();
+                //PyList ftidx = new PyList();
+                //PythonUtils.AppendRecycle(ftidx, FeatureConst.Instance.pyIntMap[1));
+                //PythonUtils.AppendRecycle(encode, ftidx);
+                //PythonUtils.AppendRecycle(encode, ft);
 
                 //model = cnn_model.compile_cnn_model(Py.kw("weight_file", policy_weight_file));
             }
@@ -117,10 +139,10 @@ namespace HRSim
             //    PyList feature = new PyList();
             //    foreach (int ft in pk.endTurnFeatrueList)
             //    {
-            //        feature.Append(new PyInt(ft));
+            //        feature.Append(FeatureConst.Instance.pyIntMap[ft));
             //    }
             //    feature_list.Append(feature);
-            //    result_list.Append(new PyInt(result));
+            //    result_list.Append(FeatureConst.Instance.pyIntMap[result));
             //}
         }
 
@@ -134,6 +156,16 @@ namespace HRSim
         {
             dynamic result = model.predict_proba(feature_list).item(1);
             return result;
+        }
+
+        public void PredictTest(dynamic feature_list)
+        {
+            model.predict_policy(feature_list);
+        }
+
+        public void fakeDNNEval()
+        { 
+            DNNEval.Instance.PredictTest(encode);  
         }
 
         public int encodeHeroHp(int heroHp)
@@ -300,8 +332,8 @@ namespace HRSim
             encodeHandFeature(mPlayer);
             encodeHandFeature(ePlayer);
 
-            PyInt width = new PyInt(458);
-            PyInt height = new PyInt(1);
+            PyInt width = FeatureConst.Instance.pyIntMap[458];
+            PyInt height = FeatureConst.Instance.pyIntMap[1];
 
             PyTuple feature_shape = new PyTuple(new PyObject[] { height, width });
 
@@ -343,12 +375,12 @@ namespace HRSim
                 {
                     dynamic board_encode = parsePlayfieldCNNAction(p, temp, own);
                     double cardToPlay = model.predict_classes(board_encode)[0];
-                    Console.WriteLine("cardToPlay: " + cardToPlay);
+                    //Console.WriteLine("cardToPlay: " + cardToPlay);
                     foreach (Handmanager.Handcard hc in mPlayer.owncards)
                     {
                         if (cardIdxDict[hc.card.name] == cardToPlay)
                         {
-                            Console.WriteLine("hc:" + hc.card.name);
+                            //Console.WriteLine("hc:" + hc.card.name);
                             hc.playProb = 1.0;
                             break;
                         }
@@ -374,7 +406,7 @@ namespace HRSim
                 }
             }
             Player oPlayer = p.getCurrentPlayer(true);
-            Console.WriteLine("Action length: " + mPlayer.playactions.Count);
+            //Console.WriteLine("Action length: " + mPlayer.playactions.Count);
             foreach (Handmanager.Handcard hc in oPlayer.owncards)
             {
                 hc.playProb = 0.0;
@@ -385,13 +417,13 @@ namespace HRSim
                 {
                     foreach (Handmanager.Handcard hc in oPlayer.owncards)
                     {
-                        Console.WriteLine("Entity: " + action.card.entity);
-                        Console.WriteLine("Entity to pair: " + hc.entity);
+                        //Console.WriteLine("Entity: " + action.card.entity);
+                        //Console.WriteLine("Entity to pair: " + hc.entity);
 
                         if (hc.entity == action.card.entity)
                         {
                             hc.playProb = 1.0;
-                            Console.WriteLine("will play card: " + hc.card.name);
+                            //Console.WriteLine("will play card: " + hc.card.name);
                         }
                     }
                 }
@@ -531,10 +563,10 @@ namespace HRSim
                 mDeck = startP.awayDeck;
             }
 
-            PyInt ownMana = new PyInt(mPlayer.ownMaxMana);
-            PyInt ownHp = new PyInt(mPlayer.ownHero.Hp + mPlayer.ownHero.armor);
-            PyInt enemyMana = new PyInt(ePlayer.ownMaxMana);
-            PyInt enemyHp = new PyInt(ePlayer.ownHero.Hp + ePlayer.ownHero.armor);
+            PyInt ownMana = FeatureConst.Instance.pyIntMap[mPlayer.ownMaxMana];
+            PyInt ownHp = FeatureConst.Instance.pyIntMap[mPlayer.ownHero.Hp + mPlayer.ownHero.armor];
+            PyInt enemyMana = FeatureConst.Instance.pyIntMap[ePlayer.ownMaxMana];
+            PyInt enemyHp = FeatureConst.Instance.pyIntMap[ePlayer.ownHero.Hp + ePlayer.ownHero.armor];
 
             PyList hero_feature = new PyList(new PyObject[] { ownMana, ownHp, enemyMana, enemyHp });
             ownMana.Dispose();
@@ -562,8 +594,8 @@ namespace HRSim
             foreach (Minion m in mPlayer.ownMinions)
             {
                 PyDict minion = new PyDict();
-                minion["Hp"] = new PyInt(m.Hp);
-                minion["Angr"] = new PyInt(m.Angr);
+                minion["Hp"] = FeatureConst.Instance.pyIntMap[m.Hp];
+                minion["Angr"] = FeatureConst.Instance.pyIntMap[m.Angr];
                 minion["name"] = new PyString(m.name.ToString());
                 PythonUtils.AppendRecycle(own_minion_list, minion);
             }
@@ -572,8 +604,8 @@ namespace HRSim
             foreach (Minion m in ePlayer.ownMinions)
             {
                 PyDict minion = new PyDict();
-                minion["Hp"] = new PyInt(m.Hp);
-                minion["Angr"] = new PyInt(m.Angr);
+                minion["Hp"] = FeatureConst.Instance.pyIntMap[m.Hp];
+                minion["Angr"] = FeatureConst.Instance.pyIntMap[m.Angr];
                 minion["name"] = new PyString(m.name.ToString());
                 PythonUtils.AppendRecycle(enemy_minion_list, minion);
             }
@@ -655,10 +687,10 @@ namespace HRSim
                 mDeck = p.awayDeck;
             }
 
-            PyInt ownMana = new PyInt(mPlayer.ownMaxMana);
-            PyInt ownHp = new PyInt(mPlayer.ownHero.Hp + mPlayer.ownHero.armor);
-            PyInt enemyMana = new PyInt(ePlayer.ownMaxMana);
-            PyInt enemyHp = new PyInt(ePlayer.ownHero.Hp + ePlayer.ownHero.armor);
+            PyInt ownMana = FeatureConst.Instance.pyIntMap[mPlayer.ownMaxMana];
+            PyInt ownHp = FeatureConst.Instance.pyIntMap[mPlayer.ownHero.Hp + mPlayer.ownHero.armor];
+            PyInt enemyMana = FeatureConst.Instance.pyIntMap[ePlayer.ownMaxMana];
+            PyInt enemyHp = FeatureConst.Instance.pyIntMap[ePlayer.ownHero.Hp + ePlayer.ownHero.armor];
 
             PyList hero_feature = new PyList(new PyObject[] { ownMana, ownHp, enemyMana, enemyHp });
             ownMana.Dispose();
@@ -686,8 +718,8 @@ namespace HRSim
             foreach (Minion m in mPlayer.ownMinions)
             {
                 PyDict minion = new PyDict();
-                minion["Hp"] = new PyInt(m.Hp);
-                minion["Angr"] = new PyInt(m.Angr);
+                minion["Hp"] = FeatureConst.Instance.pyIntMap[m.Hp];
+                minion["Angr"] = FeatureConst.Instance.pyIntMap[m.Angr];
                 minion["name"] = new PyString(m.name.ToString());
                 PythonUtils.AppendRecycle(own_minion_list, minion);
             }
@@ -696,8 +728,8 @@ namespace HRSim
             foreach (Minion m in ePlayer.ownMinions)
             {
                 PyDict minion = new PyDict();
-                minion["Hp"] = new PyInt(m.Hp);
-                minion["Angr"] = new PyInt(m.Angr);
+                minion["Hp"] = FeatureConst.Instance.pyIntMap[m.Hp];
+                minion["Angr"] = FeatureConst.Instance.pyIntMap[m.Angr];
                 minion["name"] = new PyString(m.name.ToString());
                 PythonUtils.AppendRecycle(enemy_minion_list, minion);
             }

@@ -291,7 +291,7 @@ namespace HRSim
         float constC = 0.7f;
         bool useNNEval = false;
         bool isOpenHand = false;
-        double randomProb = 1.0;
+        double randomProb = 1.0; //1.0 表示openhand 0.0 表示closehand
         //做partial order 或者 TT
 
         public MCTSPlayer(bool side, Playfield playfield, bool useNNEval, double randomProb)
@@ -423,7 +423,8 @@ namespace HRSim
 
         public void UCTClosedHand(Node startNode, List<Playfield> sampledStates)
         {
-            int numIter = 750;
+            //int numIter = 750;
+            int numIter = 100;
             bool isEndReachedBefore = isEndReached;
             foreach (Playfield sampled in sampledStates)
             {
@@ -766,14 +767,14 @@ namespace HRSim
             float score;
             if (p.depth >= rolloutDepth)
             {
-                if (this.useNNEval)
-                {
-                    score = getDNNValue(p.state);
-                }
-                else
-                {
+                //if (this.useNNEval)
+                //{
+                //    score = getDNNValue(p.state);
+                //}
+                //else
+                //{
                     score = bh.getPlayfieldValue(p.state, this.playerSide);
-                }
+                //}
                 //score = bh.getPlayfieldValue(p.state, this.playerSide);
             }
             else
@@ -828,54 +829,6 @@ namespace HRSim
             return 1.0f - stateValue;
         }
 
-        private string sendMessage(Playfield p)
-        {
-            List<PlayerKeyInfo> playerInfoList = new List<PlayerKeyInfo>(2);
-            if (this.playerSide)
-            {
-                playerInfoList.Add(new PlayerKeyInfo(p.playerFirst, p.homeDeck, true, p));
-                playerInfoList.Add(new PlayerKeyInfo(p.playerSecond, p.awayDeck, false, p));
-            }
-            else
-            {
-                playerInfoList.Add(new PlayerKeyInfo(p.playerSecond, p.awayDeck, true, p));
-                playerInfoList.Add(new PlayerKeyInfo(p.playerFirst, p.homeDeck, false, p));
-            }
-            string message = JsonConvert.SerializeObject(playerInfoList);
-            string result = null;
-            //Helpfunctions.Instance.logTime("connect time");
-            if (requester == null)
-            {
-                requester = new ZSocket(ZSocketType.REQ);
-                requester.TcpKeepAlive = TcpKeepaliveBehaviour.Enable;
-                requester.Connect("tcp://127.0.0.1:5556");
-            }
-
-            //using (var requester = new ZSocket(ZSocketType.REQ))
-            //{
-            // Connect
-            requester.TcpKeepAlive = TcpKeepaliveBehaviour.Enable;
-            //for (int n = 0; n < 10; ++n)
-            //{
-            //string requestText = "Hello";
-            //Console.Write("Sending {0}...", message);
-            //Helpfunctions.Instance.startTimer();
-            // Send
-            requester.Send(new ZFrame(message));
-
-            // Receive
-            using (ZFrame reply = requester.ReceiveFrame())
-            {
-                result = reply.ReadString();
-                //Console.WriteLine(" Received: {0}", reply.ReadString());
-            }
-            //Helpfunctions.Instance.logTime("send time");
-            //}
-
-            //}
-            return result;
-        }
-
         public float sample(Node p)
         {
             Playfield startState = new Playfield(p.state);
@@ -893,10 +846,12 @@ namespace HRSim
                 {
                     startState.endTurn(false, false);
                     startState.drawTurnStartCard();
-                    //if (this.useNNEval)
-                    //{
-                    //    DNNEval.Instance.getNNPolicy(startState, startState.isOwnTurn);
-                    //}
+                    if (this.useNNEval)
+                    {
+                        //DNNEval.Instance.getNNPolicy(startState, startState.isOwnTurn);
+                        //DNNEval.Instance.getNNActionPolicy(startState, this.playerSide);
+                        DNNEval.Instance.fakeDNNEval();
+                    }
 
 
                     turn++;
@@ -907,14 +862,14 @@ namespace HRSim
                     {
                         //startState.printBoard();
                         float value;
-                        if (this.useNNEval)
-                        {
-                            value = getDNNValue(startState);
-                        }
-                        else
-                        {
+                        //if (this.useNNEval)
+                        //{
+                        //    value = getDNNValue(startState);
+                        //}
+                        //else
+                        //{
                             value = bh.getPlayfieldValue(startState, this.playerSide);
-                        }
+                        //}
 
                         if (log)
                             Console.WriteLine("ending depth = " + turn);

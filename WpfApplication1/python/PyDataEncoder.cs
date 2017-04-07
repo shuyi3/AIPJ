@@ -239,7 +239,7 @@ namespace HRSim
                     for (int i = 0; i < 9; i++){
                         PythonUtils.AppendRecycle(features[i], featureList[i]);
                     }
-                    PythonUtils.AppendRecycle(resultList, new PyInt(result));
+                    PythonUtils.AppendRecycle(resultList, FeatureConst.Instance.pyIntMap[result]);
                 }
             }
             string outFileName = fileName + "norm.hdf5";
@@ -294,12 +294,12 @@ namespace HRSim
                         int target = 0;
                         if (action.actionType == actionEnum.playcard)
                         {
-                            target = Featurization.cardIdxDict[action.card.card.name];
+                            target = FeatureConst.Instance.cardIdxDict[action.card.card.name];
                             
                         }
                         else if (action.actionType == actionEnum.useHeroPower)
                         {
-                            target = Featurization.cardIdxDict[CardDB.cardName.fireblast];
+                            target = FeatureConst.Instance.cardIdxDict[CardDB.cardName.fireblast];
                         }
                         tempPf.getNextEntity();
                         tempPf.doAction(action);
@@ -309,7 +309,7 @@ namespace HRSim
                         {
                             PythonUtils.AppendRecycle(features[i], featureList[i]);
                         }
-                        PythonUtils.AppendRecycle(targetList, new PyInt(target)); 
+                        PythonUtils.AppendRecycle(targetList, FeatureConst.Instance.pyIntMap[target]); 
                         interFeature = Featurization.interactionFeaturization(tempPf);
                     }
                     lastEntity = tempPf.getNextEntity() + 1;                    
@@ -544,8 +544,88 @@ namespace HRSim
                 count++;
                 Helpfunctions.Instance.WriteResultToFileAbs(fileName + ".3.txt", JsonConvert.SerializeObject(gameRecord));
             }
-        }       
+        }
+        public void PerformanceTest(string fileName)
+        {
+            dynamic np = Py.Import("numpy");
+            StreamReader file = new StreamReader(fileName);
+            string line = null;
+            PyList[] features = new PyList[9];
+            for (int i = 0; i < 9; i++) features[i] = new PyList();
+            //PyTuple tp1 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1], FeatureConst.Instance.pyIntMap[26) });
+            //PyTuple tp2 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[19 * 17 * 5)});
+            //PyTuple tp3 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[9*46)});
+            //PyTuple tp4 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[46) });
+            while ((line = file.ReadLine()) != null)
+            {
+                GameRecord gameRecord = JsonConvert.DeserializeObject<GameRecord>(line);
+                List<StateKeyInfo> playSec = new List<StateKeyInfo>();
+                foreach (StateKeyInfo stKeyInfo in gameRecord.playSec)
+                {
+                    PyList resultList = new PyList();
+                    PlayerKeyInfo p1Info = stKeyInfo.attackPlayer;
+                    PlayerKeyInfo p2Info = stKeyInfo.defensePlayer;
 
+                    bool isOwnTurn = p1Info.turn == 0 ? true : false;
+
+                    Playfield tempPf = null;
+                    if (isOwnTurn)
+                    {
+                        tempPf = new Playfield(stKeyInfo.nextEntity, isOwnTurn, p1Info, p2Info);
+                    }
+                    else
+                    {
+                        tempPf = new Playfield(stKeyInfo.nextEntity, isOwnTurn, p2Info, p1Info);
+                    }
+
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    for (int j = 0; j < 10000; j++)
+                    {                    
+                        StateFeature interFeature = Featurization.interactionFeaturization(tempPf);
+                        Movegenerator.Instance.getMoveList(tempPf, false, true, true, 0.0);
+                    }
+                    watch.Stop();
+                    var elapsedMs = watch.ElapsedMilliseconds;
+                    Helpfunctions.Instance.logg("ElapsedMilliseconds for 1000 Featurization" + elapsedMs);
+
+                    dynamic encode = null;
+                    watch = System.Diagnostics.Stopwatch.StartNew();
+                    for (int j = 0; j < 10000; j++)
+                    {                    
+                        encode = DNNEval.Instance.parsePlayfieldCNNAction(tempPf, tempPf, tempPf.isOwnTurn);
+                    }
+                    watch.Stop();
+                    elapsedMs = watch.ElapsedMilliseconds;
+                    Helpfunctions.Instance.logg("ElapsedMilliseconds for 1000 encoding" + elapsedMs);
+
+                    //dynamic global_ft = np.zeros(tp1, Py.kw("dtype", "float32"));
+                    //dynamic board_ft = np.zeros(tp2, Py.kw("dtype", "float32"));
+                    //dynamic hand_ft = np.zeros(tp3, Py.kw("dtype", "float32"));
+                    //dynamic play_ft = np.zeros(tp4, Py.kw("dtype", "float32"));
+                    dynamic ft = new PyList();
+                    //PythonUtils.AppendRecycle(ft, global_ft);
+                    //PythonUtils.AppendRecycle(ft, board_ft);
+                    //PythonUtils.AppendRecycle(ft, hand_ft);
+                    //PythonUtils.AppendRecycle(ft, play_ft);
+                    encode = new PyList();
+                    PyList ftidx = new PyList();
+                    ftidx.Append(FeatureConst.Instance.pyIntMap[1]);
+
+                    encode.Append(ftidx);
+                    encode.Append(ft);
+
+                    watch = System.Diagnostics.Stopwatch.StartNew();
+                    for (int j = 0; j < 10000; j++)
+                    {
+                        DNNEval.Instance.PredictTest(encode);           
+                    }
+                    watch.Stop();
+                    elapsedMs = watch.ElapsedMilliseconds;
+                    Helpfunctions.Instance.logg("ElapsedMilliseconds for 1000 NNEval" + elapsedMs);
+                    resultList.Dispose();
+                }
+            }
+        }
         public void Encode(string fileName)
         {
             StreamReader file = new StreamReader(fileName);
@@ -553,7 +633,7 @@ namespace HRSim
             int count = 0;
             while ((line = file.ReadLine()) != null)  
             {              
-                if (count % 500 == 0)
+                if (count % 100 == 0)
                 {
                     Console.WriteLine("Read " + count + " lines.");
                 }
@@ -613,11 +693,6 @@ namespace HRSim
                     {
                         stKeyInfo.attackPlayer.canPlayHeroPower.Add(0);
                     }
-
-                    //Console.WriteLine("===================");
-                    //tempPf.printBoard();
-                    //Console.WriteLine("Next Entity:" + tempPf.nextEntity);
-                    //Console.WriteLine("===================");
 
                     foreach (PlayerKeyInfo.ActionKeyInfo actionKeyInfo in p1Info.playedActionJsonList)
                     {
@@ -680,5 +755,181 @@ namespace HRSim
                 Helpfunctions.Instance.WriteResultToFileAbs(fileName + ".2.txt", JsonConvert.SerializeObject(gameRecord));
             }
         }
+
+        public void Replay(string fileName)
+        {
+
+            using (Py.GIL())
+            {
+                PythonEngine.Initialize();
+                dynamic np = Py.Import("numpy");
+                dynamic py_utils = Py.Import("simple_dqn.py_utils");
+                dynamic h5py = Py.Import("h5py");
+                dynamic gc = Py.Import("gc");
+                dynamic encoder = Py.Import("simple_dqn.encoder");
+
+                dynamic featueEncoder = encoder.FeatueEncoder();
+
+                StreamReader file = new StreamReader(fileName);
+                string line = null;
+                int count = 0;
+                int stateCount = 0;
+
+                //while ((line = file.ReadLine()) != null)
+                //{
+                //    GameRecord gameRecord = JsonConvert.DeserializeObject<GameRecord>(line);
+                //    stateCount += gameRecord.playSec.Count;
+                //}
+
+                //file.DiscardBufferedData();
+                //file.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
+
+                //Console.WriteLine(stateCount);
+
+                //PyTuple tp1 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[36) });
+                //PyTuple tp2 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[9), FeatureConst.Instance.pyIntMap[17), FeatureConst.Instance.pyIntMap[5) });
+                //PyTuple tp3 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[18), FeatureConst.Instance.pyIntMap[23) });
+                //PyTuple tp4 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[2), FeatureConst.Instance.pyIntMap[23) });
+                //PyTuple tp5 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[40) });
+
+                //dynamic globalFeature = np.zeros(tp1, Py.kw("dtype", "float32"));
+                //dynamic boardFeature = np.zeros(tp2, Py.kw("dtype", "float32"));
+                //dynamic handFeature = np.zeros(tp3, Py.kw("dtype", "float32"));
+                //dynamic playFeature = np.zeros(tp4, Py.kw("dtype", "float32"));
+                //dynamic target = np.zeros(tp5, Py.kw("dtype", "float32"));
+
+                //PyList globalList = new PyList();
+                //PyList boardList = new PyList();
+                //PyList handList = new PyList();
+                //PyList playList = new PyList();
+                //PyList targetList = new PyList();
+                //stateCount = 0;
+
+                while ((line = file.ReadLine()) != null)
+                {
+                    if (count % 500 == 0)
+                    {
+                        Console.WriteLine("Read " + count + " lines.");
+                        GC.Collect();
+                        gc.collect();
+                        //if (count > 0) break;
+                    }
+
+                    GameRecord gameRecord = JsonConvert.DeserializeObject<GameRecord>(line);
+                    foreach (StateKeyInfo stKeyInfo in gameRecord.playSec)
+                    {
+                        PlayerKeyInfo p1Info = stKeyInfo.attackPlayer;
+                        PlayerKeyInfo p2Info = stKeyInfo.defensePlayer;
+
+                        bool isOwnTurn = p1Info.turn == 0 ? true : false;
+
+                        Playfield tempPf = null;
+                        if (isOwnTurn)
+                        {
+                            tempPf = new Playfield(stKeyInfo.nextEntity, isOwnTurn, p1Info, p2Info);
+                        }
+                        else
+                        {
+                            tempPf = new Playfield(stKeyInfo.nextEntity, isOwnTurn, p2Info, p1Info);
+                        }
+
+                        //dynamic globalFeature = np.zeros(tp1, Py.kw("dtype", "float32"));
+                        //dynamic boardFeature = np.zeros(tp2, Py.kw("dtype", "float32"));
+                        //dynamic handFeature = np.zeros(tp3, Py.kw("dtype", "float32"));
+                        //dynamic playFeature = np.zeros(tp4, Py.kw("dtype", "float32"));
+
+                        //dynamic target = np.zeros(tp5, Py.kw("dtype", "float32"));
+                        PyList globalIdxArr = new PyList();
+                        PyList boardIdxArr = new PyList();
+                        PyList handIdxArr = new PyList();
+                        PyList playIdxArr = new PyList();
+                        PyList targetIdxArr = new PyList();
+
+                        Featurization.NumpyFeaturization(tempPf, globalIdxArr, boardIdxArr, handIdxArr, playIdxArr);
+
+                        //PythonUtils.AppendRecycle(globalList, globalFeature);
+                        //PythonUtils.AppendRecycle(boardList, boardFeature);
+                        //PythonUtils.AppendRecycle(handList, handFeature);
+                        //PythonUtils.AppendRecycle(playList, playFeature);
+
+                        foreach (PlayerKeyInfo.ActionKeyInfo actionKeyInfo in p1Info.playedActionJsonList)
+                        {
+                            Action action = CreateActionFromInfo(tempPf, actionKeyInfo);
+
+                            //Featurization.TestNumpyFeaturization(tempPf, npStFeature);
+
+                            //dynamic board_encode = DNNEval.Instance.parsePlayfieldCNNAction(tempPf, tempPf, tempPf.isOwnTurn);
+                            //Console.WriteLine("global:");
+                            //py_utils.py_print(npStFeature.globalFeature.shape);
+                            //py_utils.py_print(npStFeature.globalFeature);
+                            //py_utils.py_print(board_encode[1][0].shape);
+                            //py_utils.py_print(board_encode[1][0]);
+                            //Console.WriteLine("board_ft:");
+                            //for (int j = 0; j < 9; j++)
+                            //{
+                            //    Console.WriteLine("line: " + j);
+                            //    py_utils.py_print(np.sum(npStFeature.boardFeature[0][j]));
+                            //    //py_utils.py_print(npStFeature.handFeature[0][j + 9]);
+                            //    py_utils.py_print(np.sum(board_encode[1][1][0][j]));
+                            //}     
+                            ////py_utils.py_print(npStFeature.boardFeature.shape);
+                            ////py_utils.py_print(npStFeature.boardFeature);
+                            ////py_utils.py_print(board_encode[1][1].shape);
+                            ////py_utils.py_print(board_encode[1][1]);
+                            //Console.WriteLine("hand_ft:");
+                            //for (int j = 0; j < 9; j++)
+                            //{
+                            //    Console.WriteLine("line: " + j);
+                            //    py_utils.py_print(npStFeature.handFeature[0][j]);
+                            //    //py_utils.py_print(npStFeature.handFeature[0][j + 9]);
+                            //    py_utils.py_print(board_encode[1][2][0][j]);
+                            //}                          
+                            // Console.WriteLine("play_ft:");
+                            ////py_utils.py_print(npStFeature.playFeature.shape);
+                            ////py_utils.py_print(npStFeature.playFeature.flatten());
+                            ////py_utils.py_print(board_encode[1][3].shape);
+                            ////py_utils.py_print(board_encode[1][3].flatten());
+                            //py_utils.py_print(np.array_equal(board_encode[1][3].flatten(), npStFeature.playFeature.flatten()));
+                            tempPf.getNextEntity();
+                            tempPf.doAction(action);
+                        }
+
+                        Featurization.NumpyHLTarget(tempPf, targetIdxArr);
+
+                        featueEncoder.fill_global(globalIdxArr);
+                        featueEncoder.fill_board(boardIdxArr);
+                        featueEncoder.fill_hand(handIdxArr);
+                        featueEncoder.fill_play(playIdxArr);
+                        featueEncoder.fill_target(targetIdxArr);
+
+                        globalIdxArr.Dispose();
+                        boardIdxArr.Dispose();
+                        handIdxArr.Dispose();
+                        playIdxArr.Dispose();
+                        targetIdxArr.Dispose();
+
+                        stateCount++;
+                        //PythonUtils.AppendRecycle(playList, target);
+
+                    }
+                    count++;
+                }
+
+
+
+                PyString outFileName = new PyString(fileName + "HL.hdf5");
+                featueEncoder.write_h5(outFileName);
+                //dynamic outFile = h5py.File(outFileName, "w");
+                ////for (int i = 0; i < features.Length; i++)
+                ////    outFile.create_dataset(featureNames[i], Py.kw("data", features[i]));
+                //outFile.create_dataset("globalList", Py.kw("data", globalFeature));
+                //outFile.create_dataset("boardList", Py.kw("data", boardFeature));
+                //outFile.create_dataset("handList", Py.kw("data", handFeature));
+                //outFile.create_dataset("playList", Py.kw("data", playFeature));
+                //outFile.create_dataset("playList", Py.kw("data", target));
+                //outFile.close();
+            }
+        }
+
     }
 }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                

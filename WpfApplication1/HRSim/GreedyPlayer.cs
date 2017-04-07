@@ -11,7 +11,7 @@ namespace HRSim
         private List<Playfield> posibleMoves;
         private List<Action> moveList;
         private Playfield board;
-        private int maxWide = 500;
+        private int maxWide = 100;
         private Behavior bh;
         private bool playerSide;
         private bool useNNEval;

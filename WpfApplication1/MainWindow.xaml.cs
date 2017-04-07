@@ -261,12 +261,12 @@ namespace HRSim
                 if (turn % 2 == 0)
                 {
                     Helpfunctions.Instance.logg("Player 1: MCTSPlayer, Player 2: Silverfish");
-                    GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
-                    GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, true));
+                    //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
+                    //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, true));
                     //GameManager.Instance.setPlayer(0, new Silverfish());
                     //GameManager.Instance.setPlayer(1, new Silverfish());
-                    //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false));
-                    //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 1.0));
+                    GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 1.0));
+                    GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, true, 1.0));
                     //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 0.0));
                 }
                 else
@@ -274,11 +274,13 @@ namespace HRSim
                     Helpfunctions.Instance.logg("Player 1: Silverfish, Player 2: MCTSPlayer");
                     //GameManager.Instance.setPlayer(0, new Silverfish());
                     //GameManager.Instance.setPlayer(1, new Silverfish());
-                    GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, false));
-                    GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, true));
+                    //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, false));
+                    //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, true));
                     //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false));
                     //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 0.0));
                     //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 1.0));
+                    GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, true, 1.0));
+                    GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 1.0));
                 }
                
             }
@@ -1140,13 +1142,15 @@ namespace HRSim
             //PyDataEncoder.Instance.Encode(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt");
             //PyDataEncoder.Instance.Encode(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_2.txt");
             //PyDataEncoder.Instance.Encode(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt");
-            PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt");
-            PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_2.txt.2.txt");
-            PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt.2.txt");
+            //PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt");
+            //PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_2.txt.2.txt");
+            //PyDataEncoder.Instance.EncodeModified(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt.2.txt");
 
             //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
 
             //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
+            //PyDataEncoder.Instance.PerformanceTest(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt");
+            PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt.2.txt.3.txt");
 
         }
 
