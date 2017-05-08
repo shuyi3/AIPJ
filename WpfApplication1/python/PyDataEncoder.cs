@@ -768,7 +768,7 @@ namespace HRSim
                 dynamic gc = Py.Import("gc");
                 dynamic encoder = Py.Import("simple_dqn.encoder");
 
-                dynamic featueEncoder = encoder.FeatueEncoder();
+                dynamic featureEncoder = encoder.FeatureEncoder();
 
                 StreamReader file = new StreamReader(fileName);
                 string line = null;
@@ -845,8 +845,9 @@ namespace HRSim
                         PyList playIdxArr = new PyList();
                         PyList targetIdxArr = new PyList();
 
-                        Featurization.NumpyFeaturization(tempPf, globalIdxArr, boardIdxArr, handIdxArr, playIdxArr);
-
+                        //Featurization.NumpyFeaturization(tempPf, globalIdxArr, boardIdxArr, handIdxArr, playIdxArr);
+                        string ftString = Featurization.FeaturizationToString(tempPf);
+                        featureEncoder.fill_ft_str(ftString);
                         //PythonUtils.AppendRecycle(globalList, globalFeature);
                         //PythonUtils.AppendRecycle(boardList, boardFeature);
                         //PythonUtils.AppendRecycle(handList, handFeature);
@@ -855,6 +856,7 @@ namespace HRSim
                         foreach (PlayerKeyInfo.ActionKeyInfo actionKeyInfo in p1Info.playedActionJsonList)
                         {
                             Action action = CreateActionFromInfo(tempPf, actionKeyInfo);
+                            //ftString = Featurization.FeaturizationToString(tempPf);
 
                             //Featurization.TestNumpyFeaturization(tempPf, npStFeature);
 
@@ -896,11 +898,11 @@ namespace HRSim
 
                         Featurization.NumpyHLTarget(tempPf, targetIdxArr);
 
-                        featueEncoder.fill_global(globalIdxArr);
-                        featueEncoder.fill_board(boardIdxArr);
-                        featueEncoder.fill_hand(handIdxArr);
-                        featueEncoder.fill_play(playIdxArr);
-                        featueEncoder.fill_target(targetIdxArr);
+                        featureEncoder.fill_global(globalIdxArr);
+                        featureEncoder.fill_board(boardIdxArr);
+                        featureEncoder.fill_hand(handIdxArr);
+                        featureEncoder.fill_play(playIdxArr);
+                        featureEncoder.fill_target(targetIdxArr);
 
                         globalIdxArr.Dispose();
                         boardIdxArr.Dispose();
@@ -915,10 +917,8 @@ namespace HRSim
                     count++;
                 }
 
-
-
                 PyString outFileName = new PyString(fileName + "HL.hdf5");
-                featueEncoder.write_h5(outFileName);
+                featureEncoder.write_h5(outFileName);
                 //dynamic outFile = h5py.File(outFileName, "w");
                 ////for (int i = 0; i < features.Length; i++)
                 ////    outFile.create_dataset(featureNames[i], Py.kw("data", features[i]));

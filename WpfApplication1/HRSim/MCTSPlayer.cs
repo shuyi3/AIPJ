@@ -829,6 +829,76 @@ namespace HRSim
             return 1.0f - stateValue;
         }
 
+        public float MultilevelSample(Node p)
+        {
+            Playfield startState = new Playfield(p.state);
+            Action move = null;
+            int turn = p.depth;
+            if (log)
+                Console.WriteLine("starting depth = " + turn);
+
+            int score = startState.getGameResult();
+
+            while (score == -1)
+            {
+                //if no move
+                if (startState.moveList.Count == 0)
+                {
+                    startState.endTurn(false, false);
+                    startState.drawTurnStartCard();
+                    if (this.useNNEval)
+                    {
+                        DNNEval.Instance.fakeDNNEval();
+                    }
+
+                    move = null;
+                    if (turn == rolloutDepth) //evaluate at deapth == 5
+                    {
+                        float value;
+                        
+                        value = bh.getPlayfieldValue(startState, this.playerSide);
+
+                        if (log)
+                            Console.WriteLine("ending depth = " + turn);
+                        //float value = startState.getBoardValue();
+                        if (log)
+                            Console.WriteLine("sample turn:" + startState.isOwnTurn + " val:" + value);
+
+                        if (value > bestValue)
+                        {
+                            bestBoard = new Playfield(startState);
+                            bestValue = value;
+                        }
+                        return value;
+                    }
+
+                }
+                else
+                {
+                    //startState.doAction(startState.moveList[4]);
+                    int moveIndex = GameManager.getRNG().Next(startState.moveList.Count);
+                    move = startState.moveList[moveIndex];
+                    startState.doAction(move);
+                    //Console.WriteLine("S D:" + turn + ", T:" + startState.isOwnTurn + ", M:" + move.actionType);
+                }
+
+                //Movegenerator.Instance.getMoveListForPlayfield(startState, false, false);
+                startState.moveList = new List<Action>(Movegenerator.Instance.getMoveList(startState, false, true, true, 0.0));
+                score = startState.getGameResult();
+            }
+
+            isEndReached = true;
+            if ((playerSide && score == 0) || (!playerSide && score == 1))
+            {
+                //Helpfunctions.Instance.logg("End game value = 1");
+                return 1;
+            }
+            //Helpfunctions.Instance.logg("End game value = 0");
+            return 0;
+
+
+        }
+
         public float sample(Node p)
         {
             Playfield startState = new Playfield(p.state);

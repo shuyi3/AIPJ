@@ -20,7 +20,6 @@ using HREngine.Bots;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Windows.Threading;
-using ZeroMQ;
 using Newtonsoft.Json;
 using Python.Runtime;
 
@@ -43,7 +42,6 @@ namespace HRSim
     public partial class MainWindow : Window
     {
 
-        private ZSocket responder, requester;
         private GameRecord gameRecord = null;
         private int recordTurn = 0;
         private static MainWindow instance;
@@ -424,167 +422,6 @@ namespace HRSim
 
             return p.children.Count;
         }
-      
-        //private string generateMessage(int result, Node currentState) // for player 1
-        //{
-        //    Message message = new Message();
-        //    message.result = result;
-
-        //    if (result == 1)
-        //    {
-        //        message.result = 0;
-        //        return JsonConvert.SerializeObject(message);
-        //    }
-
-        //    int count = expandDecision(currentState);
-
-        //    if (count == 0) //lethal
-        //    {
-        //        GameManager.Instance.mPlayfield = currentState.children[0].state;
-        //        message.result = 0;
-        //        return JsonConvert.SerializeObject(message);
-        //    }
-
-        //    message.features = new double[currentState.children.Count][];
-
-        //    for (int i = 0; i < currentState.children.Count; ++i)
-        //    {
-        //        Node child = currentState.children[i];
-        //        double[] delta = new double[] { child.state.getBoardValue(), -child.state.getEnemyBoardValue(), child.state.getHandValue() };
-        //        message.features[i] = delta;
-        //    }
-
-        //    return JsonConvert.SerializeObject(message);
-        //}
-
-        private void connect()
-        {
-            using (var requester = new ZSocket(ZSocketType.REQ))
-            {
-                // Connect
-                requester.Connect("tcp://127.0.0.1:5556");
-
-                for (int n = 0; n < 10; ++n)
-                {
-                    string requestText = "Hello";
-                    Console.Write("Sending {0}...", requestText);
-
-                    // Send
-                    requester.Send(new ZFrame(requestText));
-
-                    // Receive
-                    using (ZFrame reply = requester.ReceiveFrame())
-                    {
-                        Console.WriteLine(" Received: {0} {1}!", requestText, reply.ReadString());
-                    }
-                }
-            }
-
-            //requester = new ZSocket(ZSocketType.REP);
-            //try
-            //{
-            //    // Bind
-            //    //responder.Bind("tcp://*:5556");
-            //    requester.Connect("tcp://127.0.0.1:5556");
-            //    requester.Send(new ZFrame("Hello")); 
-            //    Helpfunctions.Instance.logg("connected to python server");
-            //}
-            //catch (Exception e)
-            //{
-            //    Helpfunctions.Instance.logg(e.ToString());
-            //}
-        }
-
-        private string sendMessage(string message)
-        {
-            //if (requester == null) connect();
-
-            //requester.Send(new ZFrame(message));
-            //// Receive
-            //string result = null;
-            //using (ZFrame reply = requester.ReceiveFrame())
-            //{
-            //    result = reply.ReadString();
-            //    Console.WriteLine(" Received: {0}!", reply.ReadString());
-            //}
-            //return result;
-            string result = null;
-            using (var requester = new ZSocket(ZSocketType.REQ))
-            {
-                // Connect
-                requester.Connect("tcp://127.0.0.1:5556");
-
-                for (int n = 0; n < 10; ++n)
-                {
-                    //string requestText = "Hello";
-                    Console.Write("Sending {0}...", message);
-
-                    // Send
-                    requester.Send(new ZFrame(message));
-
-                    // Receive
-                    using (ZFrame reply = requester.ReceiveFrame())
-                    {
-                        result = reply.ReadString();
-                        Console.WriteLine(" Received: {0}", reply.ReadString());
-                    }
-                }
-            }
-            return result;
-        }
-       
-        //private void FVI(object sender, RoutedEventArgs e) //For player 1
-        //{
-        //    //connect
-        //    using (responder = new ZSocket(ZSocketType.REP))
-        //    {
-        //        // Bind
-        //        responder.Bind("tcp://*:5556");
-        //        Node currentState = null;
-        //        bool turn = true;
-
-        //        while (true)
-        //        {
-        //            // Receive
-        //            using (ZFrame request = responder.ReceiveFrame())
-        //            {
-        //                int action = Int32.Parse(request.ReadString());
-        //                string message;
-
-        //                if (action == -1)
-        //                {
-        //                    //new a game
-        //                    Init(true, 0);
-        //                    currentState = new Node(null, GameManager.Instance.mPlayfield, null, 0);
-        //                    message = generateMessage(-1, currentState);
-        //                    responder.Send(new ZFrame(message));
-        //                }
-        //                else
-        //                {   //do a action, return result and successors
-        //                    Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
-        //                    Playfield state = currentState.children[action].state;
-        //                    GameManager.Instance.mPlayfield = state;
-        //                    int result = GameManager.Instance.mPlayfield.getGameResult(); //action result
-        //                    updateAllUI();
-
-
-        //                    if (result == -1)
-        //                    {
-        //                        while (!GameManager.Instance.mPlayfield.isOwnTurn && result == -1)
-        //                        {
-        //                            result = GameManager.Instance.playMove();
-        //                        }
-        //                    }
-        //                    updateAllUI();
-
-        //                    currentState = new Node(null, GameManager.Instance.mPlayfield, null, 0);
-        //                    message = generateMessage(result, currentState);
-        //                    responder.Send(new ZFrame(message));
-        //                }     
-        //            }
-        //        }
-        //    }          
-        //}
 
         private void loadRecord(GameRecord gr)
         {
@@ -786,7 +623,6 @@ namespace HRSim
                 }
             }
         }
-
 
         private void DQN(object sender, RoutedEventArgs e)
         {
@@ -1151,6 +987,9 @@ namespace HRSim
             //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
             //PyDataEncoder.Instance.PerformanceTest(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt");
             PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt.2.txt.3.txt");
+            PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_2.txt.2.txt.3.txt");
+            PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt.3.txt");
+            //ZMQMessager.Instance.Test();
 
         }
 

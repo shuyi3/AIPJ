@@ -178,8 +178,37 @@ namespace HRSim
         public dynamic data;
         public int dim;
 
-        public virtual void FillIdxArr(PyList npArray, int offset)
+        public virtual void FillIdxArr(PyList idxArr, int offset)
+        { 
+        }
+
+        public virtual string EncodeToString()
         {
+            return null;
+        }
+    }
+
+    public class OneDBinaryFeature: BinaryFeature
+    {
+
+        public OneDBinaryFeature(int d1)
+        {
+            data = new int[d1];
+        }
+
+        public override string EncodeToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] != 0)
+                {
+                    if (sb.Length != 0) sb.Append(","); 
+                    sb.Append(i);
+                }
+            }
+
+            return sb.ToString();
         }
     }
 
@@ -188,6 +217,26 @@ namespace HRSim
         public TwoDBinaryFeature(int d1)
         {
             data = new int[d1];
+        }
+
+        public override string EncodeToString()
+        {
+            StringBuilder d1Sb = new StringBuilder();
+            StringBuilder d2Sb = new StringBuilder();
+            
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (i != 0){
+                    d1Sb.Append(",");
+                    d2Sb.Append(",");
+                }
+
+                d1Sb.Append(data[i]);
+                d2Sb.Append(i);
+            }
+
+            string ret = d1Sb.ToString() + "." + d2Sb.ToString();
+            return ret;
         }
 
         public override void FillIdxArr(PyList idxArr, int offset)
@@ -201,7 +250,6 @@ namespace HRSim
             }
             PythonUtils.AppendRecycle(idxArr, Dim1);
             PythonUtils.AppendRecycle(idxArr, Dim2);
-            //npArray[data[i] + offset].itemset(i, 1);
         }
     }
 
@@ -211,6 +259,33 @@ namespace HRSim
         {
             data = new int[d1][];
             for (int i = 0; i < d1; i++) data[i] = new int[d2];
+        }
+
+        public override string EncodeToString()
+        {
+            StringBuilder d1Sb = new StringBuilder();
+            StringBuilder d2Sb = new StringBuilder();
+            StringBuilder d3Sb = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                for (int j = 0; j < data[i].Length; j++)
+                {
+                    if (i != 0 || j != 0)
+                    {
+                        d1Sb.Append(",");
+                        d2Sb.Append(",");
+                        d3Sb.Append(",");
+                    }
+                    d1Sb.Append(FeatureConst.Instance.pyIntMap[data[i][j]]);
+                    d2Sb.Append(FeatureConst.Instance.pyIntMap[i]);
+                    d3Sb.Append(FeatureConst.Instance.pyIntMap[j]);
+                }
+            }
+
+            string ret = d1Sb.ToString() + "." + d2Sb.ToString() + "." + d3Sb.ToString();
+            return ret;
+
         }
 
         public override void FillIdxArr(PyList idxArr, int offset)
@@ -532,8 +607,66 @@ namespace HRSim
             return ret;
         }
 
-        public static BinaryFeature encodeDeck(Playfield pf)
+        public static BinaryFeature encodeHandDeck(Playfield pf)
         {
+
+            /*
+             *  hand_length = 23
+                hand = np.clip(own_hand, 0, 2) * 10 + np.clip(enemy_hand, 0, 2)
+                hand = hand.reshape(-1, 1)
+
+                # print (np.unique(hand))
+
+                hand = np.select(
+                    [hand == 2,
+                     hand == 1,
+                     hand == 12,
+                     hand == 0,
+                     hand == 11,
+                     hand == 22,
+                     hand == 21,
+                     hand == 10,
+                     hand == 20],
+                    [np.array([1, 0, 0, 0, 0, 0, 0, 0, 0]),
+                     np.array([0, 1, 0, 0, 0, 0, 0, 0, 0]),
+                     np.array([0, 0, 1, 0, 0, 0, 0, 0, 0]),
+                     np.array([0, 0, 0, 1, 0, 0, 0, 0, 0]),
+                     np.array([0, 0, 0, 0, 1, 0, 0, 0, 0]),
+                     np.array([0, 0, 0, 0, 0, 1, 0, 0, 0]),
+                     np.array([0, 0, 0, 0, 0, 0, 1, 0, 0]),
+                     np.array([0, 0, 0, 0, 0, 0, 0, 1, 0]),
+                     np.array([0, 0, 0, 0, 0, 0, 0, 0, 1])
+                     ])
+
+                one_hot_length = 9
+                hand_feature = hand.reshape(-1, hand_length, one_hot_length)
+
+                hand_feature = np.rollaxis(hand_feature, 2, 1)
+             */
+
+            Player mPlayer = pf.getCurrentPlayer(true);
+            Player ePlayer = pf.getCurrentPlayer(false);
+
+            BinaryFeature ret = new TwoDBinaryFeature(FeatureConst.Instance.cardArray.Length);
+
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                int idx = FeatureConst.Instance.cardIdxDict[hc.card.name];
+                if (ret.data[idx] < 2) ret.data[idx]++;
+            }
+
+            foreach (Handmanager.Handcard hc in ePlayer.owncards)
+            {
+                int idx = FeatureConst.Instance.cardIdxDict[hc.card.name];
+                if (ret.data[idx] < 20) ret.data[idx] += 10;
+            }
+
+            for (int i = 0; i < ret.data.Length; i++)
+            {
+                ret.data[i] = FeatureConst.Instance.countDict[ret.data[i]];
+            }
+
+            //deck
             List<CardDB.Card> mDeck, eDeck;
             if (pf.isOwnTurn)
             {
@@ -546,7 +679,7 @@ namespace HRSim
                 mDeck = pf.awayDeck;
             }
 
-            BinaryFeature ret = new TwoDBinaryFeature(FeatureConst.Instance.cardArray.Length);
+            int offset = FeatureConst.Instance.cardArray.Length;
 
             foreach (CardDB.Card card in mDeck)
             {
@@ -566,51 +699,9 @@ namespace HRSim
             }
 
             return ret;
+
         }
 
-        public static BinaryFeature encodePlayed(Playfield pf)
-        {
-            Player mPlayer = pf.getCurrentPlayer(true);
-            Player ePlayer = pf.getCurrentPlayer(false);
-
-            BinaryFeature ret = new TwoDBinaryFeature(FeatureConst.Instance.cardArray.Length);
-
-            foreach (Action action in mPlayer.playactions)
-            {
-                if (action.actionType == actionEnum.playcard)
-                {
-                    int idx = FeatureConst.Instance.cardIdxDict[action.card.card.name];
-                    if (ret.data[idx] < 2) ret.data[idx]++;
-                }
-                else if (action.actionType == actionEnum.playcard)
-                {
-                    ret.data[FeatureConst.Instance.heroPowerIdx] = 1;
-                }
-            }
-
-            return ret;
-        }
-
-        public static BinaryFeature encodePlay(Playfield pf)
-        {
-            Player mPlayer = pf.getCurrentPlayer(true);
-            Player ePlayer = pf.getCurrentPlayer(false);
-
-            BinaryFeature ret = new TwoDBinaryFeature(FeatureConst.Instance.cardArray.Length);
-
-            foreach (Handmanager.Handcard hc in mPlayer.owncards)
-            {
-                if (hc.canplayCard(pf, pf.isOwnTurn))
-                {
-                    int idx = FeatureConst.Instance.cardIdxDict[hc.card.name];
-                    ret.data[idx] = 1;
-                }
-            }
-
-            if (mPlayer.mana >= 2 && mPlayer.ownAbilityReady) ret.data[FeatureConst.Instance.heroPowerIdx] = 1;
-
-            return ret;
-        }
 
         public static BinaryFeature encodeHand(Playfield pf)
         {
@@ -669,10 +760,90 @@ namespace HRSim
             for (int i = 0; i < ret.data.Length; i++)
             {
                 ret.data[i] = FeatureConst.Instance.countDict[ret.data[i]];
-            } 
+            }
 
             return ret;
 
+        }
+
+        public static BinaryFeature encodeDeck(Playfield pf)
+        {
+            List<CardDB.Card> mDeck, eDeck;
+            if (pf.isOwnTurn)
+            {
+                mDeck = pf.homeDeck;
+                eDeck = pf.awayDeck;
+            }
+            else
+            {
+                eDeck = pf.homeDeck;
+                mDeck = pf.awayDeck;
+            }
+
+            BinaryFeature ret = new TwoDBinaryFeature(FeatureConst.Instance.cardArray.Length);
+
+            foreach (CardDB.Card card in mDeck)
+            {
+                int idx = FeatureConst.Instance.cardIdxDict[card.name];
+                ret.data[idx]++;
+            }
+
+            foreach (CardDB.Card card in eDeck)
+            {
+                int idx = FeatureConst.Instance.cardIdxDict[card.name];
+                ret.data[idx] += 10;
+            }
+
+            for (int i = 0; i < ret.data.Length; i++)
+            {
+                ret.data[i] = FeatureConst.Instance.countDict[ret.data[i]];
+            }
+
+            return ret;
+        }
+
+        public static BinaryFeature encodePlayed(Playfield pf)
+        {
+            Player mPlayer = pf.getCurrentPlayer(true);
+            Player ePlayer = pf.getCurrentPlayer(false);
+
+            BinaryFeature ret = new OneDBinaryFeature(FeatureConst.Instance.cardArray.Length);
+
+            foreach (Action action in mPlayer.playactions)
+            {
+                if (action.actionType == actionEnum.playcard)
+                {
+                    int idx = FeatureConst.Instance.cardIdxDict[action.card.card.name];
+                    if (ret.data[idx] < 2) ret.data[idx]++;
+                }
+                else if (action.actionType == actionEnum.playcard)
+                {
+                    ret.data[FeatureConst.Instance.heroPowerIdx] = 1;
+                }
+            }
+
+            return ret;
+        }
+
+        public static BinaryFeature encodePlay(Playfield pf)
+        {
+            Player mPlayer = pf.getCurrentPlayer(true);
+            Player ePlayer = pf.getCurrentPlayer(false);
+
+            BinaryFeature ret = new OneDBinaryFeature(FeatureConst.Instance.cardArray.Length);
+
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                if (hc.canplayCard(pf, pf.isOwnTurn))
+                {
+                    int idx = FeatureConst.Instance.cardIdxDict[hc.card.name];
+                    ret.data[idx] = 1;
+                }
+            }
+
+            if (mPlayer.mana >= 2 && mPlayer.ownAbilityReady) ret.data[FeatureConst.Instance.heroPowerIdx] = 1;
+
+            return ret;
         }
 
         public static BinaryFeature encodeBoard(Playfield pf)
@@ -701,12 +872,10 @@ namespace HRSim
                      np.array([0, 0, 0, 0, 0, 0, 0, 1, 0]),
                      np.array([0, 0, 0, 0, 0, 0, 0, 0, 1])
                     ])
-            
-
-             
-
+           
             special = get_minion_special(name_idx)
             */
+
             int numHpLv = 5;
             Player mPlayer = pf.getCurrentPlayer(true);
             Player ePlayer = pf.getCurrentPlayer(false);
@@ -774,6 +943,99 @@ namespace HRSim
             //playedFeature.FillNpArr(playNpArr, 1);
         }
 
+        //public static void FlattenFeaturization(Playfield pf)
+        //{
+        //    List<int> globalOnList = new List<int>();
+
+        //    Player mPlayer = pf.getCurrentPlayer(true);
+        //    Player ePlayer = pf.getCurrentPlayer(false);
+        //    int ownMana = mPlayer.ownMaxMana;
+        //    int enemyMana = ePlayer.ownMaxMana;
+        //    int ownHp = mPlayer.ownHero.getHeroHpValue();
+        //    int enemyHp = ePlayer.ownHero.getHeroHpValue();
+        //    int glbIdx = 0;
+        //    glbIdx += ownMana - 1;
+        //    globalOnList.Add(glbIdx); //global mana
+
+        //    glbIdx = 10;
+        //    if (!pf.isOwnTurn) globalOnList.Add(glbIdx);
+        //    int heroIdx = FeatureConst.Instance.heroHpDict[ownHp + enemyHp * 10];
+        //    glbIdx += heroIdx;
+        //    globalOnList.Add(glbIdx);
+
+        //    BinaryFeature boardFeature = encodeBoard(pf);
+        //    BinaryFeature handFeature = encodeHand(pf);
+        //    //handFeature.FillIdxArr(handIdxArr, 0);
+
+        //    //BinaryFeature DeckFeature = encodeDeck(pf);
+        //    //DeckFeature.FillIdxArr(handIdxArr, 9);
+        //    PyList dim1 = new PyList();
+        //    PyList dim2 = new PyList();
+
+        //    for (int i = 0; i < handFeature.data.Length; i++)
+        //    {
+        //        dim1.Append(FeatureConst.Instance.pyIntMap[handFeature.data[i]]);
+        //        dim2.Append(FeatureConst.Instance.pyIntMap[i]);
+        //    }
+
+        //    BinaryFeature playableFeature = encodePlay(pf);
+
+        //    BinaryFeature playedFeature = encodePlayed(pf);
+        //    for (int i = 0; i < playedFeature.data.Length; i++)
+        //    {
+        //        if (playedFeature.data[i] > 0)
+        //        {
+        //            dim1.Append(FeatureConst.Instance.pyIntMap[1]);
+        //            dim2.Append(FeatureConst.Instance.pyIntMap[i]);
+        //        }
+        //    }
+        //    PythonUtils.AppendRecycle(playIdxArr, dim1);
+        //    PythonUtils.AppendRecycle(playIdxArr, dim2);
+
+        //}
+
+        public static BinaryFeature EncodeGlobal(Playfield pf)
+        {
+            Player mPlayer = pf.getCurrentPlayer(true);
+            Player ePlayer = pf.getCurrentPlayer(false);
+            int ownMana = mPlayer.ownMaxMana;
+            int enemyMana = ePlayer.ownMaxMana;
+            int ownHp = mPlayer.ownHero.getHeroHpValue();
+            int enemyHp = ePlayer.ownHero.getHeroHpValue();
+            int glbIdx = 0;
+            glbIdx += ownMana - 1;
+
+            BinaryFeature globalFeature = new OneDBinaryFeature(36);
+            globalFeature.data[glbIdx] = 1;
+
+            glbIdx = 10;
+            if (!pf.isOwnTurn) globalFeature.data[glbIdx] = 1;
+
+            int heroIdx = FeatureConst.Instance.heroHpDict[ownHp + enemyHp * 10];
+            glbIdx += heroIdx;
+            globalFeature.data[glbIdx] = 1;
+
+            return globalFeature;
+        }
+
+        public static string FeaturizationToString(Playfield pf)
+        {
+            BinaryFeature globalFeature = EncodeGlobal(pf);
+            string globalStr = globalFeature.EncodeToString();
+
+            BinaryFeature boardFeature = encodeBoard(pf);
+            string boardStr = boardFeature.EncodeToString();
+
+            BinaryFeature handFeature = encodeHand(pf);
+            string handStr = handFeature.EncodeToString();
+
+            BinaryFeature playableFeature = encodePlay(pf);
+            string playStr = playableFeature.EncodeToString();
+
+            return globalStr + "|" + boardStr + "|" + handStr + "|" + playStr;
+        }
+
+
         public static void NumpyFeaturization(Playfield pf, dynamic globalIdxArr, dynamic boardIdxArr, dynamic handIdxArr, dynamic playIdxArr)
         {
             Player mPlayer = pf.getCurrentPlayer(true);
@@ -796,10 +1058,8 @@ namespace HRSim
             boardFeature.FillIdxArr(boardIdxArr, 0);
 
             BinaryFeature handFeature = encodeHand(pf);
-            //handFeature.FillIdxArr(handIdxArr, 0);
+            //BinaryFeature DeckFeature = encodeDeck(pf);
 
-            BinaryFeature DeckFeature = encodeDeck(pf);
-            //DeckFeature.FillIdxArr(handIdxArr, 9);
             PyList dim1 = new PyList();
             PyList dim2 = new PyList();
 
@@ -809,16 +1069,17 @@ namespace HRSim
                 dim2.Append(FeatureConst.Instance.pyIntMap[i]);
             }
 
-            for (int i = 0; i < DeckFeature.data.Length; i++)
-            {
-                dim1.Append(FeatureConst.Instance.pyIntMap[handFeature.data[i] + 9]);
-                dim2.Append(FeatureConst.Instance.pyIntMap[i]);
-            }
+            //for (int i = 0; i < DeckFeature.data.Length; i++)
+            //{
+            //    dim1.Append(FeatureConst.Instance.pyIntMap[DeckFeature.data[i] + 9]);
+            //    dim2.Append(FeatureConst.Instance.pyIntMap[i]);
+            //}
 
             PythonUtils.AppendRecycle(handIdxArr, dim1);
             PythonUtils.AppendRecycle(handIdxArr, dim2);
 
             BinaryFeature playableFeature = encodePlay(pf);
+
             dim1 = new PyList();
             dim2 = new PyList();
 
@@ -843,7 +1104,6 @@ namespace HRSim
             PythonUtils.AppendRecycle(playIdxArr, dim1);
             PythonUtils.AppendRecycle(playIdxArr, dim2);
 
-            //playedFeature.FillNpArr(playNpArr, 1);
         }
 
         public static StateFeature interactionFeaturization(Playfield pf)

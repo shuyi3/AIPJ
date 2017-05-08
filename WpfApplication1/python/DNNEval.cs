@@ -86,41 +86,7 @@ namespace HRSim
                 board_encoder = Py.Import("simple_dqn.encoder");
                 py_utils = Py.Import("simple_dqn.py_utils");
                 dynamic cnn_model = Py.Import("simple_dqn.cnn_model");
-                //model = cnn_model.CNNPhaseEval();
-                //model = cnn_model.CNNPhaseActionPolicy();
                 model = cnn_model.CNNPhaseActionPolicyFast();
-                //model = cnn_model.CNNPhasePolicy();
-                //dynamic models = Py.Import("keras.models");
-                //dynamic layers = Py.Import("keras.layers");
-                //dynamic optimizers = Py.Import("keras.optimizers");
-
-                //dynamic Dense = layers.Dense;
-                //dynamic Dropout = layers.Dropout;
-                //dynamic Activation = layers.Activation;
-                //dynamic sequential = models.Sequential;
-                //dynamic SGD = optimizers.SGD;
-                //model = sequential();
-
-                //tp1 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[36) });
-                //tp2 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[9 * 17 * 5) });
-                //tp3 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[18 * 23) });
-                //tp4 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[46) });
-                //dynamic global_ft = np.zeros(tp1, Py.kw("dtype", "float32"));
-                //dynamic board_ft = np.zeros(tp2, Py.kw("dtype", "float32"));
-                //dynamic hand_ft = np.zeros(tp3, Py.kw("dtype", "float32"));
-                //dynamic play_ft = np.zeros(tp4, Py.kw("dtype", "float32"));
-                //dynamic ft = new PyList();
-                //PythonUtils.AppendRecycle(ft, global_ft);
-                //PythonUtils.AppendRecycle(ft, board_ft);
-                //PythonUtils.AppendRecycle(ft, hand_ft);
-                //PythonUtils.AppendRecycle(ft, play_ft);
-                //encode = new PyList();
-                //PyList ftidx = new PyList();
-                //PythonUtils.AppendRecycle(ftidx, FeatureConst.Instance.pyIntMap[1));
-                //PythonUtils.AppendRecycle(encode, ftidx);
-                //PythonUtils.AppendRecycle(encode, ft);
-
-                //model = cnn_model.compile_cnn_model(Py.kw("weight_file", policy_weight_file));
             }
         }
 
