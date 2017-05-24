@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HREngine.Bots;
+using SilverfishAi;
 using Newtonsoft.Json;
 
 namespace HRSim
@@ -335,12 +335,7 @@ namespace HRSim
             instance = new GameManager();
             instance.initPlayField();
             instance.bh = new BehaviorControl();
-            //instance.playField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", true);
-            //instance.playField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", false);
-            //instance.playField.drawInitCards();
-            //instance.playField.isOwnTurn = true;
-            //Helpfunctions.Instance.convertPlayfieldToJson(GameManager.Instance.mPlayfield);
-
+        
         }
 
         public void initPlayField()
@@ -349,8 +344,8 @@ namespace HRSim
             if (this.playField == null || this.playField.getGameResult() != -1)
             {
                 this.playField = new Playfield();
-                this.playField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", true);
-                this.playField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", false);
+                this.playField.initDeckFromFile("C:\\Code\\AIPJ\\WpfApplication1\\test_mage_deck.txt", true);
+                this.playField.initDeckFromFile("C:\\Code\\AIPJ\\WpfApplication1\\test_mage_deck.txt", false);
                 this.playField.drawInitCards();
                 this.playField.isOwnTurn = true;
             }

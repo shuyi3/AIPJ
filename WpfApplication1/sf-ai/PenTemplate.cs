@@ -1,4 +1,4 @@
-﻿namespace HREngine.Bots
+﻿namespace SilverfishAi
 {
    
     internal class PenTemplate

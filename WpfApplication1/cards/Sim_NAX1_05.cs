@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
     class Sim_NAX1_05 : SimTemplate//* Locust Swarm
     {

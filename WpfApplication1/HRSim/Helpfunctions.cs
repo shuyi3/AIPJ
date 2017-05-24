@@ -19,9 +19,9 @@ namespace HRSim
         public event EventHandler<String> LogUpdate;
 
         //HRSim.MainWindow window = null;
-        public string logpath = "C:\\Code\\WpfApplication1\\WpfApplication1\\";
+        public string logpath = "C:\\Code\\AIPJ\\WpfApplication1\\";
         public string logfile = "UILogg" + DateTime.Now.ToString("_yyyy-MM-dd_HH-mm-ss") + ".txt";
-        public string path = "C:\\Code\\WpfApplication1\\WpfApplication1\\";
+        public string path = "C:\\Code\\AIPJ\\WpfApplication1\\";
 
         public StreamReader stream = null;
         public JArray sources = null;

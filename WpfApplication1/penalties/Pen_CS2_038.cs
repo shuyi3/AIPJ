@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
 	class Pen_CS2_038 : PenTemplate //ancestralspirit
 	{

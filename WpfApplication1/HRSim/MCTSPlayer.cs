@@ -848,7 +848,7 @@ namespace HRSim
                     startState.drawTurnStartCard();
                     if (this.useNNEval)
                     {
-                        DNNEval.Instance.fakeDNNEval();
+                        DNNEval.Instance.GetCardPolicy(startState);
                     }
 
                     move = null;
@@ -920,7 +920,7 @@ namespace HRSim
                     {
                         //DNNEval.Instance.getNNPolicy(startState, startState.isOwnTurn);
                         //DNNEval.Instance.getNNActionPolicy(startState, this.playerSide);
-                        DNNEval.Instance.fakeDNNEval();
+                        DNNEval.Instance.GetCardPolicy(startState);
                     }
 
 

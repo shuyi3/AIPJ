@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
     class Sim_EX1_103 : SimTemplate//* Coldlight Seer
 	// Battlecry:: Give ALL other Murlocs +2 Health.

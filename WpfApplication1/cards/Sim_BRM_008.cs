@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
 	class Sim_BRM_008 : SimTemplate //* Dark Iron Skulker
 	{

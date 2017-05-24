@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
 
     public class Mulligan

@@ -2722,7 +2722,7 @@
                 }
                 if (ha == null)
                 {
-                    HREngine.Bots.Playfield ppTest = new HREngine.Bots.Playfield((HREngine.Bots.Silverfish)GameManager.Instance.playerFirst);
+                    SilverfishAi.Playfield ppTest = new SilverfishAi.Playfield((SilverfishAi.Silverfish)GameManager.Instance.playerFirst);
                     int debug = 1; //null target debug
                 }
             }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
     class Sim_GVG_119 : SimTemplate //Blingtron 3000
     {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
 	class Pen_FP1_013 : PenTemplate //kelthuzad
 	{

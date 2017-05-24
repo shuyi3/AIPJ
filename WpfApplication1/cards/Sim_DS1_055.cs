@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
 	class Sim_DS1_055 : SimTemplate //darkscalehealer
 	{

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
 	class Sim_GAME_002 : SimTemplate //avatarofthecoin
 	{

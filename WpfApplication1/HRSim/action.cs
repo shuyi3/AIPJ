@@ -227,7 +227,7 @@ namespace HRSim
         }
 
 
-        public Action(HREngine.Bots.Action a)//TODO: manaCost
+        public Action(SilverfishAi.Action a)//TODO: manaCost
         {
             this.actionType = (actionEnum)Enum.Parse(typeof(actionEnum), a.actionType.ToString());
             this.card = a.card == null? null : new Handmanager.Handcard(a.card);

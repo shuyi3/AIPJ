@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
     class Sim_FP1_004 : SimTemplate//* Mad Scientist
     {

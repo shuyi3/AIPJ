@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
     internal class Sim_GVG_075 : SimTemplate //Ship's Cannon
     {

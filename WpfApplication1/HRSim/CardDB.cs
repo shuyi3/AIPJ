@@ -2541,7 +2541,7 @@
                 this.isToken = c.isToken;
             }
 
-            public Card(HREngine.Bots.CardDB.Card c)
+            public Card(SilverfishAi.CardDB.Card c)
             {
                 this.playrequires = new List<ErrorType2>();
                 //this.entityID = c.entityID;
@@ -3556,7 +3556,7 @@
             string[] lines = new string[0] { };
             try
             {
-                string path = "C:\\Code\\WpfApplication1\\WpfApplication1\\";
+                string path = "C:\\Code\\AIPJ\\WpfApplication1\\";
                 lines = System.IO.File.ReadAllLines(path + "_carddb.txt");
                 Helpfunctions.Instance.ErrorLog("read carddb.txt");
             }

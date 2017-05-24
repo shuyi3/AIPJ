@@ -186,6 +186,11 @@ namespace HRSim
         {
             return null;
         }
+
+        public virtual string EncodeToStringFlatten()
+        {
+            return null;
+        }
     }
 
     public class OneDBinaryFeature: BinaryFeature
@@ -204,6 +209,21 @@ namespace HRSim
                 if (data[i] != 0)
                 {
                     if (sb.Length != 0) sb.Append(","); 
+                    sb.Append(i);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public override string EncodeToStringFlatten()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] != 0)
+                {
+                    if (sb.Length != 0) sb.Append(",");
                     sb.Append(i);
                 }
             }
@@ -237,6 +257,23 @@ namespace HRSim
 
             string ret = d1Sb.ToString() + "." + d2Sb.ToString();
             return ret;
+        }
+
+        public override string EncodeToStringFlatten()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (i != 0)
+                {
+                    sb.Append(",");
+                }
+
+                sb.Append(data[i] * data.Length + i);
+            }
+
+            return sb.ToString();
         }
 
         public override void FillIdxArr(PyList idxArr, int offset)
@@ -277,9 +314,9 @@ namespace HRSim
                         d2Sb.Append(",");
                         d3Sb.Append(",");
                     }
-                    d1Sb.Append(FeatureConst.Instance.pyIntMap[data[i][j]]);
-                    d2Sb.Append(FeatureConst.Instance.pyIntMap[i]);
-                    d3Sb.Append(FeatureConst.Instance.pyIntMap[j]);
+                    d1Sb.Append(data[i][j]);
+                    d2Sb.Append(i);
+                    d3Sb.Append(j);
                 }
             }
 
@@ -287,6 +324,27 @@ namespace HRSim
             return ret;
 
         }
+
+        public override string EncodeToStringFlatten()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                for (int j = 0; j < data[i].Length; j++)
+                {
+                    if (i != 0 || j != 0)
+                    {
+                        sb.Append(",");
+                    }
+                    sb.Append(data[i][j] * data.Length * data[i].Length + i * data[i].Length + j);
+                }
+            }
+
+            return sb.ToString();
+
+        }
+
 
         public override void FillIdxArr(PyList idxArr, int offset)
         {
@@ -943,57 +1001,6 @@ namespace HRSim
             //playedFeature.FillNpArr(playNpArr, 1);
         }
 
-        //public static void FlattenFeaturization(Playfield pf)
-        //{
-        //    List<int> globalOnList = new List<int>();
-
-        //    Player mPlayer = pf.getCurrentPlayer(true);
-        //    Player ePlayer = pf.getCurrentPlayer(false);
-        //    int ownMana = mPlayer.ownMaxMana;
-        //    int enemyMana = ePlayer.ownMaxMana;
-        //    int ownHp = mPlayer.ownHero.getHeroHpValue();
-        //    int enemyHp = ePlayer.ownHero.getHeroHpValue();
-        //    int glbIdx = 0;
-        //    glbIdx += ownMana - 1;
-        //    globalOnList.Add(glbIdx); //global mana
-
-        //    glbIdx = 10;
-        //    if (!pf.isOwnTurn) globalOnList.Add(glbIdx);
-        //    int heroIdx = FeatureConst.Instance.heroHpDict[ownHp + enemyHp * 10];
-        //    glbIdx += heroIdx;
-        //    globalOnList.Add(glbIdx);
-
-        //    BinaryFeature boardFeature = encodeBoard(pf);
-        //    BinaryFeature handFeature = encodeHand(pf);
-        //    //handFeature.FillIdxArr(handIdxArr, 0);
-
-        //    //BinaryFeature DeckFeature = encodeDeck(pf);
-        //    //DeckFeature.FillIdxArr(handIdxArr, 9);
-        //    PyList dim1 = new PyList();
-        //    PyList dim2 = new PyList();
-
-        //    for (int i = 0; i < handFeature.data.Length; i++)
-        //    {
-        //        dim1.Append(FeatureConst.Instance.pyIntMap[handFeature.data[i]]);
-        //        dim2.Append(FeatureConst.Instance.pyIntMap[i]);
-        //    }
-
-        //    BinaryFeature playableFeature = encodePlay(pf);
-
-        //    BinaryFeature playedFeature = encodePlayed(pf);
-        //    for (int i = 0; i < playedFeature.data.Length; i++)
-        //    {
-        //        if (playedFeature.data[i] > 0)
-        //        {
-        //            dim1.Append(FeatureConst.Instance.pyIntMap[1]);
-        //            dim2.Append(FeatureConst.Instance.pyIntMap[i]);
-        //        }
-        //    }
-        //    PythonUtils.AppendRecycle(playIdxArr, dim1);
-        //    PythonUtils.AppendRecycle(playIdxArr, dim2);
-
-        //}
-
         public static BinaryFeature EncodeGlobal(Playfield pf)
         {
             Player mPlayer = pf.getCurrentPlayer(true);
@@ -1035,6 +1042,22 @@ namespace HRSim
             return globalStr + "|" + boardStr + "|" + handStr + "|" + playStr;
         }
 
+        public static string FeaturizationToStringFlatten(Playfield pf)
+        {
+            BinaryFeature globalFeature = EncodeGlobal(pf);
+            string globalStr = globalFeature.EncodeToStringFlatten();
+
+            BinaryFeature boardFeature = encodeBoard(pf);
+            string boardStr = boardFeature.EncodeToStringFlatten();
+
+            BinaryFeature handFeature = encodeHand(pf);
+            string handStr = handFeature.EncodeToStringFlatten();
+
+            BinaryFeature playableFeature = encodePlay(pf);
+            string playStr = playableFeature.EncodeToStringFlatten();
+
+            return globalStr + "|" + boardStr + "|" + handStr + "|" + playStr;
+        }
 
         public static void NumpyFeaturization(Playfield pf, dynamic globalIdxArr, dynamic boardIdxArr, dynamic handIdxArr, dynamic playIdxArr)
         {

@@ -775,36 +775,6 @@ namespace HRSim
                 int count = 0;
                 int stateCount = 0;
 
-                //while ((line = file.ReadLine()) != null)
-                //{
-                //    GameRecord gameRecord = JsonConvert.DeserializeObject<GameRecord>(line);
-                //    stateCount += gameRecord.playSec.Count;
-                //}
-
-                //file.DiscardBufferedData();
-                //file.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
-
-                //Console.WriteLine(stateCount);
-
-                //PyTuple tp1 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[36) });
-                //PyTuple tp2 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[9), FeatureConst.Instance.pyIntMap[17), FeatureConst.Instance.pyIntMap[5) });
-                //PyTuple tp3 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[18), FeatureConst.Instance.pyIntMap[23) });
-                //PyTuple tp4 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[2), FeatureConst.Instance.pyIntMap[23) });
-                //PyTuple tp5 = new PyTuple(new PyObject[] { FeatureConst.Instance.pyIntMap[stateCount), FeatureConst.Instance.pyIntMap[1), FeatureConst.Instance.pyIntMap[40) });
-
-                //dynamic globalFeature = np.zeros(tp1, Py.kw("dtype", "float32"));
-                //dynamic boardFeature = np.zeros(tp2, Py.kw("dtype", "float32"));
-                //dynamic handFeature = np.zeros(tp3, Py.kw("dtype", "float32"));
-                //dynamic playFeature = np.zeros(tp4, Py.kw("dtype", "float32"));
-                //dynamic target = np.zeros(tp5, Py.kw("dtype", "float32"));
-
-                //PyList globalList = new PyList();
-                //PyList boardList = new PyList();
-                //PyList handList = new PyList();
-                //PyList playList = new PyList();
-                //PyList targetList = new PyList();
-                //stateCount = 0;
-
                 while ((line = file.ReadLine()) != null)
                 {
                     if (count % 500 == 0)
@@ -833,101 +803,29 @@ namespace HRSim
                             tempPf = new Playfield(stKeyInfo.nextEntity, isOwnTurn, p2Info, p1Info);
                         }
 
-                        //dynamic globalFeature = np.zeros(tp1, Py.kw("dtype", "float32"));
-                        //dynamic boardFeature = np.zeros(tp2, Py.kw("dtype", "float32"));
-                        //dynamic handFeature = np.zeros(tp3, Py.kw("dtype", "float32"));
-                        //dynamic playFeature = np.zeros(tp4, Py.kw("dtype", "float32"));
-
-                        //dynamic target = np.zeros(tp5, Py.kw("dtype", "float32"));
-                        PyList globalIdxArr = new PyList();
-                        PyList boardIdxArr = new PyList();
-                        PyList handIdxArr = new PyList();
-                        PyList playIdxArr = new PyList();
                         PyList targetIdxArr = new PyList();
 
-                        //Featurization.NumpyFeaturization(tempPf, globalIdxArr, boardIdxArr, handIdxArr, playIdxArr);
-                        string ftString = Featurization.FeaturizationToString(tempPf);
+                        string ftString = Featurization.FeaturizationToStringFlatten(tempPf);
                         featureEncoder.fill_ft_str(ftString);
-                        //PythonUtils.AppendRecycle(globalList, globalFeature);
-                        //PythonUtils.AppendRecycle(boardList, boardFeature);
-                        //PythonUtils.AppendRecycle(handList, handFeature);
-                        //PythonUtils.AppendRecycle(playList, playFeature);
 
                         foreach (PlayerKeyInfo.ActionKeyInfo actionKeyInfo in p1Info.playedActionJsonList)
                         {
                             Action action = CreateActionFromInfo(tempPf, actionKeyInfo);
-                            //ftString = Featurization.FeaturizationToString(tempPf);
-
-                            //Featurization.TestNumpyFeaturization(tempPf, npStFeature);
-
-                            //dynamic board_encode = DNNEval.Instance.parsePlayfieldCNNAction(tempPf, tempPf, tempPf.isOwnTurn);
-                            //Console.WriteLine("global:");
-                            //py_utils.py_print(npStFeature.globalFeature.shape);
-                            //py_utils.py_print(npStFeature.globalFeature);
-                            //py_utils.py_print(board_encode[1][0].shape);
-                            //py_utils.py_print(board_encode[1][0]);
-                            //Console.WriteLine("board_ft:");
-                            //for (int j = 0; j < 9; j++)
-                            //{
-                            //    Console.WriteLine("line: " + j);
-                            //    py_utils.py_print(np.sum(npStFeature.boardFeature[0][j]));
-                            //    //py_utils.py_print(npStFeature.handFeature[0][j + 9]);
-                            //    py_utils.py_print(np.sum(board_encode[1][1][0][j]));
-                            //}     
-                            ////py_utils.py_print(npStFeature.boardFeature.shape);
-                            ////py_utils.py_print(npStFeature.boardFeature);
-                            ////py_utils.py_print(board_encode[1][1].shape);
-                            ////py_utils.py_print(board_encode[1][1]);
-                            //Console.WriteLine("hand_ft:");
-                            //for (int j = 0; j < 9; j++)
-                            //{
-                            //    Console.WriteLine("line: " + j);
-                            //    py_utils.py_print(npStFeature.handFeature[0][j]);
-                            //    //py_utils.py_print(npStFeature.handFeature[0][j + 9]);
-                            //    py_utils.py_print(board_encode[1][2][0][j]);
-                            //}                          
-                            // Console.WriteLine("play_ft:");
-                            ////py_utils.py_print(npStFeature.playFeature.shape);
-                            ////py_utils.py_print(npStFeature.playFeature.flatten());
-                            ////py_utils.py_print(board_encode[1][3].shape);
-                            ////py_utils.py_print(board_encode[1][3].flatten());
-                            //py_utils.py_print(np.array_equal(board_encode[1][3].flatten(), npStFeature.playFeature.flatten()));
                             tempPf.getNextEntity();
                             tempPf.doAction(action);
                         }
 
                         Featurization.NumpyHLTarget(tempPf, targetIdxArr);
-
-                        featureEncoder.fill_global(globalIdxArr);
-                        featureEncoder.fill_board(boardIdxArr);
-                        featureEncoder.fill_hand(handIdxArr);
-                        featureEncoder.fill_play(playIdxArr);
                         featureEncoder.fill_target(targetIdxArr);
-
-                        globalIdxArr.Dispose();
-                        boardIdxArr.Dispose();
-                        handIdxArr.Dispose();
-                        playIdxArr.Dispose();
                         targetIdxArr.Dispose();
 
                         stateCount++;
-                        //PythonUtils.AppendRecycle(playList, target);
-
                     }
                     count++;
                 }
 
                 PyString outFileName = new PyString(fileName + "HL.hdf5");
                 featureEncoder.write_h5(outFileName);
-                //dynamic outFile = h5py.File(outFileName, "w");
-                ////for (int i = 0; i < features.Length; i++)
-                ////    outFile.create_dataset(featureNames[i], Py.kw("data", features[i]));
-                //outFile.create_dataset("globalList", Py.kw("data", globalFeature));
-                //outFile.create_dataset("boardList", Py.kw("data", boardFeature));
-                //outFile.create_dataset("handList", Py.kw("data", handFeature));
-                //outFile.create_dataset("playList", Py.kw("data", playFeature));
-                //outFile.create_dataset("playList", Py.kw("data", target));
-                //outFile.close();
             }
         }
 

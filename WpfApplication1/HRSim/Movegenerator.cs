@@ -37,6 +37,23 @@
             return c;
         }
 
+        public List<Handmanager.Handcard> getPlayableCards(Playfield pf)
+        {
+            Player mPlayer = pf.getCurrentPlayer(true);
+            List<Handmanager.Handcard> playableCards = new List<Handmanager.Handcard>();
+            HashSet<CardDB.cardName> playedCards = new HashSet<CardDB.cardName>();
+
+            foreach (Handmanager.Handcard hc in mPlayer.owncards)
+            {
+                CardDB.Card c = hc.card;
+                if (playedCards.Contains(c.name) || !hc.canplayCard(pf, pf.isOwnTurn)) continue; // dont play the same card in one loop
+                playableCards.Add(hc);
+                playedCards.Add(c.name);
+            }
+
+            return playableCards;
+        }
+
         public void getMoveListForPlayfield(Playfield p, bool log, bool lethalCheck, double cardProbCut)
         {
             bool own = p.isOwnTurn;

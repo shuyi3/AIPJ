@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HRSim;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
     public class Bot
     {

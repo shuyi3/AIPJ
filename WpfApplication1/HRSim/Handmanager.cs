@@ -33,7 +33,7 @@
                 this.playProb = hc.playProb;
             }
 
-            public Handcard(HREngine.Bots.Handmanager.Handcard hc)
+            public Handcard(SilverfishAi.Handmanager.Handcard hc)
             {
                 this.position = hc.position;
                 this.entity = hc.entity;

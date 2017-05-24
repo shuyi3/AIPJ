@@ -1,4 +1,4 @@
-﻿namespace HREngine.Bots
+﻿namespace SilverfishAi
 {
 
     public class BehaviorControl : Behavior

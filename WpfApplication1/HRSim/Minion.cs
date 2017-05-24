@@ -161,7 +161,7 @@ namespace HRSim
             this.cantBeTargetedBySpellsOrHeroPowers = m.cantBeTargetedBySpellsOrHeroPowers;
         }
 
-        public Minion(HREngine.Bots.Minion m)
+        public Minion(SilverfishAi.Minion m)
         {
             this.targetProb = 1.0;
             //dont silence----------------------------

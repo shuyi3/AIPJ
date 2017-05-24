@@ -81,12 +81,12 @@ namespace HRSim
             using (Py.GIL())
             {
                 PythonEngine.Initialize();
-                dynamic sys = PythonEngine.ImportModule("sys");
-                np = Py.Import("numpy");
-                board_encoder = Py.Import("simple_dqn.encoder");
-                py_utils = Py.Import("simple_dqn.py_utils");
-                dynamic cnn_model = Py.Import("simple_dqn.cnn_model");
-                model = cnn_model.CNNPhaseActionPolicyFast();
+                //dynamic sys = PythonEngine.ImportModule("sys");
+                //np = Py.Import("numpy");
+                //board_encoder = Py.Import("simple_dqn.encoder");
+                //py_utils = Py.Import("simple_dqn.py_utils");
+                //dynamic cnn_model = Py.Import("simple_dqn.cnn_model");
+                //model = cnn_model.CNNPhaseActionPolicyFast();
             }
         }
 
@@ -129,9 +129,11 @@ namespace HRSim
             model.predict_policy(feature_list);
         }
 
-        public void fakeDNNEval()
-        { 
-            DNNEval.Instance.PredictTest(encode);  
+        public void GetCardPolicy(Playfield pf)
+        {
+            string msg = Featurization.FeaturizationToStringFlatten(pf);
+            string cardProb = ZMQMessager.Instance.send(msg);
+            Console.WriteLine(cardProb);
         }
 
         public int encodeHeroHp(int heroHp)

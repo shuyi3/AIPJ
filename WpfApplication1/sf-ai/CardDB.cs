@@ -1,4 +1,4 @@
-﻿namespace HREngine.Bots
+﻿namespace SilverfishAi
 {
     using System;
     using System.Collections.Generic;
@@ -3466,7 +3466,7 @@
             string[] lines = new string[0] { };
             try
             {
-                string path = "C:\\Code\\ConsoleApplication1\\ConsoleApplication1\\";
+                string path = "C:\\Code\\AIPJ\\ConsoleApplication1\\";
                 lines = System.IO.File.ReadAllLines(path + "_carddb.txt");
                 HRSim.Helpfunctions.Instance.ErrorLog("read carddb.txt");
             }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
 	class Sim_NAX8_03 : SimTemplate //* Unrelenting Trainee
 	{

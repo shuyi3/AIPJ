@@ -16,7 +16,7 @@ using System.Collections.ObjectModel;
 using System.Threading;
 
 using System.IO;
-using HREngine.Bots;
+using SilverfishAi;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Windows.Threading;
@@ -63,11 +63,11 @@ namespace HRSim
                 Name = name;
                 try
                 {
-                    Image = new BitmapImage(new Uri("C:\\Code\\WpfApplication1\\WpfApplication1\\hs-images\\" + cardID + ".png", UriKind.RelativeOrAbsolute));
+                    Image = new BitmapImage(new Uri("C:\\Code\\AIPJ\\WpfApplication1\\hs-images\\" + cardID + ".png", UriKind.RelativeOrAbsolute));
                 }
                 catch (FileNotFoundException e)
                 {
-                    Image = new BitmapImage(new Uri("C:\\Code\\WpfApplication1\\WpfApplication1\\hs-images\\GVG_093.png", UriKind.RelativeOrAbsolute));
+                    Image = new BitmapImage(new Uri("C:\\Code\\AIPJ\\WpfApplication1\\hs-images\\GVG_093.png", UriKind.RelativeOrAbsolute));
                 }
             }
 
@@ -309,11 +309,11 @@ namespace HRSim
 
             //testField.mcPlayer = new MCTSPlayer(0, testField);
 
-            //playerOneBot = new HREngine.Bots.Bot(testField.playerOne);
+            //playerOneBot = new SilverfishAi.Bot(testField.playerOne);
             //playerOneBH = new BehaviorControl(testField.playerOne);//change this to new BehaviorRush() for rush mode
             ////HRSim.Action moveTodo = null;
 
-            ////playerTwoBot = new HREngine.Bots.Bot(testField.playerTwo);
+            ////playerTwoBot = new SilverfishAi.Bot(testField.playerTwo);
             ////playerTwoBH = new BehaviorControl(testField.playerTwo);
 
             //testField.isOwnTurn = true;
@@ -964,7 +964,7 @@ namespace HRSim
 
         private void AutoPlay(object sender, RoutedEventArgs e)
         {
-            //PlayMultipleGames(20000, null);
+            PlayMultipleGames(20000, null);
             //TrainMultipleGames(20000, null);
             //SampleStates(20000, null);
             //string myDocPath =
@@ -986,9 +986,9 @@ namespace HRSim
 
             //PyDataEncoder.Instance.EncodeNormalFeatureH5(filePath);
             //PyDataEncoder.Instance.PerformanceTest(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt");
-            PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt.2.txt.3.txt");
-            PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_2.txt.2.txt.3.txt");
-            PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt.3.txt");
+            //PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_1.txt.2.txt.3.txt");
+            //PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_2.txt.2.txt.3.txt");
+            //PyDataEncoder.Instance.Replay(@"C:\Users\bugdx123\Documents\data_turn_end\svs_result_3.txt.2.txt.3.txt");
             //ZMQMessager.Instance.Test();
 
         }

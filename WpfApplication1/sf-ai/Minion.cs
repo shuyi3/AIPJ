@@ -1,6 +1,6 @@
 ﻿//using Triton.Game.Mapping;
 
-namespace HREngine.Bots
+namespace SilverfishAi
 {
     using System;
     using System.Collections.Generic;

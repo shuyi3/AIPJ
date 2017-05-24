@@ -9,7 +9,7 @@ namespace HRSim
 {
     class ZMQMessager
     {
-        private ZSocket responder, requester;
+        private ZSocket requester;
         private static ZMQMessager instance;
 
         private ZMQMessager()
@@ -27,6 +27,7 @@ namespace HRSim
 
         public void Init()
         {
+            Connect();
         }
 
         public string sendMessage(string message)
@@ -83,14 +84,13 @@ namespace HRSim
         public string send(String message)
         {
             requester.Send(new ZFrame(message));
-            int ret = -1;
+            string ret = null;
             // Receive
             using (ZFrame reply = requester.ReceiveFrame())
             {
-                ret = reply.ReadInt32();
-                Console.WriteLine(" Received: {0}!", ret);
+                ret = reply.ReadString();
             }
-            return null;
+            return ret;
         }
 
         public void Test()
