@@ -2677,6 +2677,9 @@
                 if (aa.target.entitiyID == this.playerSecond.ownHero.entitiyID) trgt = this.playerSecond.ownHero;
                 if (trgt == null)
                 {
+                    this.printBoard();
+                    aa.print();
+                    Helpfunctions.Instance.logg("debugCount: " + GameManager.Instance.debugCount);
                     int debug = 1; //null target debug
                 }
             }
@@ -2722,7 +2725,9 @@
                 }
                 if (ha == null)
                 {
-                    SilverfishAi.Playfield ppTest = new SilverfishAi.Playfield((SilverfishAi.Silverfish)GameManager.Instance.playerFirst);
+                    this.printBoard();
+                    aa.print();
+                    Helpfunctions.Instance.logg("debugCount: " + GameManager.Instance.debugCount);
                     int debug = 1; //null target debug
                 }
             }
@@ -2803,7 +2808,6 @@
             }
 
             mPlayer.optionsPlayedThisTurn++;
-
         }
 
         //minion attacks a minion
@@ -5782,8 +5786,6 @@
             m.getDamageOrHeal(dmgOrHeal, this, false, dontDmgLoss);
         }
 
-
-
         public void allMinionOfASideGetDamage(bool own, int damages, bool frozen = false)
         {
             List<Minion> temp = (own) ? this.playerFirst.ownMinions : this.playerSecond.ownMinions;
@@ -6029,6 +6031,7 @@
         public void printBoard()//TODO: for both sides (secrets)
         {
             Helpfunctions.Instance.logg("Turn:" + this.isOwnTurn);
+            Helpfunctions.Instance.logg("Next Entity:" + this.nextEntity);
 
             Helpfunctions.Instance.logg("board/hash: " + playerFirst.value + "  /  " + this.playerFirst.hashcode + " ++++++++++++++++++++++");
             //Helpfunctions.Instance.logg("pen " + this.playerFirst.evaluatePenality);
@@ -6711,23 +6714,26 @@
                 mDeck = awayDeck;
             }
 
-            List<int> cardToRemove = new List<int>();
-            int cardReturned = 0;
+            List<int> EntityOfRemoved = new List<int>();
+            int entity = this.nextEntity;
             foreach (Handmanager.Handcard hc in ePlayer.owncards.ToArray())
             {
-                if (GameManager.getRNG().NextDouble() < probability)
+                if (GameManager.getRNG().NextDouble() < probability && hc.card.name != CardDB.cardName.thecoin)
                 {
                     //randomly swap a card in the deack
                     ePlayer.owncards.Remove(hc);
                     addCardBackToDeck(hc, !this.isOwnTurn);
-                    cardReturned++;
+                    EntityOfRemoved.Add(hc.entity);
                 }
             }
 
-            for (int i = 0; i < cardReturned; i++)
+            for (int i = 0; i < EntityOfRemoved.Count; i++)
             {
                 drawACard(getArandomCardFromDeck(!this.isOwnTurn), !this.isOwnTurn, passive: true);
+                ePlayer.owncards[ePlayer.owncards.Count - 1].entity = EntityOfRemoved[i];
             }
+
+            this.nextEntity = entity;
         }
 
     }

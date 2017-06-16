@@ -12,7 +12,6 @@ namespace HRSim
     public class FeatureConst {
 
         public Dictionary<int, int> heroHpDict;
-
         public Dictionary<int, int> countDict;
 
         public int heroPowerIdx;

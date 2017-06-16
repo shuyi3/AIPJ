@@ -818,8 +818,7 @@ namespace SilverfishAi
         {
             if (rng == null)
             {
-                //int seed = Environment.TickCount;
-                int seed = -1622430187;
+                int seed = Environment.TickCount;
                 HRSim.Helpfunctions.Instance.logg("sf seed = " + seed);
                 rng = new Random(seed);
             }
@@ -895,7 +894,7 @@ namespace SilverfishAi
 
         public void writeBufferToFile()
         {
-            bool writed = true;
+            bool writed = false;
             //this.sendbuffer += "<EoF>";
             while (writed)
             {

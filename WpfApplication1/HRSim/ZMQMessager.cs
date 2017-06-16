@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using ZeroMQ;
 
 namespace HRSim
@@ -81,7 +78,7 @@ namespace HRSim
             requester.Dispose();
         }
 
-        public string send(String message)
+        public string Send(String message)
         {
             requester.Send(new ZFrame(message));
             string ret = null;
@@ -106,7 +103,7 @@ namespace HRSim
                     if (i < 99) sb.Append(",");
                 }
 
-                send(sb.ToString());
+                Send(sb.ToString());
             }
         }
     }

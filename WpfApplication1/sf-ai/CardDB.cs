@@ -3466,7 +3466,7 @@
             string[] lines = new string[0] { };
             try
             {
-                string path = "C:\\Code\\AIPJ\\ConsoleApplication1\\";
+                string path = "C:\\Code\\AIPJ\\WpfApplication1\\";
                 lines = System.IO.File.ReadAllLines(path + "_carddb.txt");
                 HRSim.Helpfunctions.Instance.ErrorLog("read carddb.txt");
             }

@@ -509,9 +509,6 @@
                 if (m.enemyBlessingOfWisdom >= 1) mini += " enemyBlssng(" + m.enemyBlessingOfWisdom + ")";
                 if (m.souloftheforest >= 1) mini += " souloffrst(" + m.souloftheforest + ")";
 
-
-
-
                 help.logg(mini);
                 if (writetobuffer) help.writeToBuffer(mini);
             }

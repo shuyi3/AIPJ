@@ -245,126 +245,7 @@ namespace HRSim
                 }
             }
 
-            //setplayer 1
-
-            if (isLearning)
-            {
-                //GameManager.Instance.setPlayer(1, new Silverfish()); // we can try set to the same player
-                GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
-            }
-            else
-            {
-                //setplayer 2
-                //GameManager.Instance.setPlayer(1, new Silverfish());
-                if (turn % 2 == 0)
-                {
-                    Helpfunctions.Instance.logg("Player 1: MCTSPlayer, Player 2: Silverfish");
-                    //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, false));
-                    //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, true));
-                    //GameManager.Instance.setPlayer(0, new Silverfish());
-                    //GameManager.Instance.setPlayer(1, new Silverfish());
-                    GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 1.0));
-                    GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, true, 1.0));
-                    //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 0.0));
-                }
-                else
-                {
-                    Helpfunctions.Instance.logg("Player 1: Silverfish, Player 2: MCTSPlayer");
-                    //GameManager.Instance.setPlayer(0, new Silverfish());
-                    //GameManager.Instance.setPlayer(1, new Silverfish());
-                    //GameManager.Instance.setPlayer(0, new GreedyPlayer(true, GameManager.Instance.mPlayfield, false));
-                    //GameManager.Instance.setPlayer(1, new GreedyPlayer(false, GameManager.Instance.mPlayfield, true));
-                    //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false));
-                    //GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 0.0));
-                    //GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 1.0));
-                    GameManager.Instance.setPlayer(1, new MCTSPlayer(false, GameManager.Instance.mPlayfield, true, 1.0));
-                    GameManager.Instance.setPlayer(0, new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 1.0));
-                }
-               
-            }
-            //if (GameManager.Instance.playerFirst == null)
-            //{
-            //    GameManager.Instance.setPlayer(0, new QLearningAgent(true, GameManager.Instance.mPlayfield));
-            //}
-            //else
-            //{
-            //    GameManager.Instance.playerFirst.updateState(GameManager.Instance.mPlayfield);
-            //}
-
-            //testField = new Playfield();
-
-            //testField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", true);
-            //testField.initDeckFromFile("C:\\Code\\WpfApplication1\\WpfApplication1\\test_mage_deck.txt", false);
-
-            //testField.drawInitCards();
-
-            ////InitAISettings();
-
-            ////displayHandCards(testField, false);
-            //testField.playerOne = new Silverfish();
-            //testField.playerOne.setnewLoggFile(1);
-
-            ////testField.playerTwo = new Silverfish();
-            ////testField.playerTwo.setnewLoggFile(2);
-
-            //testField.mcPlayer = new MCTSPlayer(0, testField);
-
-            //playerOneBot = new SilverfishAi.Bot(testField.playerOne);
-            //playerOneBH = new BehaviorControl(testField.playerOne);//change this to new BehaviorRush() for rush mode
-            ////HRSim.Action moveTodo = null;
-
-            ////playerTwoBot = new SilverfishAi.Bot(testField.playerTwo);
-            ////playerTwoBH = new BehaviorControl(testField.playerTwo);
-
-            //testField.isOwnTurn = true;
-
-            //HRSim.Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
-            //for (; ; )
-            //{
-            //    bool templearn = playerOne.updateEverything(behave, testField, true);
-            //    if (playerOne.Ai.bestmove == null) break;
-            //    moveTodo = new HRSim.Action(playerOne.Ai.bestmove);
-            //    moveTodo.print();
-            //    testField.doAction(moveTodo);
-
-            //}
-            //HRSim.Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
-
-            //testField.endTurn(false, false);
-
-            //displayMinions(testField);
-
-            //displayHandCards(testField, true);
-
-            //updateHeroState(testField);
-
-            //playerTwo = new Silverfish();
-            //playerTwo.setnewLoggFile();
-
-            //HRSim.Helpfunctions.Instance.logg("PLAYER 2 ##########MOVE##########");
-            //for (; ; )
-            //{
-            //    bool templearn = playerTwo.updateEverything(behave, testField, false);
-            //    if (playerTwo.Ai.bestmove == null) break;
-            //    moveTodo = new HRSim.Action(playerTwo.Ai.bestmove);
-            //    moveTodo.print();
-            //    testField.doAction(moveTodo);
-            //}
-            //HRSim.Helpfunctions.Instance.logg("PLAYER 2 ##########MOVE##########");
-
-            //testField.endTurn(false, false);
-
-            //displayMinions(testField);
-
-            //displayHandCards(testField, true);
-
-            //updateHeroState(testField);
-
-            //displayMinions(testField);
-            //displayHandCards(testField, true);
-            //updateHeroState(testField);
             isInit = true;
-
         }
 
         private void updateAllUI() {
@@ -776,95 +657,95 @@ namespace HRSim
 
         }
 
-        private void TrainMultipleGames(int numGame, Playfield playfield)
-        {
-            int moveNum = 0;
-            int firstWon = 0;
-            int secondWon = 0;
-            int P1Won = 0;
-            int P2Won = 0;
-            GameRecord gc = new GameRecord();
-            int trainStep = 10;
-            DateTime checkPoint = DateTime.Now;
+        //private void TrainMultipleGames(int numGame, Playfield playfield)
+        //{
+        //    int moveNum = 0;
+        //    int firstWon = 0;
+        //    int secondWon = 0;
+        //    int P1Won = 0;
+        //    int P2Won = 0;
+        //    GameRecord gc = new GameRecord();
+        //    int trainStep = 10;
+        //    DateTime checkPoint = DateTime.Now;
 
-            for (int i = 0; i < numGame; i++)
-            {
-                //if (!isInit) Init(false, i, playfield);
-                if (!isInit) Init(false, i);
-                moveNum++;
-                Helpfunctions.Instance.logg("movenum = " + moveNum);
+        //    for (int i = 0; i < numGame; i++)
+        //    {
+        //        //if (!isInit) Init(false, i, playfield);
+        //        if (!isInit) Init(false, i);
+        //        moveNum++;
+        //        Helpfunctions.Instance.logg("movenum = " + moveNum);
 
-                int result = GameManager.Instance.playMove();
-                while (result == -1)
-                {
-                    moveNum++;
-                    Helpfunctions.Instance.logg("movenum = " + moveNum);
-                    result = GameManager.Instance.playMove();
+        //        int result = GameManager.Instance.playMove();
+        //        while (result == -1)
+        //        {
+        //            moveNum++;
+        //            Helpfunctions.Instance.logg("movenum = " + moveNum);
+        //            result = GameManager.Instance.playMove();
 
-                    dynamic res = LogitEval.Instance.Train();
-                    //int trainResult = (int)res[0];
-                    //if (trainResult == 1)
-                    //{
-                    //    Helpfunctions.Instance.WriteResultToFile(@"\batch_sample.txt", res.ToString());
-                    //}
-                    res.Dispose();
+        //            dynamic res = LogitEval.Instance.Train();
+        //            //int trainResult = (int)res[0];
+        //            //if (trainResult == 1)
+        //            //{
+        //            //    Helpfunctions.Instance.WriteResultToFile(@"\batch_sample.txt", res.ToString());
+        //            //}
+        //            res.Dispose();
 
-                }
+        //        }
 
-                if (result == 0)
-                {
-                    firstWon++;
-                    if (i % 2 == 0)
-                        P1Won++;
-                    else
-                        P2Won++;
-                    Helpfunctions.Instance.logg("i = " + i + "result = " + result);
-                    gc.result = 0;
-                }
-                else
-                {
-                    secondWon++;
-                    if (i % 2 == 0)
-                        P2Won++;
-                    else
-                        P1Won++;
-                    Helpfunctions.Instance.logg("i = " + i + "result = " + result);
-                    gc.result = 1;
-                }
+        //        if (result == 0)
+        //        {
+        //            firstWon++;
+        //            if (i % 2 == 0)
+        //                P1Won++;
+        //            else
+        //                P2Won++;
+        //            Helpfunctions.Instance.logg("i = " + i + "result = " + result);
+        //            gc.result = 0;
+        //        }
+        //        else
+        //        {
+        //            secondWon++;
+        //            if (i % 2 == 0)
+        //                P2Won++;
+        //            else
+        //                P1Won++;
+        //            Helpfunctions.Instance.logg("i = " + i + "result = " + result);
+        //            gc.result = 1;
+        //        }
   
-                gc.playSec = GameManager.Instance.featureList;
-                Helpfunctions.Instance.WriteResultToFile(@"\lvl_result.txt", JsonConvert.SerializeObject(gc));
+        //        gc.playSec = GameManager.Instance.featureList;
+        //        Helpfunctions.Instance.WriteResultToFile(@"\lvl_result.txt", JsonConvert.SerializeObject(gc));
 
-                LogitEval.Instance.SaveExp(gc);
+        //        LogitEval.Instance.SaveExp(gc);
 
-                if (i >= 10)
-                {
-                    Helpfunctions.Instance.logg("Train at trainStep = " + trainStep);
-                    Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
-                    Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
+        //        if (i >= 10)
+        //        {
+        //            Helpfunctions.Instance.logg("Train at trainStep = " + trainStep);
+        //            Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
+        //            Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
                     
-                    if (i % 10 == 0)
-                    {
-                        DateTime newCheckPoint = DateTime.Now;
-                        Helpfunctions.Instance.WriteResultToFile(@"\train_result.txt", "Time: " + GameManager.Instance.P1Time + " VS " + GameManager.Instance.P2Time +", P1: " + P1Won + " VS P2: " + P2Won + "\n");
-                        //Helpfunctions.Instance.WriteResultToFile(@"\train_result.txt", "Time: " + GameManager.Instance.P1Time + " VS " + GameManager.Instance.P2Time + ", P1: " + P1Won + " VS P2: " + P2Won + "\n");
-                        P1Won = 0;
-                        P2Won = 0;
-                        GameManager.Instance.P1Time = 0.0;
-                        GameManager.Instance.P2Time = 0.0;
-                        checkPoint = newCheckPoint;
-                    }
-                }
+        //            if (i % 10 == 0)
+        //            {
+        //                DateTime newCheckPoint = DateTime.Now;
+        //                Helpfunctions.Instance.WriteResultToFile(@"\train_result.txt", "Time: " + GameManager.Instance.P1Time + " VS " + GameManager.Instance.P2Time +", P1: " + P1Won + " VS P2: " + P2Won + "\n");
+        //                //Helpfunctions.Instance.WriteResultToFile(@"\train_result.txt", "Time: " + GameManager.Instance.P1Time + " VS " + GameManager.Instance.P2Time + ", P1: " + P1Won + " VS P2: " + P2Won + "\n");
+        //                P1Won = 0;
+        //                P2Won = 0;
+        //                GameManager.Instance.P1Time = 0.0;
+        //                GameManager.Instance.P2Time = 0.0;
+        //                checkPoint = newCheckPoint;
+        //            }
+        //        }
 
-                GameManager.Instance.featureList.Clear();
-                isInit = false;               
-                GC.Collect();
-                GameManager.resetSeed();
-            }
-            Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
-            Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
+        //        GameManager.Instance.featureList.Clear();
+        //        isInit = false;               
+        //        GC.Collect();
+        //        GameManager.resetSeed();
+        //    }
+        //    Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
+        //    Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
 
-        }
+        //}
 
         private void SampleStates(int numGame, Playfield playfield)
         {
@@ -887,26 +768,52 @@ namespace HRSim
             int secondWon = 0;
             int P1Won = 0;
             int P2Won = 0;
-            GameRecord gc = new GameRecord();
+            bool printLog = true;
 
             for (int i = 0; i < numGame; i++)
-            //for (; ; )
             {
-                //if (!isInit) Init(false, i, playfield);
-                if (!isInit) Init(false, i);
-                moveNum++;
-                Helpfunctions.Instance.logg("movenum = " + moveNum);
-                GameManager.Instance.turnStartEntity = GameManager.Instance.mPlayfield.nextEntity;
+                if (!isInit)
+                {
+                    Init(false, i);
+                }
 
-                int result = GameManager.Instance.playMove();
+                //Set players
+                MCTSPlayer pa1;
+                Silverfish pa2;
+                if (i % 2 == 0)
+                {
+                    pa1 = new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 0.5);
+                    pa2 = new Silverfish();
+
+                    pa1.constC = 0.7f;
+                    pa1.rolloutDepth = 3;
+
+                    GameManager.Instance.setPlayer(0, pa1);
+                    GameManager.Instance.setPlayer(1, pa2);
+                }
+                else
+                {
+                    pa1 = new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 0.5);
+                    pa2 = new Silverfish();
+
+                    pa1.constC = 0.7f;
+                    pa1.rolloutDepth = 3;
+
+                    GameManager.Instance.setPlayer(1, pa1);
+                    GameManager.Instance.setPlayer(0, pa2);
+                }
+
+                moveNum++;
+                //Helpfunctions.Instance.logg("movenum = " + moveNum);
+                GameManager.Instance.turnStartEntity = GameManager.Instance.mPlayfield.nextEntity;
+                int result = GameManager.Instance.playMove(printLog);
                 while (result == -1)
                 {
                     moveNum++;
-                    Helpfunctions.Instance.logg("movenum = " + moveNum);
-                    result = GameManager.Instance.playMove();
+                    //Helpfunctions.Instance.logg("movenum = " + moveNum);
+                    result = GameManager.Instance.playMove(printLog);
                 }
 
-                //if (result == 0 && i % 2 == 0 || result == 1 && i % 2 != 0)
                 if (result == 0)
                 {
                     firstWon++;
@@ -915,7 +822,6 @@ namespace HRSim
                     else
                         P2Won++;
                     Helpfunctions.Instance.logg("i = " + i + "result = " + result);
-                    gc.result = 0;
                 }
                 else
                 {
@@ -925,46 +831,142 @@ namespace HRSim
                     else
                         P1Won++;
                     Helpfunctions.Instance.logg("i = " + i + "result = " + result);
-                    gc.result = 1;
                 }
-                //else
-                //{//for debuging
-                //    break;
-                //}
-                //gc.playSec = GameManager.Instance.featureList;
-                //Helpfunctions.Instance.WriteResultToFile(@"\ava_result_4.txt", JsonConvert.SerializeObject(gc));
-                //Console.WriteLine(gc.playSec[0].attackPlayer.playedActionJsonList[0].cardEntitiy);
-                //Helpfunctions.Instance.WriteResultToFile(@"\svs_result_5.txt", JsonConvert.SerializeObject(gc));
-                //Console.WriteLine(gc.playSec[0].attackPlayer.playedActionJsonList[0].cardEntitiy);
-                //PyDataEncoder.Instance.replay(gc);
-                //string player1BCString = ((GreedyPlayer)GameManager.Instance.playerFirst).getAvgBCString();
-                //string player2BCString = ((GreedyPlayer)GameManager.Instance.playerSecond).getAvgBCString();
-                //Helpfunctions.Instance.WriteResultToFile(@"\avg_bc.txt", player1BCString + " vs " + player2BCString);
-                //Helpfunctions.Instance.WriteResultToFile(JsonConvert.SerializeObject(gc));
-                //gcList.Add(gc);
-
-                
-
-                //GameManager.Instance.featureList.Clear();
                 isInit = false;
                 Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
                 Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
-                //((QLearningAgent)GameManager.Instance.playerFirst).printWeights();
                 GC.Collect();
                 GameManager.resetSeed();
             }
             Helpfunctions.Instance.logg("SF 1 WON " + P1Won + " GAMES");
             Helpfunctions.Instance.logg("MCTS 2 WON " + P2Won + " GAMES");
-            //string sampleResult = firstWon.ToString() + '/' + secondWon.ToString();
-            //loadRecord(gc);
+        }
 
-            //((QLearningAgent)GameManager.Instance.playerSecond).printWeights();
-            //updateAllUI();
+        private int PlayMCTSGame()
+        {
+            bool printLog = false;
+            GameManager.Instance.turnStartEntity = GameManager.Instance.mPlayfield.nextEntity;
+            int result = GameManager.Instance.playMove(printLog);
+            while (result == -1)
+            {
+                try
+                {
+                    result = GameManager.Instance.playMove(printLog);
+                }
+                catch (NullReferenceException ex)
+                {
+                    throw;
+                }
+            }
+            return result;
+        }
+
+        private void PlayMCTSGames(int numGame, Playfield playfield, float c1, float c2, int d1, int d2)
+        {
+            int firstWon = 0;
+            int secondWon = 0;
+            int P1Won = 0;
+            int P2Won = 0;
+            string p1Setting = "MCTS[c1=" + c1 + ", d1=" + d1 + "]";
+            string p2Setting = "MCTS[c2=" + c2 + ", d2=" + d2 + "]";
+
+            Helpfunctions.Instance.logg("P1: " + p1Setting);
+            Helpfunctions.Instance.logg("P2: " + p2Setting);
+
+            for (int i = 0; i < numGame;)
+            {
+                if (!isInit)
+                {
+                    Init(false, i);                    
+                }
+                MCTSPlayer pa1, pa2;
+                if (i % 2 == 0)
+                {
+                    pa1 = new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 0.5);
+                    pa2 = new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 0.5);
+
+                    pa1.constC = c1;
+                    pa1.rolloutDepth = d1;
+                    pa2.constC = c2;
+                    pa2.rolloutDepth = d2;
+
+                    GameManager.Instance.setPlayer(0, pa1);
+                    GameManager.Instance.setPlayer(1, pa2);
+                }
+                else
+                {
+                    pa1 = new MCTSPlayer(false, GameManager.Instance.mPlayfield, false, 0.5);
+                    pa2 = new MCTSPlayer(true, GameManager.Instance.mPlayfield, false, 0.5);
+
+                    pa1.constC = c1;
+                    pa1.rolloutDepth = d1;
+                    pa2.constC = c2;
+                    pa2.rolloutDepth = d2;
+
+                    GameManager.Instance.setPlayer(1, pa1);
+                    GameManager.Instance.setPlayer(0, pa2);
+                }
+
+                try
+                {
+                    int matchResult = PlayMCTSGame();
+                    if (matchResult == 0)
+                    {
+                        firstWon++;
+                        if (i % 2 == 0)
+                            P1Won++;
+                        else
+                            P2Won++;
+                        Helpfunctions.Instance.logg("i = " + i + "result = " + matchResult);
+                    }
+                    else
+                    {
+                        secondWon++;
+                        if (i % 2 == 0)
+                            P2Won++;
+                        else
+                            P1Won++;
+                        Helpfunctions.Instance.logg("i = " + i + "result = " + matchResult);
+                    }
+                    Helpfunctions.Instance.logg(p1Setting + " WON " + P1Won + " GAMES");
+                    Helpfunctions.Instance.logg(p2Setting + " WON " + P2Won + " GAMES");
+                    i++;
+                }
+                catch (NullReferenceException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    continue;
+                }
+                finally
+                {
+                    isInit = false;                    
+                    GC.Collect();
+                    GameManager.resetSeed();
+                }
+            }
+            Helpfunctions.Instance.logg(p1Setting + " WON " + P1Won + " GAMES");
+            Helpfunctions.Instance.logg(p2Setting + " WON " + P2Won + " GAMES");
+        }
+
+        private void PlayMCTSTournament()
+        {
+            //float[] cArr = new float[] { 0.3f, 0.5f, 0.7f, 0.9f, 1.2f, 1.5f, 2.0f };
+            float[] cArr = new float[] {1.5f, 1.2f, 0.9f, 0.7f, 0.5f, 0.3f, 2.0f};
+            int numGames = 100;
+            //foreach (float c1 in cArr)
+            //{
+            float c1 = 1.5f;
+            foreach (float c2 in cArr)
+            {
+                PlayMCTSGames(numGames, null, c1, c2, 5, 5);
+            }
+            //}
         }
 
         private void AutoPlay(object sender, RoutedEventArgs e)
         {
-            PlayMultipleGames(20000, null);
+            PlayMCTSTournament();
+            //PlayMultipleGames(200, null);
             //TrainMultipleGames(20000, null);
             //SampleStates(20000, null);
             //string myDocPath =
@@ -996,8 +998,8 @@ namespace HRSim
         private void MakeMove(object sender, RoutedEventArgs e)
         {
             if (!isInit) Init(false, 0);
-            //testField.printBoard();
-            int result = GameManager.Instance.playMove();
+            bool printLog = true;
+            int result = GameManager.Instance.playMove(printLog);
             if (result != -1) isInit = false;
             updateAllUI();
         }

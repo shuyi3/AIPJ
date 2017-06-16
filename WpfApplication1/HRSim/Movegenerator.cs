@@ -1,7 +1,8 @@
 ﻿namespace HRSim
 {
-    using System.Collections.Generic;
     using System;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;
 
     public class Movegenerator
     {
@@ -19,11 +20,6 @@
             }
         }
 
-        //public Movegenerator(Silverfish sf)
-        //{
-        //    this.sf = sf;
-        //    pen = sf.PenalityManager;
-        //}
         public CardDB.Card getChooseCard(CardDB.Card c, int choice)
         {
             if (choice == 1 && CardDB.Instance.choose1database.ContainsKey(c.name))
@@ -37,21 +33,158 @@
             return c;
         }
 
-        public List<Handmanager.Handcard> getPlayableCards(Playfield pf)
+        public List<Action> GetNonPlaycardActions(Playfield p, bool isLethalCheck, bool usePenalityManager)
+        {
+            Player mPlayer = p.getCurrentPlayer(true);
+            List<Action> ret = new List<Action>();
+
+            List<Minion> trgts = p.getAttackTargets(p.isOwnTurn, isLethalCheck);
+            //if (!isLethalCheck) trgts = this.cutAttackList(trgts);
+
+            // attack with minions
+            List<Minion> attackingMinions = new List<Minion>(8);
+            foreach (Minion m in mPlayer.ownMinions)
+            {
+                if (m.Ready && m.Angr >= 1 && !m.frozen) attackingMinions.Add(m); //* add non-attacing minions
+            }
+            //attackingMinions = this.cutAttackList(attackingMinions);
+
+            foreach (Minion m in attackingMinions)
+            {
+                int attackPenality = 0;
+                foreach (Minion trgt in trgts)
+                {
+                    if (trgt != null && !trgt.isHero && trgt.own != p.isOwnTurn && trgt.targetProb < minionProbCut) continue;
+                    if (usePenalityManager) attackPenality = pen.getAttackWithMininonPenality(m, p, trgt, isLethalCheck);
+                    if (attackPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.attackWithMinion, null, m, 0, trgt, attackPenality, 0, 0);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            // attack with hero (weapon)
+            if (mPlayer.ownHero.Ready && mPlayer.ownHero.Angr >= 1)
+            {
+                int heroAttackPen = 0;
+                foreach (Minion trgt in trgts)
+                {
+                    if (trgt != null && !trgt.isHero && trgt.own != p.isOwnTurn && trgt.targetProb < minionProbCut) continue;
+                    if (usePenalityManager) heroAttackPen = pen.getAttackWithHeroPenality(trgt, p, isLethalCheck);
+                    if (heroAttackPen <= 499)
+                    {
+                        Action a = new Action(actionEnum.attackWithHero, null, mPlayer.ownHero, 0, trgt, heroAttackPen, 0, 0);
+                        ret.Add(a);
+                    }
+                }
+            }
+
+            return ret;
+        }
+
+        public List<Action> GetActionsForCard(Playfield p, Handmanager.Handcard hc, bool isLethalCheck, bool usePenalityManager)
+        {
+            Player mPlayer = p.getCurrentPlayer(true);
+            CardDB.Card c = hc.card;
+            List<Minion> trgts = new List<Minion>();
+            List<Action> ret = new List<Action>();
+
+            int isChoice = (c.choice) ? 1 : 0;
+            for (int i = 0 + 1 * isChoice; i < 1 + 2 * isChoice; i++)
+            {
+                if (isChoice == 1) c = getChooseCard(hc.card, i); // do all choice
+
+                int manaCost = hc.getManaCost(p, p.isOwnTurn);
+                if (mPlayer.mana >= manaCost) // if enough manna
+                {
+                    int cardplayPenality = 0;
+                    int bestplace = p.getBestPlace(c, isLethalCheck, p.isOwnTurn);
+                    trgts = c.getTargetsForCard(p, isLethalCheck, p.isOwnTurn);
+                    foreach (Minion trgt in trgts)
+                    {
+                        if (trgt != null && !trgt.isHero && trgt.own != p.isOwnTurn && trgt.targetProb < minionProbCut) continue;
+                        if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, trgt, p, i, isLethalCheck);
+                        if (cardplayPenality <= 499)
+                        {
+                            Action a = new Action(actionEnum.playcard, hc, null, bestplace, trgt, cardplayPenality, i, manaCost); //i is the choice
+
+                            ret.Add(a);
+                            if (trgt != null && trgt.own == p.isOwnTurn)
+                            {
+                                p.moveTrigger.hasOwnTargetMove = true;
+                            }
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public bool CanUseHeroPower(Playfield pf)
         {
             Player mPlayer = pf.getCurrentPlayer(true);
-            List<Handmanager.Handcard> playableCards = new List<Handmanager.Handcard>();
-            HashSet<CardDB.cardName> playedCards = new HashSet<CardDB.cardName>();
+            return mPlayer.ownAbilityReady && mPlayer.mana >= 2;
+        }
+
+        public List<List<Action>> getMoveListByAction(Playfield p, bool isLethalCheck, bool usePenalityManager)
+        {
+            Player mPlayer = p.getCurrentPlayer(true);
+            List<List<Action>> moveListByAction = new List<List<Action>>();
+            List<Minion> trgts;
 
             foreach (Handmanager.Handcard hc in mPlayer.owncards)
             {
+                if (!hc.canplayCard(p, p.isOwnTurn)) continue; // dont play the same card in one loop
                 CardDB.Card c = hc.card;
-                if (playedCards.Contains(c.name) || !hc.canplayCard(pf, pf.isOwnTurn)) continue; // dont play the same card in one loop
-                playableCards.Add(hc);
-                playedCards.Add(c.name);
+
+                List<Action> actions = new List<Action>();
+                int manaCost = hc.getManaCost(p, p.isOwnTurn);
+                if (mPlayer.mana >= manaCost)
+                {
+                    int cardplayPenality = 0;
+                    int bestplace = p.getBestPlace(c, isLethalCheck, p.isOwnTurn);
+                    trgts = c.getTargetsForCard(p, isLethalCheck, p.isOwnTurn);
+
+                    foreach (Minion trgt in trgts)
+                    {
+                        if (trgt != null && !trgt.isHero && trgt.own != p.isOwnTurn && trgt.targetProb < minionProbCut) continue;
+                        if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(hc.card, trgt, p, 0, isLethalCheck);
+                        if (cardplayPenality <= 499)
+                        {
+                            Action a = new Action(actionEnum.playcard, hc, null, bestplace, trgt, cardplayPenality, 0, manaCost); //i is the choice
+                            actions.Add(a);
+                            if (trgt != null && trgt.own == p.isOwnTurn)
+                            {
+                                p.moveTrigger.hasOwnTargetMove = true;
+                            }
+                        }
+                    }
+                    if (actions.Count > 0) moveListByAction.Add(actions);
+                }
             }
 
-            return playableCards;
+
+            if (mPlayer.ownAbilityReady && mPlayer.mana >= 2) // if ready and enough manna TODO: TGT mana cost change
+            {
+                List<Action> actions = new List<Action>();
+                int cardplayPenality = 0;
+                int bestplace = mPlayer.ownMinions.Count + 1; //we can not manage it
+                trgts = mPlayer.ownHeroAblility.card.getTargetsForCard(p, isLethalCheck, p.isOwnTurn);
+                foreach (Minion trgt in trgts)
+                {
+                    if (trgt != null && !trgt.isHero && trgt.own != p.isOwnTurn && trgt.targetProb < minionProbCut) continue;
+                    if (usePenalityManager) cardplayPenality = pen.getPlayCardPenality(mPlayer.ownHeroAblility.card, trgt, p, 0, isLethalCheck);
+                    if (cardplayPenality <= 499)
+                    {
+                        Action a = new Action(actionEnum.useHeroPower, mPlayer.ownHeroAblility, null, bestplace, trgt, cardplayPenality, 0, 2);
+                        actions.Add(a);
+                    }
+                }
+                if (actions.Count > 0) moveListByAction.Add(actions);
+            }
+
+            return moveListByAction;
         }
 
         public void getMoveListForPlayfield(Playfield p, bool log, bool lethalCheck, double cardProbCut)
@@ -648,20 +781,10 @@
             return ret;
         }
 
-        public List<Action> getHeroPowerMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager, bool useCutingTargets)
+        public List<Action> getHeroPowerMoveList(Playfield p, bool isLethalCheck, bool usePenalityManager)
         {
             bool own = p.isOwnTurn;
-            Player mPlayer, ePlayer;
-            if (own)
-            {
-                mPlayer = p.playerFirst;
-                ePlayer = p.playerSecond;
-            }
-            else
-            {
-                mPlayer = p.playerSecond;
-                ePlayer = p.playerFirst;
-            }
+            Player mPlayer = p.getCurrentPlayer(true);
 
             List<Action> ret = new List<Action>();
             List<Minion> trgts = new List<Minion>();
@@ -670,8 +793,6 @@
             {
                 return ret;
             }
-
-            //#############################################################################################################
 
             // use ability
             if (mPlayer.ownAbilityReady && mPlayer.mana >= 2) // if ready and enough manna TODO: TGT mana cost change
@@ -724,7 +845,6 @@
             //play cards:
             List<CardDB.cardName> playedcards = new List<CardDB.cardName>();
 
-            int idx = 0;
             foreach (Handmanager.Handcard hc in mPlayer.owncards)
             {
                 if (p.keepCardList.Contains(hc.entity))
@@ -754,9 +874,7 @@
                         int cardplayPenality = 0;
                         int bestplace = p.getBestPlace(c, isLethalCheck, own);
                         trgts = c.getTargetsForCard(p, isLethalCheck, own);
-                        float bestReward = Single.MinValue;
 
-                        List<Tuple<Action, float>> tempRet = new List<Tuple<Action, float>>();
                         foreach (Minion trgt in trgts)                        
                         {
                             if (trgt != null && !trgt.isHero && trgt.own != own && trgt.targetProb < minionProbCut) continue;
@@ -775,7 +893,6 @@
                     }
                 }
 
-                idx++;
             }
 
           //get targets for Hero weapon and Minions  ###################################################################################

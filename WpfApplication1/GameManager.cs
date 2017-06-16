@@ -295,7 +295,7 @@ namespace HRSim
         public Behavior playerOneBH, playerTwoBH;
         public Behavior botBase = new BehaviorControl();
 
-        public int moveCount = 0;
+        public int debugCount = 0;
         public double myTimer = 0;
         public double sfTimer = 0;
         public int nodeCount = 0;
@@ -308,6 +308,7 @@ namespace HRSim
         public Behavior bh;
         public double P1Time = 0;
         public double P2Time = 0;
+        public int debug = 0;
 
         public Playfield mPlayfield
         {
@@ -367,24 +368,184 @@ namespace HRSim
             }
         }
 
-        public int playMove()
+        //public int playMove(bool dummy)
+        //{
+        //    int gameResult = playField.getGameResult();
+        //    if (gameResult == 0)
+        //    {
+        //        Helpfunctions.Instance.logg("##########PLAYER 1 WON##########");
+        //        return 0;
+        //    }
+        //    else if (gameResult == 1)
+        //    {
+        //        Helpfunctions.Instance.logg("##########PLAYER 2 WON##########");
+        //        return 1;
+        //    }
+        //    Action moveTodo = null;
+        //    if (playField.isOwnTurn)
+        //    {
+
+        //        Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
+        //        //DateTime startTime = DateTime.Now;  
+        //        if (playerFirst is LearningPlayer)
+        //        {
+        //            playerFirst.updateState(playField);
+        //            GameManager.Instance.mPlayfield = ((LearningPlayer)playerFirst).getBestPlayfield();
+        //        }
+        //        else
+        //        {
+        //            if (ownkeyInfo == null && enemykeyInfo == null)
+        //            {
+        //                ownkeyInfo = new PlayerKeyInfo(playField.playerFirst, playField.homeDeck, true, playField);
+        //                enemykeyInfo = new PlayerKeyInfo(playField.playerSecond, playField.awayDeck, false, playField);
+        //            }
+        //            playerFirst.updateState(playField);
+        //            moveTodo = playerFirst.getMove();
+        //            if (moveTodo != null)
+        //            {
+        //                moveTodo.print();
+        //                playField.doAction(moveTodo);
+        //            }
+        //            else
+        //            {
+        //                List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, true);
+        //                playField.endTurn(false, false);
+        //                ownkeyInfo.updatePlayedAction(playField.playerFirst);
+        //                ownkeyInfo.updatePlayedCard(playField.playerFirst, true, GameManager.Instance.mPlayfield);
+        //                ownkeyInfo.updateEndTurnFeature(endTurnFeature);
+        //                playField.value = Int32.MinValue;
+        //                StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, ownkeyInfo, enemykeyInfo,
+        //                    playerFirst.isRandomMove(), playerFirst.getStateValue(playField));
+        //                featureList.Add(stateInfo);
+        //                ownkeyInfo = null;
+        //                enemykeyInfo = null;
+        //                playField.drawTurnStartCard();
+        //                GameManager.Instance.turnStartEntity = playField.nextEntity;
+        //                Helpfunctions.Instance.logg("Next eneity: " + GameManager.Instance.turnStartEntity);
+        //                //if (GameManager.Instance.turnStartEntity == 1072)
+        //                //{ 
+        //                //    int debug = 1;
+        //                //}
+        //            }
+        //        }
+        //        //DateTime endTime = DateTime.Now;
+        //        //double calcTime = (endTime - startTime).TotalMilliseconds / 1000;
+        //        //if (((GreedyPlayer)playerFirst).isDNNEval())
+        //        //{
+        //        //    GameManager.Instance.P1Time += calcTime;
+        //        //}
+        //        //else
+        //        //{
+        //        //    GameManager.Instance.P2Time += calcTime;
+        //        //}
+        //        //Helpfunctions.Instance.logg("PLAYER 1 calculating time: " + calcTime);
+        //    }
+        //    else
+        //    {
+        //        Helpfunctions.Instance.logg("PLAYER 2 ##########MOVE##########");
+        //        //DateTime startTime = DateTime.Now;  
+        //        if (playerSecond is LearningPlayer)
+        //        {
+        //            playerSecond.updateState(playField);
+        //            GameManager.Instance.mPlayfield = ((LearningPlayer)playerSecond).getBestPlayfield();
+        //        }
+        //        else
+        //        {
+        //            if (ownkeyInfo == null && enemykeyInfo == null)
+        //            {
+        //                ownkeyInfo = new PlayerKeyInfo(playField.playerFirst, playField.homeDeck, true, playField);
+        //                enemykeyInfo = new PlayerKeyInfo(playField.playerSecond, playField.awayDeck, false, playField);
+        //            }
+        //            playerSecond.updateState(playField);
+        //            GameManager.instance.IncreaseDebugCounter();
+        //            moveTodo = playerSecond.getMove();
+        //            if (moveTodo != null)
+        //            {
+        //                moveTodo.print();
+        //                playField.doAction(moveTodo);
+        //            }
+        //            else
+        //            {
+        //                List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, false);
+        //                playField.endTurn(false, false);
+        //                enemykeyInfo.updatePlayedAction(playField.playerSecond);
+        //                enemykeyInfo.updatePlayedCard(playField.playerSecond, false, playField);
+        //                enemykeyInfo.updateEndTurnFeature(endTurnFeature);
+        //                playField.value = Int32.MinValue;
+        //                StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, enemykeyInfo, ownkeyInfo,
+        //                    playerSecond.isRandomMove(), playerSecond.getStateValue(playField));
+        //                featureList.Add(stateInfo);
+        //                ownkeyInfo = null;
+        //                enemykeyInfo = null;
+        //                playField.drawTurnStartCard();
+        //                GameManager.Instance.turnStartEntity = playField.nextEntity;
+        //                Helpfunctions.Instance.logg("Next eneity: " + GameManager.Instance.turnStartEntity);
+        //            }
+        //        }
+        //        //DateTime endTime = DateTime.Now;
+        //        //double calcTime = (endTime - startTime).TotalMilliseconds / 1000;
+        //        //if (((GreedyPlayer)playerFirst).isDNNEval())
+        //        //{
+        //        //    GameManager.Instance.P1Time += calcTime;
+        //        //}
+        //        //else
+        //        //{
+        //        //    GameManager.Instance.P2Time += calcTime;
+        //        //}
+        //        //Helpfunctions.Instance.logg("PLAYER 2 calculating time: " + calcTime);
+        //    }
+
+        //    gameResult = playField.getGameResult();
+        //    if (gameResult != -1) //game end, so update the last frame
+        //    {
+        //        if (playField.isOwnTurn)
+        //        {
+        //            List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, true);
+        //            ownkeyInfo.updatePlayedAction(playField.playerFirst);
+        //            ownkeyInfo.updatePlayedCard(playField.playerFirst, true, playField);
+        //            ownkeyInfo.updateEndTurnFeature(endTurnFeature);
+        //            playField.value = Int32.MinValue;
+        //            StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, ownkeyInfo, enemykeyInfo,
+        //                                       playerFirst.isRandomMove(), playerFirst.getStateValue(playField));
+        //            featureList.Add(stateInfo);
+        //            ownkeyInfo = null;
+        //            enemykeyInfo = null;
+        //        }
+        //        else
+        //        {
+        //            List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, false);
+        //            enemykeyInfo.updatePlayedAction(playField.playerSecond);
+        //            enemykeyInfo.updatePlayedCard(playField.playerSecond, false, playField);
+        //            enemykeyInfo.updateEndTurnFeature(endTurnFeature);
+        //            playField.value = Int32.MinValue;
+        //            StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, enemykeyInfo, ownkeyInfo,
+        //                                        playerSecond.isRandomMove(), playerSecond.getStateValue(playField));
+        //            featureList.Add(stateInfo);
+        //            ownkeyInfo = null;
+        //            enemykeyInfo = null;
+        //        }
+        //    }
+        //    return -1;
+        //}
+
+        public int playMove(bool printLog)
         {
             int gameResult = playField.getGameResult();
             if (gameResult == 0)
             {
-                Helpfunctions.Instance.logg("##########PLAYER 1 WON##########");
+                if (printLog) Helpfunctions.Instance.logg("##########PLAYER 1 WON##########");
                 return 0;
             }
             else if (gameResult == 1)
             {
-                Helpfunctions.Instance.logg("##########PLAYER 2 WON##########");
+                if (printLog) Helpfunctions.Instance.logg("##########PLAYER 2 WON##########");
                 return 1;
             }
             Action moveTodo = null;
             if (playField.isOwnTurn)
             {
 
-                Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
+                if (printLog) Helpfunctions.Instance.logg("PLAYER 1 ##########MOVE##########");
                 //DateTime startTime = DateTime.Now;  
                 if (playerFirst is LearningPlayer)
                 {
@@ -393,55 +554,47 @@ namespace HRSim
                 }
                 else
                 {
-                    if (ownkeyInfo == null && enemykeyInfo == null)
-                    {
-                        ownkeyInfo = new PlayerKeyInfo(playField.playerFirst, playField.homeDeck, true, playField);
-                        enemykeyInfo = new PlayerKeyInfo(playField.playerSecond, playField.awayDeck, false, playField);
-                    }
+                    //if (ownkeyInfo == null && enemykeyInfo == null)
+                    //{
+                    //    ownkeyInfo = new PlayerKeyInfo(playField.playerFirst, playField.homeDeck, true, playField);
+                    //    enemykeyInfo = new PlayerKeyInfo(playField.playerSecond, playField.awayDeck, false, playField);
+                    //}
+
                     playerFirst.updateState(playField);
-                    moveTodo = playerFirst.getMove();
+                    try
+                    {
+                        moveTodo = playerFirst.getMove();
+                    }
+                    catch (NullReferenceException ex)
+                    {
+                        throw;
+                    }
                     if (moveTodo != null)
                     {
-                        moveTodo.print();
+                        if (printLog) moveTodo.print();
                         playField.doAction(moveTodo);
                     }
                     else
                     {
-                        List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, true);
+                        //List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, true);
                         playField.endTurn(false, false);
-                        ownkeyInfo.updatePlayedAction(playField.playerFirst);
-                        ownkeyInfo.updatePlayedCard(playField.playerFirst, true, GameManager.Instance.mPlayfield);
-                        ownkeyInfo.updateEndTurnFeature(endTurnFeature);
+                        //ownkeyInfo.updatePlayedAction(playField.playerFirst);
+                        //ownkeyInfo.updatePlayedCard(playField.playerFirst, true, GameManager.Instance.mPlayfield);
+                        //ownkeyInfo.updateEndTurnFeature(endTurnFeature);
                         playField.value = Int32.MinValue;
-                        StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, ownkeyInfo, enemykeyInfo,
-                            playerFirst.isRandomMove(), playerFirst.getStateValue(playField));
-                        featureList.Add(stateInfo);
-                        ownkeyInfo = null;
-                        enemykeyInfo = null;
+                        //StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, ownkeyInfo, enemykeyInfo,
+                        //    playerFirst.isRandomMove(), playerFirst.getStateValue(playField));
+                        //featureList.Add(stateInfo);
+                        //ownkeyInfo = null;
+                        //enemykeyInfo = null;
                         playField.drawTurnStartCard();
                         GameManager.Instance.turnStartEntity = playField.nextEntity;
-                        Helpfunctions.Instance.logg("Next eneity: " + GameManager.Instance.turnStartEntity);
-                        //if (GameManager.Instance.turnStartEntity == 1072)
-                        //{ 
-                        //    int debug = 1;
-                        //}
                     }
                 }
-                //DateTime endTime = DateTime.Now;
-                //double calcTime = (endTime - startTime).TotalMilliseconds / 1000;
-                //if (((GreedyPlayer)playerFirst).isDNNEval())
-                //{
-                //    GameManager.Instance.P1Time += calcTime;
-                //}
-                //else
-                //{
-                //    GameManager.Instance.P2Time += calcTime;
-                //}
-                //Helpfunctions.Instance.logg("PLAYER 1 calculating time: " + calcTime);
             }
             else
             {
-                Helpfunctions.Instance.logg("PLAYER 2 ##########MOVE##########");
+                if (printLog) Helpfunctions.Instance.logg("PLAYER 2 ##########MOVE##########");
                 //DateTime startTime = DateTime.Now;  
                 if (playerSecond is LearningPlayer)
                 {
@@ -450,86 +603,75 @@ namespace HRSim
                 }
                 else
                 {
-                    if (ownkeyInfo == null && enemykeyInfo == null)
-                    {
-                        ownkeyInfo = new PlayerKeyInfo(playField.playerFirst, playField.homeDeck, true, playField);
-                        enemykeyInfo = new PlayerKeyInfo(playField.playerSecond, playField.awayDeck, false, playField);
-                    }
+                    //if (ownkeyInfo == null && enemykeyInfo == null)
+                    //{
+                    //    ownkeyInfo = new PlayerKeyInfo(playField.playerFirst, playField.homeDeck, true, playField);
+                    //    enemykeyInfo = new PlayerKeyInfo(playField.playerSecond, playField.awayDeck, false, playField);
+                    //}
+
                     playerSecond.updateState(playField);
-                    moveTodo = playerSecond.getMove();
+                    try
+                    {
+                        moveTodo = playerSecond.getMove();
+                    }
+                    catch (NullReferenceException ex)
+                    {
+                        throw;
+                    }
                     if (moveTodo != null)
                     {
-                        moveTodo.print();
+                        if (printLog) moveTodo.print();
                         playField.doAction(moveTodo);
                     }
                     else
                     {
-                        List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, false);
+                        //List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, false);
                         playField.endTurn(false, false);
-                        enemykeyInfo.updatePlayedAction(playField.playerSecond);
-                        enemykeyInfo.updatePlayedCard(playField.playerSecond, false, playField);
-                        enemykeyInfo.updateEndTurnFeature(endTurnFeature);
+                        //enemykeyInfo.updatePlayedAction(playField.playerSecond);
+                        //enemykeyInfo.updatePlayedCard(playField.playerSecond, false, playField);
+                        //enemykeyInfo.updateEndTurnFeature(endTurnFeature);
                         playField.value = Int32.MinValue;
-                        StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, enemykeyInfo, ownkeyInfo,
-                            playerSecond.isRandomMove(), playerSecond.getStateValue(playField));
-                        featureList.Add(stateInfo);
-                        ownkeyInfo = null;
-                        enemykeyInfo = null;
+                        //StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, enemykeyInfo, ownkeyInfo,
+                        //    playerSecond.isRandomMove(), playerSecond.getStateValue(playField));
+                        //featureList.Add(stateInfo);
+                        //ownkeyInfo = null;
+                        //enemykeyInfo = null;
                         playField.drawTurnStartCard();
                         GameManager.Instance.turnStartEntity = playField.nextEntity;
-                        Helpfunctions.Instance.logg("Next eneity: " + GameManager.Instance.turnStartEntity);
                     }
                 }
-                //DateTime endTime = DateTime.Now;
-                //double calcTime = (endTime - startTime).TotalMilliseconds / 1000;
-                //if (((GreedyPlayer)playerFirst).isDNNEval())
-                //{
-                //    GameManager.Instance.P1Time += calcTime;
-                //}
-                //else
-                //{
-                //    GameManager.Instance.P2Time += calcTime;
-                //}
-                //Helpfunctions.Instance.logg("PLAYER 2 calculating time: " + calcTime);
             }
 
             gameResult = playField.getGameResult();
-            if (gameResult != -1) //game end, so update the last frame
-            {
-                if (playField.isOwnTurn)
-                {
-                    List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, true);
-                    ownkeyInfo.updatePlayedAction(playField.playerFirst);
-                    ownkeyInfo.updatePlayedCard(playField.playerFirst, true, playField);
-                    ownkeyInfo.updateEndTurnFeature(endTurnFeature);
-                    playField.value = Int32.MinValue;
-                    StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, ownkeyInfo, enemykeyInfo,
-                                               playerFirst.isRandomMove(), playerFirst.getStateValue(playField));
-                    featureList.Add(stateInfo);
-                    ownkeyInfo = null;
-                    enemykeyInfo = null;
-                }
-                else
-                {
-                    List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, false);
-                    enemykeyInfo.updatePlayedAction(playField.playerSecond);
-                    enemykeyInfo.updatePlayedCard(playField.playerSecond, false, playField);
-                    enemykeyInfo.updateEndTurnFeature(endTurnFeature);
-                    playField.value = Int32.MinValue;
-                    StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, enemykeyInfo, ownkeyInfo,
-                                                playerSecond.isRandomMove(), playerSecond.getStateValue(playField));
-                    featureList.Add(stateInfo);
-                    ownkeyInfo = null;
-                    enemykeyInfo = null;
-                }
-            }
-
-            //for debuging
-            //if (moveTodo != null && moveTodo.actionType == actionEnum.playcard && moveTodo.card.card.name == CardDB.cardName.loatheb)
+            //if (gameResult != -1) //game end, so update the last frame
             //{
-            //    return -2;
+            //    if (playField.isOwnTurn)
+            //    {
+            //        List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, true);
+            //        ownkeyInfo.updatePlayedAction(playField.playerFirst);
+            //        ownkeyInfo.updatePlayedCard(playField.playerFirst, true, playField);
+            //        ownkeyInfo.updateEndTurnFeature(endTurnFeature);
+            //        playField.value = Int32.MinValue;
+            //        StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, ownkeyInfo, enemykeyInfo,
+            //                                   playerFirst.isRandomMove(), playerFirst.getStateValue(playField));
+            //        featureList.Add(stateInfo);
+            //        ownkeyInfo = null;
+            //        enemykeyInfo = null;
+            //    }
+            //    else
+            //    {
+            //        List<int> endTurnFeature = GameManager.Instance.bh.getPlayfieldFeature(playField, false);
+            //        enemykeyInfo.updatePlayedAction(playField.playerSecond);
+            //        enemykeyInfo.updatePlayedCard(playField.playerSecond, false, playField);
+            //        enemykeyInfo.updateEndTurnFeature(endTurnFeature);
+            //        playField.value = Int32.MinValue;
+            //        StateKeyInfo stateInfo = new StateKeyInfo(GameManager.Instance.turnStartEntity, enemykeyInfo, ownkeyInfo,
+            //                                    playerSecond.isRandomMove(), playerSecond.getStateValue(playField));
+            //        featureList.Add(stateInfo);
+            //        ownkeyInfo = null;
+            //        enemykeyInfo = null;
+            //    }
             //}
-            //UPDATE UI   
 
             return -1;
         }
@@ -549,15 +691,47 @@ namespace HRSim
         {
             if (rng == null)
             {
-                //int seed = Environment.TickCount;
-                //int seed = 564654093;
-                int seed = 1220632265;
+                int seed = Environment.TickCount;
+                //int seed = 517824156;
+                //int seed = 349665531;
                 rng = new Random(seed);
                 Helpfunctions.Instance.logg("seed = " + seed);
             }
             return rng;
         }
 
+        public void IncreaseDebugCounter()
+        {
+            debugCount++;           
+        }
+
+        public void Debugger(Node cur)
+        {
+            //for (int i = 0; i < cur.children.Count; i++)
+            //{
+            //    Node child = cur.children[i];
+            //    if (GameManager.Instance.debug == 3 && child.move.card != null && child.move.card.entity == 1009 && child.state.nextEntity == 1024)
+            //    {
+            //        child.move.print();
+            //        child.state.printBoard();
+            //    }
+            //}
+
+        }
+
+
+        public bool Debugger(Playfield p)
+        {
+            Player mPlayer = p.getCurrentPlayer(true);
+            foreach(Action action in mPlayer.playactions)
+            {
+                if (action.card != null && action.card.entity == 1017)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
 }

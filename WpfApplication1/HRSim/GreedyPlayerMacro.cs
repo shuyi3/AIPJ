@@ -117,8 +117,6 @@ namespace HRSim
 
                 for (int i = 0; i < count; i++)
                 {
-                    GameManager.Instance.moveCount++;
-
                     Playfield pf = temp[i];
                     List<Action> actions = new List<Action>(Movegenerator.Instance.getNoneTargetMove(pf, 0.0));
 

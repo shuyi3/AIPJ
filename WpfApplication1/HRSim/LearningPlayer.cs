@@ -28,10 +28,6 @@
             if (expand(p, HeuristicType.LethalCheck) == 1) return 0;
             expand(p, HeuristicType.Boardvalue); // no moves
 
-            if (GameManager.Instance.moveCount == 235)
-            {
-                int debug = 1;
-            }
 
             //expand(p, HeuristicType.DrawCard);
 

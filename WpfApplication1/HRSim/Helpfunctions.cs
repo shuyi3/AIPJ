@@ -60,13 +60,6 @@ namespace HRSim
 
         private Helpfunctions()
         {
-            //foreach (Window window in Application.Current.Windows)
-            //{
-            //    if (window.GetType() == typeof(HRSim.MainWindow))
-            //    {
-            //        this.window = (HRSim.MainWindow)window;
-            //    }
-            //}
             jsonSerializer = new JavaScriptSerializer();
             System.IO.File.WriteAllText(logpath + logfile, "");
         }
@@ -103,14 +96,14 @@ namespace HRSim
         {
 
             if (!writelogg) return;
-            //try
-            //{
-            //    using (StreamWriter sw = File.AppendText(logpath + logfile))
-            //    {
-            //        sw.WriteLine(s);
-            //    }
-            //}
-            //catch { }
+            try
+            {
+                using (StreamWriter sw = File.AppendText(logpath + logfile))
+                {
+                    sw.WriteLine(s);
+                }
+            }
+            catch { }
             Console.WriteLine(s);
             ErrorLog(s);
         }

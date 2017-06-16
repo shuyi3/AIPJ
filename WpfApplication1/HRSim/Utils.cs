@@ -64,5 +64,85 @@ namespace HRSim
                 probList[i] /= expSum;
             }
         }
+
+        public static void SoftMaxCummulate(double[] probArr)
+        {
+            if (probArr.Length == 0) return;
+
+            double cMax = Double.MinValue;
+            foreach (double v in probArr)
+            {
+                cMax = Math.Max(v, cMax);
+            }
+
+            double[] expArray = new double[probArr.Length];
+            for (int i = 0; i < probArr.Length; i++)
+            {
+                probArr[i] = Math.Exp(probArr[i] - cMax);
+            }
+
+            double expSum = 0.0;
+            foreach (double v in probArr)
+            {
+                expSum += v;
+            }
+
+            for (int i = 0; i < probArr.Length; i++)
+            {
+                if (i == probArr.Length - 1)
+                {
+                    probArr[i] = 1.0;
+                }
+                else if (i == 0)
+                {
+                    probArr[i] /= expSum;
+                }
+                else
+                {
+                    probArr[i] = probArr[i] / expSum + probArr[i - 1];
+                }
+            }
+
+        }
+
+        public static void SoftMax(List<Handmanager.Handcard> cardList)
+        {
+            if (cardList.Count == 0) return;
+
+            double cMax = Double.MinValue;
+            foreach (Handmanager.Handcard hc in cardList)
+            {
+                cMax = Math.Max(hc.playProb, cMax);
+            }
+
+            double[] expArray = new double[cardList.Count];
+            foreach (Handmanager.Handcard hc in cardList)
+            {
+                hc.playProb = Math.Exp(hc.playProb - cMax);
+            }
+
+            double expSum = 0.0;
+            foreach (Handmanager.Handcard hc in cardList)
+            {
+                expSum += hc.playProb;
+            }
+
+            for (int i = 0; i < cardList.Count; i++)
+            {
+                //if (i == cardList.Count - 1)
+                //{
+                //    cardList[i].playProb = 1.0;
+                //}
+                //else if (i == 0)
+                //{
+                //    cardList[i].playProb /= expSum;
+                //}
+                //else
+                //{
+                //    cardList[i].playProb = cardList[i].playProb / expSum + cardList[i - 1].playProb;
+                //}
+                cardList[i].playProb /= expSum;
+            }
+        }
     }
 }

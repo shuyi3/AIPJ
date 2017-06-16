@@ -73,17 +73,6 @@ public class ParetoTreeNode {
         Movegenerator.Instance.getMoveListForPlayfield(state, false, lethalCheck, 0.0);
         Playfield afterState = new Playfield(state);
 
-        //afterState.printMoveList();
-        //List<Action> testMoves = Movegenerator.Instance.getMoveList(afterState, lethalCheck, true, true);
-
-        //if (afterState.moveList.Count != testMoves.Count)
-        //{
-        //    int debug = 1;
-        //}
-
-
-        //List<Action> testMoves = Movegenerator.Instance.getMoveList(afterState, lethalCheck, true, true);
-
         if (afterState.moveList.Count > 0)
         {
             children = new List<ParetoTreeNode>(afterState.moveList.Count + 1);
@@ -99,8 +88,7 @@ public class ParetoTreeNode {
 
             foreach (Action a in afterState.moveList)
             {
-                //TODO: 暂时没有智慧祝福，收割机，大哥, 只有抽牌
-
+                    //TODO: 暂时没有智慧祝福，收割机，大哥, 只有抽牌
                 nextState = new Playfield(afterState);
                 nextState.doAction(a);
                 if (a.actionType == actionEnum.playcard && CardDB.Instance.UsefulNeedKeepDatabase.ContainsKey(a.card.card.name))
@@ -145,8 +133,6 @@ public class ParetoTreeNode {
                 return state;
 
             bool lethalCheck = false;
-            //if (m_player.heuristicType == HeuristicType.LethalCheck)
-                //lethalCheck = true;
 
             Playfield startState = new Playfield(state);
             Action move = null;
@@ -159,7 +145,6 @@ public class ParetoTreeNode {
 
                 if (startState.moveList.Count == 0)
                 {
-                    //this.isTerminal = true;
                     break;
                 }
                 else

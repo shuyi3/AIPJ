@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,15 +16,11 @@ namespace HRSim
         dynamic board_encoder = null;
         dynamic py_utils = null;
         HashSet<int> featureSparseSet = new HashSet<int>();
+        public double[] cachedProb;
         int offset = 0;
 
         PyTuple tp1, tp2, tp3, tp4;
         PyList encode;
-
-        //static string[] minionCardArray = { "annoyotron", "archmageantonidas", "boombot", "clockworkgnome", 
-        //                         "cogmaster", "damagedgolem", "drboom",
-        //                            "goblinblastmage", "harvestgolem", "loatheb", "manawyrm", "mechanicalyeti", "mechwarper",
-        //                         "snowchugger", "spidertank", "tinkertowntechnician", "unknown" };
 
         static string[] minionCardArray = {"damagedgolem", "clockworkgnome", "boombot", "manawyrm", "cogmaster", "annoyotron", "mechwarper",
                "snowchugger", "harvestgolem", "spidertank", "tinkertowntechnician", "mechanicalyeti",
@@ -61,6 +58,8 @@ namespace HRSim
                                                                 {CardDB.cardName.flamestrike, 22}
                                                                };
 
+        static Dictionary<string, double[]> policyDict;
+
         private static DNNEval instance;
 
         private DNNEval()
@@ -78,6 +77,8 @@ namespace HRSim
 
         public void Init()
         {
+            cachedProb = new Double[cardArray.Length];
+            policyDict = new Dictionary<string, double[]>();
             using (Py.GIL())
             {
                 PythonEngine.Initialize();
@@ -132,8 +133,55 @@ namespace HRSim
         public void GetCardPolicy(Playfield pf)
         {
             string msg = Featurization.FeaturizationToStringFlatten(pf);
-            string cardProb = ZMQMessager.Instance.send(msg);
-            Console.WriteLine(cardProb);
+            if (policyDict.ContainsKey(msg))
+            {
+                Array.Copy(policyDict[msg], cachedProb, cachedProb.Length);
+            }
+            else
+            {
+                string cardProb = ZMQMessager.Instance.Send(msg);
+                string[] probStrArray = cardProb.Split();
+                for (int i = 0; i < probStrArray.Length; i++)
+                {
+                    cachedProb[i] = Double.Parse(probStrArray[i]);
+                }
+                policyDict[msg] = new double[cachedProb.Length];
+                Array.Copy(cachedProb, policyDict[msg], cachedProb.Length);
+            }            
+        }
+
+        public Action GetHighLevelMove(Playfield pf)
+        {
+            int i;
+            List<List<Action>> moveListByAction = Movegenerator.Instance.getMoveListByAction(pf, false, true);
+            if (moveListByAction.Count == 0) return null;
+            double[] prob = new double[moveListByAction.Count];
+
+            for (i = 0; i < moveListByAction.Count; i++)
+            {
+                prob[i] = cachedProb[FeatureConst.Instance.cardIdxDict[moveListByAction[i][0].card.card.name]];
+            }
+           
+            MathUtils.SoftMaxCummulate(prob);
+
+            //binary search
+            double randomNum = GameManager.getRNG().NextDouble();
+            int idx = Array.BinarySearch(prob, randomNum);
+            if (idx < 0)
+            {
+                idx = ~idx;
+            }
+
+            List<Action> actions = moveListByAction[idx]; 
+            //randomly pick a high-level action
+            return actions[GameManager.getRNG().Next(actions.Count)];
+        }
+
+        public Action GetLowLevelMove(Playfield pf)
+        {
+            List<Action> actions = Movegenerator.Instance.GetNonPlaycardActions(pf, false, true);
+            if (actions.Count == 0) return null;
+            return actions[GameManager.getRNG().Next(actions.Count)];
         }
 
         public int encodeHeroHp(int heroHp)
@@ -343,12 +391,10 @@ namespace HRSim
                 {
                     dynamic board_encode = parsePlayfieldCNNAction(p, temp, own);
                     double cardToPlay = model.predict_classes(board_encode)[0];
-                    //Console.WriteLine("cardToPlay: " + cardToPlay);
                     foreach (Handmanager.Handcard hc in mPlayer.owncards)
                     {
                         if (cardIdxDict[hc.card.name] == cardToPlay)
                         {
-                            //Console.WriteLine("hc:" + hc.card.name);
                             hc.playProb = 1.0;
                             break;
                         }
@@ -357,7 +403,7 @@ namespace HRSim
                     List<Action> actions;
                     if (cardIdxDict[CardDB.cardName.fireblast] == cardToPlay)
                     {
-                        actions = new List<Action>(Movegenerator.Instance.getHeroPowerMoveList(temp, false, true, true));
+                        actions = new List<Action>(Movegenerator.Instance.getHeroPowerMoveList(temp, false, true));
                     }
                     else
                     {

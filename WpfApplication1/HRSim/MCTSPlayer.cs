@@ -280,15 +280,12 @@ namespace HRSim
         bool isEndReached;
         float bestValue = float.MinValue;
         Playfield bestBoard;
-        int rolloutDepth = 3;
+        public int rolloutDepth { get; set; }
         int firstNumberIter = 500;
         int playoutNumberIter = 500;
         bool log = false;
         int chanceCount = 0;
-        int expandCount = 0;
-        double expandTime = 0.0;
-        int numExpand = 0;
-        float constC = 0.7f;
+        public float constC { get; set; }
         bool useNNEval = false;
         bool isOpenHand = false;
         double randomProb = 1.0; //1.0 表示openhand 0.0 表示closehand
@@ -302,8 +299,9 @@ namespace HRSim
             moveList = new List<Action>();
             bh = new BehaviorControl();
             this.useNNEval = useNNEval;
-            //this.isOpenHand = isOpenHand;
             this.randomProb = randomProb;
+            constC = 0.7f;
+            rolloutDepth = 5;
         }
 
         public override void updateState(Playfield playfield)
@@ -313,18 +311,37 @@ namespace HRSim
 
         public override Action getMove()
         {
+
+            //print player board
+            //Helpfunctions.Instance.logg("Player board:");
+            //this.board.printBoard();
+            //
+
             if (moveList.Count == 0)
             {
+                //GameManager.Instance.IncreaseDebugCounter();
+                //if (GameManager.Instance.debugCount == 16)
+                //{
+                //    GameManager.Instance.debug = 2;
+                //}
+
                 if (this.isOpenHand)
                 {
                     moveList = getBestPlayfield();
                 }
                 else
                 {
-                    moveList = getBestPlayfieldClosedHand();
+                    try
+                    {
+                        moveList = getBestPlayfieldClosedHand();
+                    }
+                    catch (NullReferenceException ex)
+                    {
+                        throw;
+                    }
                 }
             }
- 
+
             Action moveToPlay = moveList[0];
             moveList.RemoveAt(0);
             return moveToPlay;
@@ -334,26 +351,28 @@ namespace HRSim
         {
             bool lethalCheck = false;
 
-            //Movegenerator.Instance.getMoveListForPlayfield(p.state, false, lethalCheck);
             p.state.moveList = new List<Action>(Movegenerator.Instance.getMoveList(p.state, lethalCheck, true, true, 0.0));
 
             Playfield afterState = new Playfield(p.state);
+
+            //if (GameManager.Instance.debug == 2)
+            //{
+            //    //afterState.printBoard();
+            //}
 
             if (afterState.moveList.Count > 0)
             {
                 p.children = new List<Node>(afterState.moveList.Count + 1);
 
-                int i = 0;
                 Node tn = null;
                 Playfield nextState = new Playfield(afterState);
 
                 foreach (Action a in afterState.moveList)
                 {
                     nextState = new Playfield(afterState);
-                    nextState.doAction(a);
+                    nextState.doAction(a);                   
                     tn = new Node(null, nextState, a, p.depth);
                     p.children.Add(tn);
-                    i++;
                 }
                 return p.children.Count;
             }
@@ -377,6 +396,11 @@ namespace HRSim
                 probSum += p.probability[i];
                 if (prob < probSum)
                     break;
+            }
+            if (i == 0 && p.children.Count == 0)
+            {
+                throw new NullReferenceException();
+                //p.state.printBoard();
             }
             return p.children[i];
         }
@@ -418,14 +442,14 @@ namespace HRSim
                     //currentState.state = new Playfield(board);
                 }
             }
-        }
-
+        }      
 
         public void UCTClosedHand(Node startNode, List<Playfield> sampledStates)
         {
             //int numIter = 750;
-            int numIter = 100;
+            int numIter = 1500;
             bool isEndReachedBefore = isEndReached;
+
             foreach (Playfield sampled in sampledStates)
             {
                 Playfield temp = currentState.state;
@@ -437,9 +461,17 @@ namespace HRSim
                         rolloutDepth = int.MaxValue;
                         break;
                     }
-                    UCTRun(currentState, constC);
-                    if (i % 100 == 0)
-                        Console.WriteLine(i + " th iteration");
+
+                    try
+                    {
+                        UCTRun(currentState, constC);
+                    }
+                    catch (NullReferenceException ex)
+                    {
+                        throw;
+                    }
+                    //if (i % 100 == 0)
+                    //    Console.WriteLine(i + " th iteration");
 
                 }
                 currentState.state = temp;
@@ -447,21 +479,29 @@ namespace HRSim
 
             if (isEndReachedBefore != isEndReached)
             {
-                board.moveList.Clear();
-                currentState = new Node(null, board, null, 0);
+                currentState.children.Clear();
+                //currentState = new Node(null, board, null, 0);
                 foreach (Playfield sampled in sampledStates)
                 {
                     Playfield temp = currentState.state;
                     currentState.state = sampled;
                     for (int i = 0; i < numIter; i++)
                     {
-                        UCTRun(currentState, constC);
-                        if (i % 1000 == 0)
-                            Console.WriteLine(i + " th iteration");
+                        try
+                        {
+                            UCTRun(currentState, constC);
+                        }
+                        catch (NullReferenceException ex)
+                        {
+                            throw;
+                        }                        
+                        //if (i % 100 == 0)
+                        //    Console.WriteLine(i + " th iteration");
                     }
                     currentState.state = temp;
                 }
-            }      
+            }
+
         }
 
         public List<Playfield> sampleState(Playfield state, int numWorlds)
@@ -479,9 +519,6 @@ namespace HRSim
         public List<Action> getBestPlayfieldClosedHand()
         {
             //Helpfunctions.Instance.startTimer();
-            numExpand = 0;
-            expandTime = 0.0;
-            expandCount = 0;
             chanceCount = 0;
             Playfield selectedMove = null;
             bestValue = float.MinValue;
@@ -489,7 +526,14 @@ namespace HRSim
             currentState = new Node(null, board, null, 0);
             List<Action> actionList = new List<Action>();
 
-            if (expand(currentState, HeuristicType.LethalCheck, 500) == 1)
+            //if (GameManager.Instance.debug >= 2)
+            //{
+            //    board.printBoard();
+            //}
+
+            int lethalRes = expand(currentState, HeuristicType.LethalCheck, 500);
+
+            if (lethalRes == 1)
             {
                 actionList.AddRange(currentState.children[0].state.getLastTurnAction());
                 actionList.Add(null);
@@ -505,8 +549,15 @@ namespace HRSim
                 return actionList;
             }
 
-            List<Playfield> stateList = sampleState(currentState.state, 10);
-            UCTClosedHand(currentState, stateList);
+            List<Playfield> stateList = sampleState(currentState.state, 5);
+            try
+            {
+                UCTClosedHand(currentState, stateList);
+            }
+            catch (NullReferenceException ex)
+            {
+                throw;
+            }
 
             int depth = currentState.depth;
             while (currentState.depth == depth)
@@ -523,22 +574,50 @@ namespace HRSim
                     }
                 }
 
-                currentState.printChildren();
-                actionList.Add(selectedChild.move);
-                currentState = selectedChild;
+                //if (GameManager.Instance.debug >= 2)
+                //{
+                //    currentState.printChildren();
+                //}
 
                 if (selectedChild.numVisited <= 50)
                 {
-                    int result = expandDecision(currentState, firstNumberIter);
-                    if (result != 0) //chance node
+                    //if (GameManager.Instance.debug >= 2)
+                    //{
+                    //    currentState.state.printBoard();
+                    //}
+                    //int result = expandDecision(currentState, firstNumberIter);
+                    if (currentState.move == null) //chance node, add the null move
                     {
+                        actionList.Add(null);
                         break;
                     }
                     else
                     {
-                        UCTClosedHand(currentState, stateList);
+                        try
+                        {
+                            UCTClosedHand(currentState, stateList);
+                        }
+                        catch (NullReferenceException ex)
+                        {
+                            throw;
+                        }
                     }
                 }
+                else
+                {
+                    currentState = selectedChild;
+                    actionList.Add(currentState.move);
+                    foreach (Playfield state in stateList)
+                    {
+                        if (currentState.move != null)
+                            state.doAction(currentState.move);
+                    }
+                }
+            }
+
+            if (actionList[actionList.Count-1] != null)
+            {
+                int debug = 1;
             }
             return actionList;
         }
@@ -546,9 +625,6 @@ namespace HRSim
         public List<Action> getBestPlayfield()
         {
             //Helpfunctions.Instance.startTimer();
-            numExpand = 0;
-            expandTime = 0.0;
-            expandCount = 0;
             chanceCount = 0;
             Playfield selectedMove = null;
             bestValue = float.MinValue;
@@ -614,139 +690,13 @@ namespace HRSim
             return actionList;
         }
 
-        //public Playfield getBestPlayfield()
-        //{
-        //    currentState = new Node(null, board, null, 0);
-
-        //    int count = expandDecision(currentState, firstNumberIter);
-
-        //    if (count == 0) //lethal
-        //    {
-        //        return currentState.children[0].state;
-        //    }
-        //    else if (count == 1)
-        //    {
-        //        return currentState.children[0].state;
-        //    }
-
-        //    float maxScore = 0;
-        //    Playfield selectedMove = null;
-        //    foreach (Node child in currentState.children)
-        //    {
-        //        //child.move.print();
-        //        child.state.printLastTurnActions();
-        //        float nnEval = getNNEval(child.state);
-        //        Helpfunctions.Instance.logg("NN Score = " + nnEval);
-        //        if (nnEval > maxScore)
-        //        {
-        //            maxScore = nnEval;
-        //            selectedMove = child.state;
-        //        }
-        //        Helpfunctions.Instance.logg("============================================================");
-        //    }
-
-        //    selectedMove.printBoard();
-
-        //    return selectedMove;
-        //}
-
-        //public void UCTRun(Node p, int threadNumber)
-        //{
-        //    List<Node> visited = new List<Node>();
-        //    visited.Add(p);
-
-        //    int depth = 0;
-        //    Node parent = null;
-
-        //    //List<Action> actions = new List<Action>();
-
-        //    while (!isLeaf(p) && p.depth < rolloutDepth)
-        //    {
-        //        parent = p;
-        //        p = select(p, 0.7f);
-
-        //        //chanceNode
-        //        ChanceNode chanceNode = p as ChanceNode;
-        //        if (chanceNode != null)
-        //        {
-        //            visited.Add(p);
-        //            p = advanceChance(chanceNode);
-        //        }
-        //        depth++;
-        //        if (p.move != null && depth == 1)
-        //        {
-        //            //Helpfunctions.Instance.logg("=======================MOVE TO SAMPLE===================");
-        //            //Helpfunctions.Instance.logg("Turn: " + p.state.isOwnTurn);
-        //            //p.state.printBoard();
-        //            //p.move.print();
-        //        }
-        //        //actions.Add(p.move);
-        //        depth++;
-        //        visited.Add(p);
-        //    }
-
-        //    //Console.WriteLine("OUT OF LOOP:" + threadNumber);
-
-        //    float score;
-        //    if (p.depth == rolloutDepth && !isEndReached)
-        //    {
-        //        score = p.state.getBoardValue();
-        //        //score = getNNEval(p.state);
-        //        //Console.WriteLine("NN value = " + score);
-        //    }
-        //    else
-        //    {
-        //        //int count = expand(p, HeuristicType.Boardvalue);
-        //        //Helpfunctions.Instance.startTimer();
-        //        //p.state.drawTurnStartCard();
-        //        //ChanceNode cn = new ChanceNode(p, p.state, null, p.depth);
-        //        int count = expandDecision(p, threadNumber);
-        //        //Helpfunctions.Instance.logTime("expand");
-        //        if (count == 0)
-        //        {
-        //            if (p.state.isOwnTurn == playerSide)
-        //            {
-        //                score = 1;
-        //            }
-        //            else
-        //            {
-        //                score = 0;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            //Helpfunctions.Instance.startTimer();
-        //            score = sample(p);
-        //            //Helpfunctions.Instance.logTime("sample time");
-        //            //Helpfunctions.Instance.startTimer();
-        //            //score = getNNEval(p);
-        //            //Helpfunctions.Instance.logTime("NN time");
-        //        }
-        //    }
-        //    //Helpfunctions.Instance.logg("score = " + score);
-
-        //    //update score
-        //    foreach (Node visitedPos in visited)
-        //    {
-        //        float lastMean = visitedPos.mean;
-        //        visitedPos.mean = (score + lastMean * visitedPos.numVisited) / (visitedPos.numVisited + 1);
-        //        visitedPos.numVisited++;
-        //    }
-
-        //    return;
-        //}
-
         public void UCTRun(Node p, float c)
         {
 
             List<Node> visited = new List<Node>();
             visited.Add(p);
 
-            int depth = 0;
             Node parent = null;
-
-            //List<Action> actions = new List<Action>();
-            //Console.WriteLine("Begin D:" + p.depth + ", T:" + p.state.isOwnTurn);
 
             while (!isLeaf(p) && p.depth < rolloutDepth)
             {
@@ -786,21 +736,32 @@ namespace HRSim
                 bool turnBefore = p.state.isOwnTurn;
                 int depthBefore = p.depth;
                 int count = expandDecision(p, playoutNumberIter);
+
                 while (count == 0)
                 {
                     visited.Add(p);
                     ChanceNode chanceNode = p.children[0] as ChanceNode;
-                    p = advanceChance(chanceNode);
+                    try
+                    {
+                        p = advanceChance(chanceNode);
+                    }
+                    catch (NullReferenceException ex)
+                    {
+                        throw;
+                    }
                     count = expandDecision(p, playoutNumberIter);
                     //Console.WriteLine("Ad D:" + p.depth + ", T:" + p.state.isOwnTurn);
                 }
 
                 //Helpfunctions.Instance.startTimer();
-                score = sample(p);
-                //Helpfunctions.Instance.logTime("sample time");
-                //Helpfunctions.Instance.startTimer();
-                //score = getNNEval(p);
-                //Helpfunctions.Instance.logTime("NN time");
+                if (useNNEval)
+                {
+                    score = MultilevelSample(p);
+                }
+                else
+                {
+                    score = sample(p);
+                }
             }
             if (log)
                 Console.WriteLine("score = " + score + "--------------------------------------");
@@ -832,35 +793,50 @@ namespace HRSim
         public float MultilevelSample(Node p)
         {
             Playfield startState = new Playfield(p.state);
-            Action move = null;
             int turn = p.depth;
+            int limit = rolloutDepth + turn;
             if (log)
                 Console.WriteLine("starting depth = " + turn);
 
             int score = startState.getGameResult();
+            Action move = null;
+            bool newTurn = true;
 
             while (score == -1)
             {
                 //if no move
-                if (startState.moveList.Count == 0)
+                
+                if (newTurn)
                 {
+                    DNNEval.Instance.GetCardPolicy(startState);
+                    newTurn = false;
+                }
+
+                move = null;
+                move = DNNEval.Instance.GetLowLevelMove(startState);
+                if (move == null || GameManager.getRNG().NextDouble() > 0.5)
+                {
+                    move = DNNEval.Instance.GetHighLevelMove(startState);
+                }
+
+                if (move != null)
+                {
+                    //move.print();
+                    startState.doAction(move);
+                }
+                else
+                {
+                    newTurn = true;
                     startState.endTurn(false, false);
                     startState.drawTurnStartCard();
-                    if (this.useNNEval)
-                    {
-                        DNNEval.Instance.GetCardPolicy(startState);
-                    }
-
-                    move = null;
-                    if (turn == rolloutDepth) //evaluate at deapth == 5
+                    turn++;
+                    if (turn == limit) //evaluate at deapth == 5
                     {
                         float value;
-                        
                         value = bh.getPlayfieldValue(startState, this.playerSide);
 
                         if (log)
                             Console.WriteLine("ending depth = " + turn);
-                        //float value = startState.getBoardValue();
                         if (log)
                             Console.WriteLine("sample turn:" + startState.isOwnTurn + " val:" + value);
 
@@ -871,19 +847,7 @@ namespace HRSim
                         }
                         return value;
                     }
-
                 }
-                else
-                {
-                    //startState.doAction(startState.moveList[4]);
-                    int moveIndex = GameManager.getRNG().Next(startState.moveList.Count);
-                    move = startState.moveList[moveIndex];
-                    startState.doAction(move);
-                    //Console.WriteLine("S D:" + turn + ", T:" + startState.isOwnTurn + ", M:" + move.actionType);
-                }
-
-                //Movegenerator.Instance.getMoveListForPlayfield(startState, false, false);
-                startState.moveList = new List<Action>(Movegenerator.Instance.getMoveList(startState, false, true, true, 0.0));
                 score = startState.getGameResult();
             }
 
@@ -904,6 +868,7 @@ namespace HRSim
             Playfield startState = new Playfield(p.state);
             Action move = null;
             int turn = p.depth;
+            int limit = rolloutDepth + turn;
             if (log)
                 Console.WriteLine("starting depth = " + turn);
 
@@ -915,47 +880,20 @@ namespace HRSim
                 if (startState.moveList.Count == 0)
                 {
                     startState.endTurn(false, false);
-                    startState.drawTurnStartCard();
-                    if (this.useNNEval)
-                    {
-                        //DNNEval.Instance.getNNPolicy(startState, startState.isOwnTurn);
-                        //DNNEval.Instance.getNNActionPolicy(startState, this.playerSide);
-                        DNNEval.Instance.GetCardPolicy(startState);
-                    }
-
-
+                    startState.drawTurnStartCard();                   
                     turn++;
-                    //Console.WriteLine("S D:" + turn + ", T:" + startState.isOwnTurn);
 
                     move = null;
-                    if (turn == rolloutDepth) //evaluate at deapth == 5
+                    if (turn == limit) //evaluate at deapth == 5
                     {
-                        //startState.printBoard();
                         float value;
-                        //if (this.useNNEval)
-                        //{
-                        //    value = getDNNValue(startState);
-                        //}
-                        //else
-                        //{
-                            value = bh.getPlayfieldValue(startState, this.playerSide);
-                        //}
+                        value = bh.getPlayfieldValue(startState, this.playerSide);
 
                         if (log)
                             Console.WriteLine("ending depth = " + turn);
-                        //float value = startState.getBoardValue();
                         if (log)
                             Console.WriteLine("sample turn:" + startState.isOwnTurn + " val:" + value);
 
-                        if (startState.isOwnTurn == this.playerSide)
-                        {
-                            int debug = 1;
-                        }
-
-                        //startState.printBoard();
-                        //float value = getNNEval(startState);
-                        //Helpfunctions.Instance.logg("NN value = " + value);
-                        //Console.WriteLine("Board value = " + value);
                         if (value > bestValue)
                         {
                             bestBoard = new Playfield(startState);
@@ -967,14 +905,11 @@ namespace HRSim
                 }
                 else
                 {
-                    //startState.doAction(startState.moveList[4]);
                     int moveIndex = GameManager.getRNG().Next(startState.moveList.Count);
                     move = startState.moveList[moveIndex];
                     startState.doAction(move);
-                    //Console.WriteLine("S D:" + turn + ", T:" + startState.isOwnTurn + ", M:" + move.actionType);
                 }
 
-                //Movegenerator.Instance.getMoveListForPlayfield(startState, false, false);
                 startState.moveList = new List<Action>(Movegenerator.Instance.getMoveList(startState, false, true, true, 0.0));
                 score = startState.getGameResult();
             }
@@ -982,10 +917,8 @@ namespace HRSim
             isEndReached = true;
             if ((playerSide && score == 0) || (!playerSide && score == 1))
             {
-                //Helpfunctions.Instance.logg("End game value = 1");
                 return 1;
             }
-            //Helpfunctions.Instance.logg("End game value = 0");
             return 0;
         }
 

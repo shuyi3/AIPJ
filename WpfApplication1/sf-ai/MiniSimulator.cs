@@ -343,7 +343,7 @@
                 String valString = "";
                 bool turn = bestplay.isOwnTurn;
                 int maxMana = bestplay.ownMaxMana;
-                if (Helpfunctions.getRNG().NextDouble() > 0.97)
+                if (Helpfunctions.getRNG().NextDouble() > 2) //no way to go here
                 {
                     int r = Helpfunctions.getRNG().Next(posmoves.Count);
                     bestplay = posmoves[r];
